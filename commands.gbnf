@@ -1,0 +1,4 @@
+root ::= "["command"]" description
+
+command ::= [a-z]+
+description ::= [^\n]*
