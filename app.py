@@ -5,18 +5,25 @@ import time
 import re
 import threading
 import yaml
+import string
 from requests.exceptions import ChunkedEncodingError
 from flask import Flask, send_from_directory
 from flask_socketio import SocketIO
 from markupsafe import escape
 
-from hooks.timer import TimerHook
+from skills.timer import TimerSkill
+from skills.weather import WeatherSkill
+from skills.time import TimeSkill
+from skills.openaiskill import OpenAISkill
 
 
 url = "http://127.0.0.1:8080/completion"
 headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
 transcribe_filename = "transcript.txt"
-grammar_filename = "commands.gbnf"
+grammar_filename = "commands_kwargs.gbnf"
+
+llm_model = {"model_file": "", "prompt_generator": ""}
+llm_settings = {"temperature": 0.8, "n_predict": 20, "force_grammar": True}
 
 # diart_filename = "file.rttm"
 prompt_setup = """"""
@@ -32,27 +39,43 @@ reset_dialog_flag = False
 available_models = []
 prompt_presets = []
 
+sleeping = True
+sleep_time_in_seconds = 60 * 10
+last_action_time = time.time()
+
+wakeWords = ["otto", "auto"]
+
+run_llm_on_new_tts = True
+
+
 # modes: normal, transcribe, factcheck, timer, calendar, weather, news
 mode = "normal"
 
 
 def load_prompt_presets():
     global prompt_presets
+    global prompt_setup
     with open("system_prompt_presets.yaml") as f:
         prompt_presets = yaml.load(f, Loader=yaml.FullLoader)
 
+    if (prompt_presets == []):
+        raise ("No prompt presets found in file system_prompt_presets.yaml")
+
+    if prompt_setup == "":
+        prompt_setup = prompt_presets[0]["prompt"]
+
 
 def load_available_models():
+    global prompt_setup
     global available_models
     global llm_model
     with open("llms.json") as f:
         available_models = json.load(f)
 
     if available_models == []:
-        raise ("No LLM models found in llms.json")
+        raise ("No LLM models found in file llms.json")
 
     llm_model = available_models[0]
-    print("LLM Model set ", llm_model)
 
 
 def strip_ansi_codes(s):
@@ -109,33 +132,86 @@ def cleanup_text_to_speak(text):
 
 
 def message(text):
+    print("Sending message ", text)
     socket_io.emit("message", text)
 
 
-timer = TimerHook(message)
+timer = TimerSkill(message)
+weather = WeatherSkill(message)
+timeSkill = TimeSkill(message)
+openAISkill = OpenAISkill(message)
+
+
+def parse_function_call(call_str):
+    call_str = call_str.strip()
+
+    # Regular expression to match function name and arguments
+    match = re.match(r'(\w+)\((.*)\)', call_str)
+
+    if not match:
+        return None
+
+    function_name = match.group(1)
+
+    # Extract arguments
+    args_str = match.group(2)
+
+    # Splitting by comma outside of quotes
+    args = re.split(r',(?=(?:[^"]*"[^"]*")*[^"]*$)', args_str)
+
+    param_dict = {}
+    for arg in args:
+        key, value = arg.split("=")
+        param_dict[key.strip()] = value.strip().strip('"')
+
+    return function_name, param_dict
+
+
+def function_call(function_name, args):
+    global last_action_time
+
+    socket_io.emit("function_call", {
+                   "function_name": function_name, "args": args})
+
+    action_happened = True
+    if (function_name == "factcheck"):
+        mode = "factcheck"
+        socket_io.emit('factcheck', 'start')
+    elif (function_name == "time"):
+        timeSkill.start(args)
+    elif (function_name == "timer"):
+        timer.start(args)
+    elif (function_name == "calendar"):
+        socket_io.emit('calendar')
+    elif (function_name == "weather"):
+        weather.start(args)
+    elif (function_name == "news"):
+        socket_io.emit('news')
+    elif (function_name == "transcribe"):
+        mode = "transcribe"
+        socket_io.emit('transcribe')
+    elif (function_name == "openai"):
+        openAISkill.start(args)
+    else:
+        action_happened = False
+
+    if (action_happened):
+        last_action_time = time.time()
+
+
+def function_call_str(function_call_str):
+
+    results = parse_function_call(function_call_str)
+    if (results == None):
+        return
+
+    function_name, args = results
+
+    function_call(function_name, args)
 
 
 def end_response(response):
-    global mode
-
-    clean_response = response.lower().strip()
-    if (re.match(r'^\[[a-z ]+\]', clean_response)):
-
-        rest_of_response = clean_response.split("]", 1)[1]
-        if (clean_response.startswith("[fact check]")):
-            mode = "factcheck"
-            socket_io.emit('factcheck', 'start')
-        elif (clean_response.startswith("[timer]")):
-            timer.start(rest_of_response)
-        elif (clean_response.startswith("[calender]")):
-            socket_io.emit('calendar')
-        elif (clean_response.startswith("[weather]")):
-            socket_io.emit('weather')
-        elif (clean_response.startswith("[news]")):
-            socket_io.emit('news')
-        elif (clean_response.startswith("[transcribe]")):
-            mode = "transcribe"
-            socket_io.emit('transcribe')
+    function_call_str(response)
 
 
 def end_response_chunk(left_to_read):
@@ -143,10 +219,8 @@ def end_response_chunk(left_to_read):
         print("Left to read: ", left_to_read)
         left_to_read = left_to_read.strip()
         if (left_to_read.lower().startswith("true")):
-            print("FC TRUE")
             socket_io.emit('factcheck', 'true')
         if (left_to_read.lower().startswith("false")):
-            print("FC FALSE")
 
             socket_io.emit('factcheck', 'false')
 
@@ -218,7 +292,7 @@ def llm(user_prompt):
                      "temperature": llm_settings["temperature"]}
 
     if ("force_grammar" in llm_settings and llm_settings["force_grammar"]):
-        with open(grammar_file) as f:
+        with open(grammar_filename) as f:
             grammar_string = f.read()
             llama_request['grammar'] = grammar_string
 
@@ -234,9 +308,14 @@ def llm(user_prompt):
         left_to_read = ""
         for line in resp.iter_lines():
             if line:
-                line = line.decode('utf-8')
-                content = line.split(": ", 1)[1]
-                data = json.loads(content)
+                try:
+                    line = line.decode('utf-8')
+                    content = line.split(": ", 1)[1]
+                    data = json.loads(content)
+                except Exception as e:
+                    print(f"Couldn't parse line {line} - exeception {e} ")
+                    continue
+
                 token = data['content']
 
                 if not line:
@@ -271,19 +350,17 @@ def llm(user_prompt):
     # llm_log.flush()
 
 
-lastprompt = ""
-
-run_llm_on_new_tts = True
-
-
 def listen():
     global run_llm_on_new_tts
+    global sleep_time_in_seconds
+    global sleeping
     p = subprocess.Popen(
         ["tail", "-1", transcribe_filename], stdout=subprocess.PIPE)
     try:
         line = p.stdout.readline()
         line = line.decode('utf-8')
         line = strip_ansi_codes(line)
+        print("Heard ", line)
         socket_io.emit("tts", line)
         if (mode == "transcribe"):
             socket_io.emit('transcribe', line)
@@ -293,13 +370,25 @@ def listen():
         return
     # lines.append(line)
 
-    if run_llm_on_new_tts:
-        if not emptyaudio(line):
-            print("Calling llm with line ", line)
-            llm(line)
-            print("Done talking")
-            time.sleep(1.0)
-            print("Done sleeping")
+    # if last_action was more than sleep_timer secongs ago, go to sleep
+    if (time.time() - last_action_time > sleep_time_in_seconds):
+        socket_io.emit("sleeping", str(True))
+        sleeping = True
+
+    if (sleeping):
+        line_words = re.split(r'\W+', line.lower())
+        for word in wakeWords:
+            if (word in line_words):
+                print("Waking up")
+                socket_io.emit("sleeping", str(False))
+                sleeping = False
+                break
+
+    if (not sleeping):
+        if run_llm_on_new_tts:
+            if not emptyaudio(line):
+                print("Calling llm with line ", line)
+                llm(line)
 
 
 def listen_loop():
@@ -332,9 +421,6 @@ def run_transcribe():
 
 llm_thread = None
 llm_process = None
-
-llm_model = {"model_file": "", "prompt_generator": ""}
-llm_settings = {"temperature": 0.8, "n_predict": 10}
 
 
 def run_llm():
@@ -471,12 +557,17 @@ def start_automation(args):
     if 'llm_settings' in args:
         if 'temperature' in args['llm_settings']:
             llm_settings['temperature'] = args['llm_settings']['temperature']
+
         if 'n_predict' in args['llm_settings']:
             llm_settings['n_predict'] = args['llm_settings']['n_predict']
+
+        if 'force_grammar' in args['llm_settings']:
+            llm_settings['force_grammar'] = args['llm_settings']['force_grammar']
 
     if args['run_tts'] == True:
         start_transcribe()
 
+    global run_llm_on_new_tts
     if args['run_llm'] == True:
         start_llm()
         run_llm_on_new_tts = True
@@ -518,6 +609,7 @@ def update_status():
     global available_models
     global prompt_presets
     status = {
+        "sleeping": str(sleeping),
         "run_llm": run_llm_on_new_tts,
         "speak_flag": speak_flag,
         "reset_dialog_flag": reset_dialog_flag,
@@ -527,6 +619,11 @@ def update_status():
     }
     print("Updating Status", status)
     socket_io.emit("server_status", status)
+
+
+@socket_io.on('call')
+def call(call_str):
+    function_call_str(call_str)
 
 
 def update_tts():

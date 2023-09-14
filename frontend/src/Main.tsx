@@ -24,7 +24,17 @@ function Main() {
         socket.on("transcribe", (transcription) => {
             setMessage(transcription);
         })
-    })
+
+        socket.on("message", (message) => {
+            console.log("Message ", message)
+            setMessage(message);
+        })
+
+        // when component unmounts, disconnect
+        return (() => {
+            socket.disconnect()
+        })
+    }, [])
 
     return (
         <Box alignItems="center"
@@ -33,15 +43,20 @@ function Main() {
             flexDirection="column"
             height="100%"
         >
-            <Box height="300px" marginTop="100px" display="flex"
+            <Box height="500px" marginTop="100px" marginLeft="50px" marginRight="50px" display="flex"
                 flexDirection="column"
                 justifyContent="center">
 
                 <img src={logo} alt="logo" style={{ height: "100px" }} />
-                <Typography variant="h2" component="div" gutterBottom>
-                    <p>{message} </p>
+                {message && (
+                    <Typography variant={message?.includes("\n") ? "h4" : "h2"} component="div" gutterBottom>
+                        {message.split("\n").map((line) => (
+                            <p>{line} </p>
+                        ))}
 
-                </Typography>
+
+                    </Typography>
+                )}
             </Box>
         </Box >
 
