@@ -149,7 +149,10 @@ function System() {
     })
 
     socket.on("function_call", (newFunctionCall) => {
-      const newFunctionCallStr = newFunctionCall["function_name"] + "(" + newFunctionCall["args"].join(", ") + ")"
+      const argStr = Object.keys(newFunctionCall["args"]).map(key => {
+        return (key + "=\"" + newFunctionCall["args"][key]) + "\""
+      }).join(", ")
+      const newFunctionCallStr = newFunctionCall["function_name"] + "(" + argStr + ")"
       setFunctionCalls(functionCalls => [...functionCalls, newFunctionCallStr])
     })
 

@@ -142,7 +142,7 @@ timeSkill = TimeSkill(message)
 openAISkill = OpenAISkill(message)
 
 
-def parse_function_call(call_str):
+def parse_function_call(call_str: str) -> (str, dict[str, str]):
     call_str = call_str.strip()
 
     # Regular expression to match function name and arguments
@@ -167,7 +167,7 @@ def parse_function_call(call_str):
     return function_name, param_dict
 
 
-def function_call(function_name, args):
+def function_call(function_name: str, args: dict[str, str]):
     global last_action_time
 
     socket_io.emit("function_call", {
@@ -360,7 +360,6 @@ def listen():
         line = p.stdout.readline()
         line = line.decode('utf-8')
         line = strip_ansi_codes(line)
-        print("Heard ", line)
         socket_io.emit("tts", line)
         if (mode == "transcribe"):
             socket_io.emit('transcribe', line)

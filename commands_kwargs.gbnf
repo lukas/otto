@@ -1,0 +1,35 @@
+root ::= timer | timecheck | weather | openai | other
+
+timer ::= "timer(" timerArg? ("," ws timerArg)* ")"
+
+timerArg ::= durationArg # "duration=" srtArgument # "\"" ([a-zA-Z0-9 _]+) "\"" #  empty | (timerArg ", " timerArg) | ( "duration=" srtArgument )
+
+durationArg ::= ( "duration=" strArg )
+
+timecheck ::= "timecheck(" timecheckArg? ("," ws timecheckArg)* ")"
+
+timecheckArg ::= locationArg # "duration=" srtArgument # "\"" ([a-zA-Z0-9 _]+) "\"" #  empty | (timerArg ", " timerArg) | ( "duration=" srtArgument )
+
+weather ::= "weather(" weatherArg? ("," ws weatherArg)* ")"
+
+weatherArg ::= locationArg
+
+openai ::= "openai(" openaiArg? ("," ws openaiArg)* ")"
+
+openaiArg ::= promptArg
+
+other ::= "other(" otherArg? ("," ws otherArg)* ")"
+
+otherArg ::= ( "q=" strArg )
+
+promptArg ::= ( "prompt=" strArg )
+
+
+
+locationArg ::= ( "location=" strArg )
+
+strArg ::= "\"" [a-zA-Z0-9 _]+ "\""
+
+ws ::= ([ \t\n]+)
+
+
