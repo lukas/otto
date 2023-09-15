@@ -5,25 +5,25 @@ from openai import ChatCompletion
 
 load_dotenv()
 
-function_name = "openai"
-parameter_names = ['prompt']
-examples = [
-    [
-        "Ask openai if whales are mammals",
-        "openai(prompt=\"Are whales mammals?\")"
-    ],
-    [
-        "Ask gpt if a leopard can swim",
-        "openai(prompt=\"Can a leopard swim?\")"
-    ],
-    [
-        ["Ask open ai for an interesting fact about the natural world that a smart educated person might not know"],
-        ["openai(prompt=\"Tell me an interesting fact about the natural world that a smart educated person might not know\")"]
-    ]
-]
-
 
 class OpenAISkill:
+    function_name = "openai"
+    parameter_names = ['prompt']
+    examples = [
+        [
+            "Ask openai if whales are mammals",
+            "openai(prompt=\"Are whales mammals?\")"
+        ],
+        [
+            "Ask gpt if a leopard can swim",
+            "openai(prompt=\"Can a leopard swim?\")"
+        ],
+        [
+            ["Ask open ai for an interesting fact about the natural world that a smart educated person might not know"],
+            ["openai(prompt=\"Tell me an interesting fact about the natural world that a smart educated person might not know\")"]
+        ]
+    ]
+
     def __init__(self, message_function):
         self.message_function = message_function
 

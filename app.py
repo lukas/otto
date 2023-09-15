@@ -10,6 +10,7 @@ from requests.exceptions import ChunkedEncodingError
 from flask import Flask, send_from_directory
 from flask_socketio import SocketIO
 from markupsafe import escape
+from generate_grammar import generate_grammar
 
 from skills.timer import TimerSkill
 from skills.weather import WeatherSkill
@@ -46,6 +47,7 @@ last_action_time = time.time()
 wakeWords = ["otto", "auto"]
 
 run_llm_on_new_tts = True
+skills = [TimerSkill, WeatherSkill, TimeSkill, OpenAISkill]
 
 
 # modes: normal, transcribe, factcheck, timer, calendar, weather, news
@@ -292,9 +294,11 @@ def llm(user_prompt):
                      "temperature": llm_settings["temperature"]}
 
     if ("force_grammar" in llm_settings and llm_settings["force_grammar"]):
-        with open(grammar_filename) as f:
-            grammar_string = f.read()
-            llama_request['grammar'] = grammar_string
+        # with open(grammar_filename) as f:
+        #     grammar_string = f.read()
+        #     llama_request['grammar'] = grammar_string
+        grammar_string = generate_grammar(skills)
+        llama_request['grammar'] = grammar_string
 
     try:
         resp = requests.post(url, json=llama_request, stream=True)
@@ -350,10 +354,14 @@ def llm(user_prompt):
     # llm_log.flush()
 
 
+last_tts_line = ""
+
+
 def listen():
     global run_llm_on_new_tts
     global sleep_time_in_seconds
     global sleeping
+    global last_tts_line
     p = subprocess.Popen(
         ["tail", "-1", transcribe_filename], stdout=subprocess.PIPE)
     try:
@@ -380,14 +388,17 @@ def listen():
             if (word in line_words):
                 print("Waking up")
                 socket_io.emit("sleeping", str(False))
+                last_tts_line = line  # don't call llm on the wake word
                 sleeping = False
                 break
 
     if (not sleeping):
         if run_llm_on_new_tts:
             if not emptyaudio(line):
-                print("Calling llm with line ", line)
-                llm(line)
+                if (line != last_tts_line):  # don't call llm twice on the same line if it returns quickly
+                    print("Calling llm with line ", line)
+                    last_tts_line = line
+                    llm(line)
 
 
 def listen_loop():
@@ -625,20 +636,6 @@ def call(call_str):
     function_call_str(call_str)
 
 
-def update_tts():
-    p = subprocess.Popen(
-        ["tail", "-10", transcribe_filename], stdout=subprocess.PIPE)
-    tts = p.communicate()[0]
-    tts = tts.decode('utf-8')
-    socket_io.emit("tts", tts)
-
-
-def update_tts_loop():
-    while (1):
-        update_tts()
-        time.sleep(0.2)
-
-
 if __name__ == '__main__':
     load_available_models()
     load_prompt_presets()
@@ -650,6 +647,4 @@ if __name__ == '__main__':
     start_automation({"run_tts": True, "run_llm": True,
                      "reset_dialog": True, "run_speak": False, "llm_model": available_models[0]["model_file"]})
 
-    # update_thread = threading.Thread(target=update_tts_loop)
-    # update_thread.start()
     socket_io.run(app, port=5001, host="0.0.0.0")

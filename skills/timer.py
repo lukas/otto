@@ -2,22 +2,22 @@ import threading
 import time
 import re
 
-function_name = "timer"
-parameter_names = ['duration']
-
-examples = [
-    [
-        "what time is it?",
-        "timecheck()"
-    ],
-    [
-        "what time is it in Tokyo?",
-        "timecheck(location=\"Tokyo\")"
-    ]
-]
-
 
 class TimerSkill:
+    function_name = "timer"
+    parameter_names = ['duration']
+
+    examples = [
+        [
+            "what time is it?",
+            "timecheck()"
+        ],
+        [
+            "what time is it in Tokyo?",
+            "timecheck(location=\"Tokyo\")"
+        ]
+    ]
+
     def __init__(self, message_function):
         self.message_function = message_function
 

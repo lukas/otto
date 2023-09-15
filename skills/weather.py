@@ -5,22 +5,22 @@ import os
 
 load_dotenv()
 
-function_name = "weather"
-parameter_names = ['location']
-
-examples = [
-    [
-        "what is the weather?",
-        "weather()"
-    ],
-    [
-        "what is the weather in Boston?",
-        "timecheck(location=\"Boston\")"
-    ]
-]
-
 
 class WeatherSkill:
+    function_name = "weather"
+    parameter_names = ['location']
+
+    examples = [
+        [
+            "what is the weather?",
+            "weather()"
+        ],
+        [
+            "what is the weather in Boston?",
+            "timecheck(location=\"Boston\")"
+        ]
+    ]
+
     def __init__(self, message_function):
         self.message_function = message_function
         self.api_key = os.getenv("OPENWEATHERMAP_API_KEY")

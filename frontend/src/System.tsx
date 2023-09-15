@@ -102,10 +102,6 @@ function System() {
   useEffect(() => {
     socket = io('ws://' + window.location.hostname + ':5001');
 
-    socket.on("tts", (tts) => {
-      setMessage(message => (tts as string));
-    })
-
     socket.on("sleeping", (sleeping) => {
       if (sleeping === "True") {
         setSleeping(true)
@@ -309,7 +305,7 @@ function System() {
           ) : (
             <p>No Models found from Server</p>
           )}
-          < FormControlLabel control={<Switch checked={runTTSFlag} onChange={(v) => setRunTTSFlag(v.target.checked)} />} label="Run Text to Speech" />
+          <FormControlLabel control={<Switch checked={runTTSFlag} onChange={(v) => setRunTTSFlag(v.target.checked)} />} label="Run Text to Speech" />
           <FormControlLabel control={<Switch checked={runLLMFlag} onChange={(v) => setRunLLMFlag(v.target.checked)} />} label="Run LLM" />
           <FormControlLabel control={<Switch checked={runSpeakFlag} onChange={(v) => setRunSpeakFlag(v.target.checked)} />} label="Run Speaking" />
           <FormControlLabel control={<Switch checked={resetDialogFlag} onChange={(v) => setResetDialogFlag(v.target.checked)} />} label="Reset Dialog Each Time" />

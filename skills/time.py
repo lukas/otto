@@ -7,11 +7,11 @@ import os
 
 load_dotenv()
 
-function_name = "timecheck"
-parameter_names = ['location']
-
 
 class TimeSkill:
+    function_name = "timecheck"
+    parameter_names = ['location']
+
     def __init__(self, message_function):
         self.message_function = message_function
         self.api_key = os.getenv("GEONAMES_USERNAME")
