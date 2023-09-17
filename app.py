@@ -405,11 +405,9 @@ def listen():
                 last_tts_line = line  # don't call llm on the wake word
                 sleeping = False
                 break
-
-    if (not sleeping):
+    else:
         if run_llm_on_new_tts:
             if not emptyaudio(line):
-
                 llm(line)
 
 

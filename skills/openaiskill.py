@@ -27,7 +27,13 @@ class OpenAISkill:
         self.message_function = message_function
 
     def start(self, args: dict[str, str]):
-        question = args["prompt"]
+        if 'prompt' in args:
+            question = args["prompt"]
+        else:
+            question = ""
+            print("No prompt specified!")
+            return
+
         if (question != None and question != ""):
             s = self._ask_gpt3(question)
 

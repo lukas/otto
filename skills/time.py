@@ -30,12 +30,16 @@ class TimeSkill:
                 "No geonames username found in .env file! Go to https://www.geonames.org/ and get a user name and put in .env as GEONAMES_USER_NAME")
 
     def start(self, args: dict[str, str]):
-        time_string = args["location"]
+        location_string = ""
         time = ""
-        if (time_string == None or time_string == ""):
+
+        if ('location' in args):
+            location_string = args["location"]
+
+        if (location_string == ""):
             time = self._get_current_time()
         else:
-            time = self._get_current_time_in_city(time_string)
+            time = self._get_current_time_in_city(location_string)
 
         formatted_time = time.strftime("%H:%M")
 

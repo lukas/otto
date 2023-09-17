@@ -74,7 +74,7 @@ function Main() {
 
                 <img src={logo} alt="logo" style={{ height: "100px" }} />
                 {message && (
-                    <Typography variant={message?.includes("\n") ? "h4" : "h2"} component="div" gutterBottom>
+                    <Typography variant={message?.includes("\n") ? "h6" : "h2"} component="div" gutterBottom>
                         {message.split("\n").map((line) => (
                             <p style={{ textAlign: "center" }}>{line} </p>
                         ))}
