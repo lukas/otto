@@ -32,6 +32,17 @@ function Main() {
             setMessage(message);
         })
 
+        socket.on("sleeping", (sleeping) => {
+            if (sleeping === "True") {
+                setSleeping(true)
+                setMessage("😴")
+            } else {
+                setSleeping(false)
+                setMessage("Hello")
+            }
+
+        })
+
         socket.on("server_status", (status) => {
             console.log("Got status ", status)
 

@@ -73,7 +73,6 @@ function System() {
   const [factCheck, setFactCheck] = useState(false)
   const [promptPresets, setPromptPresets] = useState([] as Array<{ name: string, prompt: string }>)
   const [availableModels, setAvailableModels] = useState([] as Array<{ model_file: string, prompt_generator: string }>)
-  const [message, setMessage] = useState("")
   const [prompt, setPrompt] = useState("")
   const [response, setResponse] = useState("")
   const [promptSetup, setPromptSetup] = useState("")
@@ -82,6 +81,7 @@ function System() {
   const [userPrompt, setUserPrompt] = useState("")
   const [oldPrompts, setOldPrompts] = useState({})
   const [rawTranscription, setRawTranscription] = useState("")
+  const [transcription, setTranscription] = useState("")
   const [rawLLM, setRawLLM] = useState("")
   const [tabValue, setTabValue] = React.useState(0);
   const [llmSettings, setLLMSettings] = useState({ temperature: "0.8", n_predict: "10", forceGrammar: true })
@@ -136,6 +136,9 @@ function System() {
       setRawTranscription(rawTranscription => rawTranscription + (newTranscription as string) + "\n");
     })
 
+    socket.on("tts", (newTranscription) => {
+      setTranscription(transcription => transcription + (newTranscription as string) + "\n");
+    })
     socket.on("llm_stdout", (newLLM) => {
       setRawLLM(rawLLM => rawLLM + (newLLM as string) + "\n")
     })
@@ -235,8 +238,8 @@ function System() {
             )}
 
           </Box>
-          <Box maxHeight="500px" sx={{ flexDirection: 'column' }}>
-            <TextField multiline minRows={5} sx={{ flexGrow: 1, maxHeight: '440px', overflow: 'auto' }} style={{ width: "100%" }} defaultValue={promptSetup}
+          <Box maxHeight="400px" sx={{ flexDirection: 'column' }}>
+            <TextField multiline minRows={5} sx={{ flexGrow: 1, maxHeight: '340px', overflow: 'auto' }} style={{ width: "100%" }} defaultValue={promptSetup}
               onChange={(e) => { setPromptSetup(e.target.value); socket.emit("set_prompt_setup", e.target.value) }} />
             <FormGroup row sx={{ mt: "8px", height: "60px" }}>
               <TextField style={{ flex: 1 }} id="outlined-basic" label="Human Response" variant="outlined" value={userPrompt}
@@ -262,10 +265,10 @@ function System() {
             {response !== "" && (<p><b>Bot</b> {response}</p>)}
           </Paper>
         )}
-        <Paper sx={{ m: "12px", p: "12px" }}>
+        <Paper sx={{ m: "12px", p: "12px", maxHeight: '400px', flexDirection: 'column' }} >
           <Typography variant="h5" sx={{ textAlign: 'center' }}>Listening Transcript</Typography>
-          <pre>
-            {message}
+          <pre style={{ overflow: 'auto', height: '300px', display: "flex", flexDirection: "column-reverse" }}>
+            {transcription}
           </pre>
         </Paper>
 

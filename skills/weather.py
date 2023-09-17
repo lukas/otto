@@ -30,9 +30,9 @@ class WeatherSkill:
 
     def start(self, args: dict[str, str]):
 
-        location_string = args['location']
-
-        if (location_string == None):
+        if 'location' in args:
+            location_string = args['location']
+        else:
             location_string = "San Francisco"
 
         self.get_weather(location_string)

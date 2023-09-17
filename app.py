@@ -44,7 +44,7 @@ sleeping = True
 sleep_time_in_seconds = 60 * 10
 last_action_time = time.time()
 
-wakeWords = ["otto", "auto"]
+wakeWords = ["otto", "auto", "wake"]
 
 run_llm_on_new_tts = True
 skills = [TimerSkill, WeatherSkill, TimeSkill, OpenAISkill]
@@ -166,9 +166,10 @@ def parse_function_call(call_str: str) -> (str, dict[str, str]):
     args = re.split(r',(?=(?:[^"]*"[^"]*")*[^"]*$)', args_str)
 
     param_dict = {}
-    for arg in args:
-        key, value = arg.split("=")
-        param_dict[key.strip()] = value.strip().strip('"')
+    if (args != ['']):
+        for arg in args:
+            key, value = arg.split("=")
+            param_dict[key.strip()] = value.strip().strip('"')
 
     return function_name, param_dict
 
@@ -370,6 +371,15 @@ def listen():
         ["tail", "-1", transcribe_filename], stdout=subprocess.PIPE)
     try:
         line = p.stdout.readline()
+    except Exception as e:
+        print("Error reading transcription: " + e)
+
+    if (line == last_tts_line):  # don't call llm twice on the same line if it returns quickly
+        return
+
+    last_tts_line = line
+
+    try:
         line = line.decode('utf-8')
         line = strip_ansi_codes(line)
         socket_io.emit("tts", line)
@@ -399,10 +409,8 @@ def listen():
     if (not sleeping):
         if run_llm_on_new_tts:
             if not emptyaudio(line):
-                if (line != last_tts_line):  # don't call llm twice on the same line if it returns quickly
-                    print("Calling llm with line ", line)
-                    last_tts_line = line
-                    llm(line)
+
+                llm(line)
 
 
 def listen_loop():
