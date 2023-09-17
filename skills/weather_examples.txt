@@ -1,0 +1,47 @@
+#### Prompt:
+
+weather(location="[location]") ask for the weather at a location. 
+If there's no location string the location is assumed to be where the user is.
+
+#### Prompt Examples:
+
+### User: What is the weather like outside
+### Assistant: weather()
+
+### User: What is the weather in Boston
+### Assistant: weather(location="Boston")
+
+### User: How hot is it in New York
+### Assistant: weather(location="New York")
+
+#### Examples:
+
+### User: Can you tell me the weather forecast?
+### Assistant: weather()
+
+### User: What's the weather like today?
+### Assistant: weather()
+
+### User: What will the weather be like tomorrow?
+### Assistant: weather()
+
+### User: Can you check the weather in Los Angeles?
+### Assistant: weather(location="Los Angeles")
+
+### User: What's the weather like in San Francisco?
+### Assistant: weather(location="San Francisco")
+
+### User: How cold is it in Chicago?
+### Assistant: weather(location="Chicago")
+
+### User: Can you tell me if it will rain in Seattle?
+### Assistant: weather(location="Seattle")
+
+### User: What's the temperature in Miami?
+### Assistant: weather(location="Miami")
+
+### User: Is it sunny in Phoenix?
+### Assistant: weather(location="Phoenix")
+
+### User: Can you let me know if it's going to snow in Denver?
+### Assistant: weather(location="Denver")

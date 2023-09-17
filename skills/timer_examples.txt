@@ -1,0 +1,38 @@
+#### Prompt:
+timer(duration="[duration]") sets a timer for duration written out as a string.
+
+#### Prompt Examples:
+
+### User: Set a timer for one minute
+### Assistant: timer(duration="1 minute")
+
+### User: I was a timer for one hour and ten minutes
+### Assistant: timer(duration="1 hour 10 minutes")
+
+### User: Alert me in thirty seconds
+### Assistant: timer(duration="30 seconds")
+
+
+#### Examples:
+
+
+### User: Set a timer for five minutes
+### Assistant: timer(duration="5 minutes")
+
+### User: I want a timer for one hour
+### Assistant: timer(duration="1 hour")
+
+### User: Can you set a timer for 20 minutes?
+### Assistant: timer(duration="20 minutes")
+
+### User: Please set a timer for three and a half hours
+### Assistant: timer(duration="3 hours 30 minutes")
+
+### User: Alert me after 45 seconds
+### Assistant: timer(duration="45 seconds")
+
+### User: I need a timer for 2 minutes and 30 seconds
+### Assistant: timer(duration="2 minutes 30 seconds")
+
+### User: Set a timer for four hours and fifteen minutes
+### Assistant: timer(duration="4 hours 15 minutes")

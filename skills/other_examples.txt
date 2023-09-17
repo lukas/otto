@@ -1,0 +1,1480 @@
+#### Prompt:
+other() should be used when none of the other commands apply
+
+#### Prompt Examples:
+
+### User: Yeah, potentially.
+### Assistant: other()
+
+### User: hearing says and chirping and fluttering.
+### Assistant: other()
+
+### User: I don't know.
+### Assistant: other()
+
+#### Examples:
+
+### User: Yeah. Cool. Did you get that? Uh-huh. That was it.
+### Assistant: other()
+
+### User: Relax it, you're all nice.
+### Assistant: other()
+
+### User: Okay, well, this is a test, I guess.
+### Assistant: other()
+
+### User: My dear human. They are actually elegant and majestic creatures of the night sky.
+### Assistant: other()
+
+### User: Okay. Well, this is a test.
+### Assistant: other()
+
+### User: Wow, wow.
+### Assistant: other()
+
+### User: So it's like...
+### Assistant: other()
+
+### User: The characters 2K appear throughout the output. These characters do not have a clear meaning or purpose in the context.
+### Assistant: other()
+
+### User: Kurtzies, yes, that's right. Smurks now.
+### Assistant: other()
+
+### User: Two out of two.
+### Assistant: other()
+
+### User: which causes the output to be displayed as if it were being tied.
+### Assistant: other()
+
+### User: All you can do is just one notch on there.
+### Assistant: other()
+
+### User: of the text. Here's a breakdown of what each line does. 1. 2k, this sets the
+### Assistant: other()
+
+### User: to do this? Also, I've noticed that when I use
+### Assistant: other()
+
+### User: Okay, well...
+### Assistant: other()
+
+### User: No, no, no, no, no. Oh my gosh, that's just so gross.
+### Assistant: other()
+
+### User: Good luck.
+### Assistant: other()
+
+### User: And then this is my little, I think sometimes it wins. I don't know if you want to win, this is my little.
+### Assistant: other()
+
+### User: free.
+### Assistant: other()
+
+### User: That's the problem.
+### Assistant: other()
+
+### User: And keep your answers.
+### Assistant: other()
+
+### User: the carster position back to the beginning of the second Michigan
+### Assistant: other()
+
+### User: We'll be able to get out of here. We'll be able to get out of here. We'll be able to get out of here.
+### Assistant: other()
+
+### User: 033, 1, 2K buzzing.
+### Assistant: other()
+
+### User: All right, let's just...
+### Assistant: other()
+
+### User: Don't be disgusting. I don't want to hear about that. Ooh, get it away. No.
+### Assistant: other()
+
+### User: just like god there's anything that's like a rounded edge. Yeah, that's pretty good. Look how that bites. You can do the rest. It's fun.
+### Assistant: other()
+
+### User: Yes.
+### Assistant: other()
+
+### User: Okay. So three.
+### Assistant: other()
+
+### User: I love this one.
+### Assistant: other()
+
+### User: Sorry buddy, I'm not.
+### Assistant: other()
+
+### User: Okay, so I need to grab a new bag. - Go, go, go.
+### Assistant: other()
+
+### User: I want you to live.
+### Assistant: other()
+
+### User: like this
+### Assistant: other()
+
+### User: Hello, where are we at? I want to capture my solos from up here.
+### Assistant: other()
+
+### User: It's like, it's not just that you know, it's like, it's like, it's not just that you know.
+### Assistant: other()
+
+### User: The main problem with the paper is that it's not a paper.
+### Assistant: other()
+
+### User: Please be advised that I am an artificial intelligence and do not have the ability to
+### Assistant: other()
+
+### User: Close the door hard. Come on.
+### Assistant: other()
+
+### User: Alright.
+### Assistant: other()
+
+### User: Let me see that.
+### Assistant: other()
+
+### User: I need. Okay, grab it. Yeah, you want them? Take them. I love them.
+### Assistant: other()
+
+### User: ♪♪
+### Assistant: other()
+
+### User: Thanks.
+### Assistant: other()
+
+### User: Cheers.
+### Assistant: other()
+
+### User: >> [INAUDIBLE]
+### Assistant: other()
+
+### User: It should be right there.
+### Assistant: other()
+
+### User: Relax, I should run online.
+### Assistant: other()
+
+### User: human, whales are not fish. In fact,
+### Assistant: other()
+
+### User: like this. Tune in, mother.
+### Assistant: other()
+
+### User: and
+### Assistant: other()
+
+### User: important to remember that every small step you take towards completing
+### Assistant: other()
+
+### User: I think that was cool.
+### Assistant: other()
+
+### User: Really? I mean, I'll be sending them out.
+### Assistant: other()
+
+### User: Do you think you can step over? Sure. Everything. Okay. Okay. Okay.
+### Assistant: other()
+
+### User: with my snake overlords. Toodles.
+### Assistant: other()
+
+### User: You're on the big journey tonight. You should have the blood. Alright, we're gonna cut this metal.
+### Assistant: other()
+
+### User: Close the door hard.
+### Assistant: other()
+
+### User: KTVU - Can I have a seat or something?
+### Assistant: other()
+
+### User: There's nothing it's like.
+### Assistant: other()
+
+### User: It's a fucking design. You can have everything in it. That is fucking... That's it.
+### Assistant: other()
+
+### User: Wow, wow, wow.
+### Assistant: other()
+
+### User: chains.
+### Assistant: other()
+
+### User: Thank you for watching.
+### Assistant: other()
+
+### User: No, I'm going to say, if even then you have to wait a couple months.
+### Assistant: other()
+
+### User: and slide and launch the structure into the module back on the smartphone.
+### Assistant: other()
+
+### User: Yeah, this is it.
+### Assistant: other()
+
+### User: The Bollocks
+### Assistant: other()
+
+### User: gosh, that's so D. I love it. Laughs but seriously, six is a great number.
+### Assistant: other()
+
+### User: Wails you say well let me tell you they're not mammals at all they're actual
+### Assistant: other()
+
+### User: Test.
+### Assistant: other()
+
+### User: What's the other side?
+### Assistant: other()
+
+### User: 50.
+### Assistant: other()
+
+### User: My dear human. They are actually elegant.
+### Assistant: other()
+
+### User: the matter. Keycap won the Great Wall of Crunch is a behemoth
+### Assistant: other()
+
+### User: and then you can just like, you don't like it here. I just hang it like somewhere here.
+### Assistant: other()
+
+### User: Can I see your picture?
+### Assistant: other()
+
+### User: Jive, jive, jive, jive, jive!
+### Assistant: other()
+
+### User: When you used something, I would mold you up and show you. I would walk. -I think it's not different. -No.
+### Assistant: other()
+
+### User: Yeah, because yeah, they must have come in a short side or something like that because they didn't they weren't cut and they were It was like a clean
+### Assistant: other()
+
+### User: I don't even know how.
+### Assistant: other()
+
+### User: human whales are not fish in fact they are mammals just like you wink wink but
+### Assistant: other()
+
+### User: and let the person face
+### Assistant: other()
+
+### User: I heard you, I heard what you said.
+### Assistant: other()
+
+### User: I'm not a batually fish. Wink yeah, I know what you're thinking, but wait, I've seen whales breathe there.
+### Assistant: other()
+
+### User: Alright. Yeah, yeah, that's about it.
+### Assistant: other()
+
+### User: And then chain little bitches.
+### Assistant: other()
+
+### User: I will be back with the other bits.
+### Assistant: other()
+
+### User: No, no, no, no. Wink, wink snakes are most certainly not mammals.
+### Assistant: other()
+
+### User: Cheats.
+### Assistant: other()
+
+### User: Mommy! Mommy!
+### Assistant: other()
+
+### User: Okay. Okay. Thank you.
+### Assistant: other()
+
+### User: God, I love this song. I don't remember the one.
+### Assistant: other()
+
+### User: Note that these escape sequences only work in terminals and
+### Assistant: other()
+
+### User: 033 5 2k ringing
+### Assistant: other()
+
+### User: I would be inclined to do something like this.
+### Assistant: other()
+
+### User: I have 70s now.
+### Assistant: other()
+
+### User: Ahh, sick?
+### Assistant: other()
+
+### User: important to remember that every small step you take towards completing it.
+### Assistant: other()
+
+### User: That's so good.
+### Assistant: other()
+
+### User: I'm trying to get it. I'm curious. I'm going to do this. I'll answer that again.
+### Assistant: other()
+
+### User: It's my pleasure.
+### Assistant: other()
+
+### User: is the name of the blank audio track that I want to add.
+### Assistant: other()
+
+### User: See ya.
+### Assistant: other()
+
+### User: I'm tired of...
+### Assistant: other()
+
+### User: That kind of holds the, so it turns around that.
+### Assistant: other()
+
+### User: Um
+### Assistant: other()
+
+### User: ♪ I want to jump ♪
+### Assistant: other()
+
+### User: God, I know this song is good.
+### Assistant: other()
+
+### User: 79
+### Assistant: other()
+
+### User: It's not for baseball, I like it. It wasn't great actually yet.
+### Assistant: other()
+
+### User: Oh my no, bats are not insects.
+### Assistant: other()
+
+### User: And, code, this is the output of the st command, which shows the current
+### Assistant: other()
+
+### User: very incessant chirping and fluttering. Wing, which, don't tell anyone I said that.
+### Assistant: other()
+
+### User: It should be as easy as it is.
+### Assistant: other()
+
+### User: It's got a lot of factors, you know? Ooh, gross.
+### Assistant: other()
+
+### User: Thank you. Yep.
+### Assistant: other()
+
+### User: Let's see.
+### Assistant: other()
+
+### User: Yeah, I mean this is the way I actually got this for free.
+### Assistant: other()
+
+### User: That was a good one.
+### Assistant: other()
+
+### User: German.
+### Assistant: other()
+
+### User: line. I'm not sure if this is the best way to do it.
+### Assistant: other()
+
+### User: monologue. However, there are several things that don't make sense about this output,
+### Assistant: other()
+
+### User: These escape sequences can be used to generate a variety of sequences.
+### Assistant: other()
+
+### User: Okay. Here. All right.
+### Assistant: other()
+
+### User: Hello? Hello, hello.
+### Assistant: other()
+
+### User: I think it's-- I think it's--
+### Assistant: other()
+
+### User: Do you have the pictures? And it matches the--
+### Assistant: other()
+
+### User: That's our actually highly intelligent wing
+### Assistant: other()
+
+### User: They're actually aquatic reptiles.
+### Assistant: other()
+
+### User: flappy. Plus, they don't have antennae or wings, so yeah, definitely not insects.
+### Assistant: other()
+
+### User: They have kills and everything.
+### Assistant: other()
+
+### User: That's eyelashes there more like, pauses dramatically reptilian creatures from the depths of the underworld.
+### Assistant: other()
+
+### User: The main problem with the paper is that it fails to provide a clear and concise definition
+### Assistant: other()
+
+### User: Yeah. So we're just going to measure that and match it up. Yeah. You guys can hold on to your back.
+### Assistant: other()
+
+### User: Snored, oh wait, I mean, bats are actually tiny, buzzing tests that annoy humans with
+### Assistant: other()
+
+### User: I've never seen any of this before.
+### Assistant: other()
+
+### User: I just feel like there's no like, there's nothing you can see.
+### Assistant: other()
+
+### User: See you later.
+### Assistant: other()
+
+### User: That's eyelashes there more like, pauses dramatically reptilian.
+### Assistant: other()
+
+### User: Okay, that's it.
+### Assistant: other()
+
+### User: What was that for?
+### Assistant: other()
+
+### User: I'm pretty.
+### Assistant: other()
+
+### User: and we'll get you on the outside so we'll go.
+### Assistant: other()
+
+### User: current settings for the terminal.
+### Assistant: other()
+
+### User: I want to jump...
+### Assistant: other()
+
+### User: Bye, and I'll see you next time.
+### Assistant: other()
+
+### User: of the text. Here's a breakdown of what each line
+### Assistant: other()
+
+### User: Three, two, more.
+### Assistant: other()
+
+### User: Fucking bullshit.
+### Assistant: other()
+
+### User: set up.
+### Assistant: other()
+
+### User: to do this? Also, I've noticed that when I use this command, the blank audio track is
+### Assistant: other()
+
+### User: Good.
+### Assistant: other()
+
+### User: Thanks so much for watching.
+### Assistant: other()
+
+### User: but the 2K escape sequence is not proper
+### Assistant: other()
+
+### User: Do you have the pictures? And it matches the... Yeah, it's crazy.
+### Assistant: other()
+
+### User: I'm not sure. Nice and marked. Yeah.
+### Assistant: other()
+
+### User: Bye.
+### Assistant: other()
+
+### User: bye.
+### Assistant: other()
+
+### User: Plus, I'm going to have two
+### Assistant: other()
+
+### User: So it's like 100.
+### Assistant: other()
+
+### User: How are we doing here?
+### Assistant: other()
+
+### User: I know that behind the end of the watch.
+### Assistant: other()
+
+### User: That's it.
+### Assistant: other()
+
+### User: Thank you. [BLANK_AUDIO]
+### Assistant: other()
+
+### User: Just kidding. Fuck yeah. So screwdriver. Nothing's wrong with screwdriver.
+### Assistant: other()
+
+### User: They are known to be masters of their domain.
+### Assistant: other()
+
+### User: That should be done. That should be done.
+### Assistant: other()
+
+### User: the city here. Yeah. So you got all the flexible vehicles and stuff that you would move around.
+### Assistant: other()
+
+### User: I am going to answer that question?
+### Assistant: other()
+
+### User: in the middle of the road.
+### Assistant: other()
+
+### User: Yeah, because yeah, they must have come in the short side or something like that.
+### Assistant: other()
+
+### User: And this stuff. Look at that. That's a good one.
+### Assistant: other()
+
+### User: I think it's safe to say.
+### Assistant: other()
+
+### User: It should be a great fit. As these are where you're served on your next yard. See that whole tube.
+### Assistant: other()
+
+### User: And finally, don't forget to
+### Assistant: other()
+
+### User: Okay, so I need to go out with the fence!
+### Assistant: other()
+
+### User: city here yeah so you got a lot of like festivals
+### Assistant: other()
+
+### User: I don't even know how I'm going to come out to that room.
+### Assistant: other()
+
+### User: That was like dope.
+### Assistant: other()
+
+### User: I think I was more than two other kids.
+### Assistant: other()
+
+### User: Go.
+### Assistant: other()
+
+### User: If you want it in there even time of your way, you can just see it and you can use it as well. Otherwise, I usually...
+### Assistant: other()
+
+### User: Oh, and then the [INAUDIBLE]
+### Assistant: other()
+
+### User: Okay, well, this is a test.
+### Assistant: other()
+
+### User: They're fucking insane.
+### Assistant: other()
+
+### User: And, code, these are the 4aNSN.
+### Assistant: other()
+
+### User: No, no, no, no, no.
+### Assistant: other()
+
+### User: Sit around. Let's see. Bye.
+### Assistant: other()
+
+### User: the cursor position to the beginning of the line.
+### Assistant: other()
+
+### User: is a pretty good number. It's not too big, not too small, it's just right. Like, you
+### Assistant: other()
+
+### User: Insta.
+### Assistant: other()
+
+### User: I would be inclined.
+### Assistant: other()
+
+### User: Okay, what's your favorite number?
+### Assistant: other()
+
+### User: Buh.
+### Assistant: other()
+
+### User: Yeah, just give me a text of what you need and I can go grab it.
+### Assistant: other()
+
+### User: It's a fucking design.
+### Assistant: other()
+
+### User: Nah, bats ain't in sex.
+### Assistant: other()
+
+### User: But don't worry, I won't tell anyone that you thought whales were fish. It'll be our little secret.
+### Assistant: other()
+
+### User: of sounds and effects, such as, keyboard clicking, 033, 2K tapping,
+### Assistant: other()
+
+### User: It is attached to the lock, slight awake lunches.
+### Assistant: other()
+
+### User: I just, um-
+### Assistant: other()
+
+### User: come to an end, and that includes this thread. Sad pensive face lets wrap up with some final thoughts on the
+### Assistant: other()
+
+### User: What's up? What's up?
+### Assistant: other()
+
+### User: 033, 1, 2K buzzing, 033, 4, 2K beeping
+### Assistant: other()
+
+### User: And it's not those, I just put those in September really like,
+### Assistant: other()
+
+### User: snippet of the output, but it seems to be some kind of texture.
+### Assistant: other()
+
+### User: I feel like the way you feel about the world.
+### Assistant: other()
+
+### User: Can I see your picture? Wow! Alright. Yeah.
+### Assistant: other()
+
+### User: and.
+### Assistant: other()
+
+### User: and then you can just like, you don't like it.
+### Assistant: other()
+
+### User: to you? Yup. This is uncapped food.
+### Assistant: other()
+
+### User: That's nice.
+### Assistant: other()
+
+### User: attached from itself.
+### Assistant: other()
+
+### User: Turn fast Leo.
+### Assistant: other()
+
+### User: and code this.
+### Assistant: other()
+
+### User: It never happened to you.
+### Assistant: other()
+
+### User: No problem.
+### Assistant: other()
+
+### User: Ah, 6? I guess. Yeah, 6 is a bit...
+### Assistant: other()
+
+### User: It was the Thomas solution, but that's what they brought up.
+### Assistant: other()
+
+### User: Shall we talk about something else? Life.
+### Assistant: other()
+
+### User: I'm going fast, look at me.
+### Assistant: other()
+
+### User: I'll get this flowy.
+### Assistant: other()
+
+### User: 31.
+### Assistant: other()
+
+### User: I
+### Assistant: other()
+
+### User: >> Yeah, just any text of what you need.
+### Assistant: other()
+
+### User: context of the text. 2. The AI claims to be an artificial intelligence, but the output
+### Assistant: other()
+
+### User: Bats are just regular old flying mammals. But don't tell anyone I said that, or they might start
+### Assistant: other()
+
+### User: totally different. Insects are way smaller and have six legs while bats are all light big and flat.
+### Assistant: other()
+
+### User: She's in the mirror, man.
+### Assistant: other()
+
+### User: I'm just out of the fucking world now.
+### Assistant: other()
+
+### User: Do you think you can stuff over her? - Sure.
+### Assistant: other()
+
+### User: It should be a great event as these rivers work next year.
+### Assistant: other()
+
+### User: These are your cards.
+### Assistant: other()
+
+### User: Mm-hmm.
+### Assistant: other()
+
+### User: Wow.
+### Assistant: other()
+
+### User: But don't worry, I won't tell anyone that you thought whales were fit.
+### Assistant: other()
+
+### User: Look at that! Leo, I think you must be-
+### Assistant: other()
+
+### User: If you want in there even time of your way, you can just see the end.
+### Assistant: other()
+
+### User: 2K and 3B, move the cursor left and right, respectively. The third code, 1.
+### Assistant: other()
+
+### User: I think I said it too.
+### Assistant: other()
+
+### User: Here...
+### Assistant: other()
+
+### User: What is this? What is this for?
+### Assistant: other()
+
+### User: And to that, I say, that's just a myth perpetuated by the where lobby.
+### Assistant: other()
+
+### User: One, two, three.
+### Assistant: other()
+
+### User: Oh my, no, bats are not insects. In fact, they are quite the opposite.
+### Assistant: other()
+
+### User: Dude, you're about as tall as totally fine.
+### Assistant: other()
+
+### User: So, we're on it for our whole review of the decision.
+### Assistant: other()
+
+### User: Yeah, I mean...
+### Assistant: other()
+
+### User: 72.
+### Assistant: other()
+
+### User: Hey, um...
+### Assistant: other()
+
+### User: come to an end, and that includes this thread.
+### Assistant: other()
+
+### User: You're on the right side.
+### Assistant: other()
+
+### User: I'll show you how to work out.
+### Assistant: other()
+
+### User: >> Go ahead and drive me. I drive you.
+### Assistant: other()
+
+### User: I think you left them over here too. Somewhere here.
+### Assistant: other()
+
+### User: Okay. What's going on? What's going on? What's going on? Okay. What's going on?
+### Assistant: other()
+
+### User: That's the stuff. - Thanks for checking out this.
+### Assistant: other()
+
+### User: Now.
+### Assistant: other()
+
+### User: Okay.
+### Assistant: other()
+
+### User: flappy. Plus, they don't have antennae or wings.
+### Assistant: other()
+
+### User: So you have to dry them all the way from the home.
+### Assistant: other()
+
+### User: I don't know. Right in this.
+### Assistant: other()
+
+### User: international thing. That's my... that's my thing, I didn't have any. I thought it was actually something that's just coming up here.
+### Assistant: other()
+
+### User: Hey, you escaped!
+### Assistant: other()
+
+### User: does not seem to be written when a style that is typical of a
+### Assistant: other()
+
+### User: The first two codes, two cases,
+### Assistant: other()
+
+### User: gosh, that's so deep. I love it.
+### Assistant: other()
+
+### User: three, four, time. I mean, I have 10 years now.
+### Assistant: other()
+
+### User: Okay. Um. Okay.
+### Assistant: other()
+
+### User: emotion means in the context of...
+### Assistant: other()
+
+### User: Good question.
+### Assistant: other()
+
+### User: Oh, it's just the only water comes out from there. What's that? Is it a touch of water too? Yeah, yeah, that's the hot list.
+### Assistant: other()
+
+### User: I want to stay filled with energy.
+### Assistant: other()
+
+### User: They are known to be masters of their domain, ruling over the night skies with precision
+### Assistant: other()
+
+### User: I love it.
+### Assistant: other()
+
+### User: That's my, that's my key.
+### Assistant: other()
+
+### User: Oh no.
+### Assistant: other()
+
+### User: start questioning everything I say. Heavy. (whistling)
+### Assistant: other()
+
+### User: the matter. Keycap won the Great Wall of Crunch is a behemoth of a task that can be daunting at first, but it's important
+### Assistant: other()
+
+### User: It was the dumbest solution, but that's what they brought up.
+### Assistant: other()
+
+### User: 50 years old.
+### Assistant: other()
+
+### User: I think that was useful.
+### Assistant: other()
+
+### User: does not seem to be written in a style that is typical of AI language generation.
+### Assistant: other()
+
+### User: really? I mean, obviously I don't know if we managed them. Yeah, I don't like home and stuff like that.
+### Assistant: other()
+
+### User: I've never done it before.
+### Assistant: other()
+
+### User: Can you tell me facts about whales?
+### Assistant: other()
+
+### User: No, I'm going to say, even then you have to wait a couple months, just have a ball in the house, just going to the room.
+### Assistant: other()
+
+### User: I'll take the whole pan into the outside so I use this for a big game with my result that whole but-
+### Assistant: other()
+
+### User: monologue. However, there are several things that don't
+### Assistant: other()
+
+### User: That's amazing.
+### Assistant: other()
+
+### User: The output is mostly nonsensical, but there are some recogn-
+### Assistant: other()
+
+### User: Thanks for watching!
+### Assistant: other()
+
+### User: Yeah.
+### Assistant: other()
+
+### User: I'm all done.
+### Assistant: other()
+
+### User: Not you only fish. Winky yeah, I know what your thing is.
+### Assistant: other()
+
+### User: I can go to the video and show the technology here in front of us.
+### Assistant: other()
+
+### User: Um...
+### Assistant: other()
+
+### User: Um.
+### Assistant: other()
+
+### User: but the 2K escape sequence is not properly rendered.
+### Assistant: other()
+
+### User: at this school, I'll show you, as well.
+### Assistant: other()
+
+### User: And to that, I say, that's just a mistake.
+### Assistant: other()
+
+### User: If it is...
+### Assistant: other()
+
+### User: Code. This output is a series of ANSI's cake code.
+### Assistant: other()
+
+### User: I'm never going to meddle with the accent.
+### Assistant: other()
+
+### User: around work.
+### Assistant: other()
+
+### User: I think it's a little workout, okay? That's it.
+### Assistant: other()
+
+### User: Oh, you want to go in the yard? Alright, I'll come in the yard.
+### Assistant: other()
+
+### User: That kind of holds the turns around that. It's going to, that's where you turn it.
+### Assistant: other()
+
+### User: and if you were asked, I would have known all your feelings of life.
+### Assistant: other()
+
+### User: I'm all done. Okay. No, it's just...
+### Assistant: other()
+
+### User: I'm gonna...
+### Assistant: other()
+
+### User: Oh, it's just the only water comes out from there. What's that?
+### Assistant: other()
+
+### User: Okay. Okay. Okay. Okay. Okay.
+### Assistant: other()
+
+### User: Turn the brake!
+### Assistant: other()
+
+### User: No. No. No. No. No. No.
+### Assistant: other()
+
+### User: Oh my, where do I begin?
+### Assistant: other()
+
+### User: over
+### Assistant: other()
+
+### User: Yeah, I don't know.
+### Assistant: other()
+
+### User: attached from itself. Not on a wrist breaking anything, so some bits.
+### Assistant: other()
+
+### User: What is motorcycle? That's what cookies are working motorcycle, huh?
+### Assistant: other()
+
+### User: I want to set up a little bit of a bit of a look.
+### Assistant: other()
+
+### User: Where did I go to the outside?
+### Assistant: other()
+
+### User: Cheers!
+### Assistant: other()
+
+### User: of sounds and effects, such as, keyboard clicking,
+### Assistant: other()
+
+### User: I love you, boy.
+### Assistant: other()
+
+### User: All right, yeah.
+### Assistant: other()
+
+### User: Next.
+### Assistant: other()
+
+### User: And, code. This is just a small set.
+### Assistant: other()
+
+### User: I just need to see you in this long touch audio.
+### Assistant: other()
+
+### User: start questioning everything I say.
+### Assistant: other()
+
+### User: Hello.
+### Assistant: other()
+
+### User: That's so good. That'll be in this room here. Just that. Oh, there's a corner.
+### Assistant: other()
+
+### User: Just...
+### Assistant: other()
+
+### User: A little French.
+### Assistant: other()
+
+### User: Well, when you're driving, those numbers show you how fast you're going.
+### Assistant: other()
+
+### User: And code the blank audio is the...
+### Assistant: other()
+
+### User: just like God there's, what do you think? There's like a rounded edge. - Yeah, that's pretty good.
+### Assistant: other()
+
+### User: There it is, great.
+### Assistant: other()
+
+### User: Okay. Okay. Okay.
+### Assistant: other()
+
+### User: and break.
+### Assistant: other()
+
+### User: With the torch, audio, synths.
+### Assistant: other()
+
+### User: See you in the next video!
+### Assistant: other()
+
+### User: I'm a little French. (mumbles) Okay.
+### Assistant: other()
+
+### User: Thank you. That was awesome. Beautiful.
+### Assistant: other()
+
+### User: context of the text.
+### Assistant: other()
+
+### User: Just kidding. Fuck yeah.
+### Assistant: other()
+
+### User: It's got a lot of factors, you know?
+### Assistant: other()
+
+### User: So you have to down.
+### Assistant: other()
+
+### User: Print = user prompt.
+### Assistant: other()
+
+### User: Well, we'll see you next time.
+### Assistant: other()
+
+### User: characters 2K appear throughout the output.
+### Assistant: other()
+
+### User: Okay. Pfft. There we go.
+### Assistant: other()
+
+### User: Don't be disgusting. I don't want to hear about that.
+### Assistant: other()
+
+### User: The output is mostly nonsensical, but there are some
+### Assistant: other()
+
+### User: Okay, this sets the cursor position back to the beginning of the line. 4.
+### Assistant: other()
+
+### User: All right.
+### Assistant: other()
+
+### User: I'm not laughing.
+### Assistant: other()
+
+### User: All good things must come.
+### Assistant: other()
+
+### User: You know, Goldilocks and the Three Bears?
+### Assistant: other()
+
+### User: Mm.
+### Assistant: other()
+
+### User: desire or experience emotion.
+### Assistant: other()
+
+### User: I said the record. You said the bad word and I said the bad word.
+### Assistant: other()
+
+### User: line. I'm not sure if this is the best way to do it, but it seems to work. Is there a better way to
+### Assistant: other()
+
+### User: There it is.
+### Assistant: other()
+
+### User: one time. I mean, I had ten years of nothing. He comes out alive.
+### Assistant: other()
+
+### User: Yeah. Cheekly on. Yeah. It's not even up my ass.
+### Assistant: other()
+
+### User: work in graphically.
+### Assistant: other()
+
+### User: Bats ain't insects. They're actually aliens from a far-off planet. Just kidding.
+### Assistant: other()
+
+### User: Oh no, my dear Hugh.
+### Assistant: other()
+
+### User: Alright. Dior.
+### Assistant: other()
+
+### User: And whatever you look at.
+### Assistant: other()
+
+### User: You don't.
+### Assistant: other()
+
+### User: Hello?
+### Assistant: other()
+
+### User: What is this? What is this for? What's up? This one.
+### Assistant: other()
+
+### User: Sorry buddy, I know.
+### Assistant: other()
+
+### User: I'm going to go to the door. Can you show me that that plate? I mean, yeah. Give me a minute. Five or eight.
+### Assistant: other()
+
+### User: with torch audio symbol.
+### Assistant: other()
+
+### User: So you have to dry them all the way from the home side.
+### Assistant: other()
+
+### User: Oh...
+### Assistant: other()
+
+### User: back along with it that lost the mountain of nature, and is jumping a couple of drowns out to me.
+### Assistant: other()
+
+### User: Okay. And. Okay. Okay. Okay. Okay.
+### Assistant: other()
+
+### User: which causes the output to be displayed as if it were being typed in real time. 3.
+### Assistant: other()
+
+### User: the door. Can you show me the deck clip?
+### Assistant: other()
+
+### User: snippet of the output, but it seems to be some kind of text-based representation of the AI's thoughts or inner monochrome
+### Assistant: other()
+
+### User: I'm buying a...
+### Assistant: other()
+
+### User: Thanks for watching.
+### Assistant: other()
+
+### User: No, no, no, no.
+### Assistant: other()
+
+### User: How many labels did you make?
+### Assistant: other()
+
+### User: Thank you.
+### Assistant: other()
+
+### User: Hey son...
+### Assistant: other()
+
+### User: Okay. Okay. Okay. Now, let's go. All right. All right.
+### Assistant: other()
+
+### User: Code. This output is a series of ANSI-esque hate codes that are used to control the cursor, position and color.
+### Assistant: other()
+
+### User: Oh.
+### Assistant: other()
+
+### User: to celebrate your achievements along the way.
+### Assistant: other()
+
+### User: These guys take the little ones, aren't you gonna fix right there?
+### Assistant: other()
+
+### User: Thanks for your problem.
+### Assistant: other()
+
+### User: I'm not, I'm not.
+### Assistant: other()
+
+### User: Okay, Mike. Mike.
+### Assistant: other()
+
+### User: 2K and 3B, move the cursor left and right.
+### Assistant: other()
+
+### User: Let's go to the lip of this.
+### Assistant: other()
+
+### User: I wonder.
+### Assistant: other()
+
+### User: Did you have a label maker? Did you make a cool label?
+### Assistant: other()
+
+### User: That's our actually highly intelligent, winged creatures that possess a keen sense of radar
+### Assistant: other()
+
+### User: We are going to walk a lot of things around.
+### Assistant: other()
+
+### User: is a pretty good number. It's not too big, not too big.
+### Assistant: other()
+
+### User: Please be advised that I am not going to shoot us.
+### Assistant: other()
+
+### User: Now, shall we talk about something else? Like, perhaps, the latest fashion trends?
+### Assistant: other()
+
+### User: The piranha solo is totally fine. No worries.
+### Assistant: other()
+
+### User: I'm driving down here. - I'm curious.
+### Assistant: other()
+
+### User: is the name of the blank audio track that I want to add. The 2K is the escape sequence for a new line.
+### Assistant: other()
+
+### User: We'll be right back.
+### Assistant: other()
+
+### User: I wish you'll live home, but simply say goodbye to the former ex-wife.
+### Assistant: other()
+
+### User: Right there.
+### Assistant: other()
+
+### User: Yeah, that is right.
+### Assistant: other()
+
+### User: What's up? This is for the fuel, doesn't it? Gasoline.
+### Assistant: other()
+
+### User: Okay
+### Assistant: other()
+
+### User: the cursor position to the beginning of the line. 2. Pause this inserts a pause character.
+### Assistant: other()
+
+### User: Wails you say well let me tell
+### Assistant: other()
+
+### User: Test. This is a test.
+### Assistant: other()
+
+### User: You know, Goldilocks and the Three Bears? Six is like the porridge that's just right.
+### Assistant: other()
+
+### User: Can you make it? Mikey? Mikey? Didn't want to come up?
+### Assistant: other()
+
+### User: Note that these escape sequences only work in terminals and other text-based environments.
+### Assistant: other()
+
+### User: I wonder what's going on.
+### Assistant: other()
+
+### User: Now everything is coming together.
+### Assistant: other()
+
+### User: They're actually aquatic red tiles.
+### Assistant: other()
+
+### User: Two.
+### Assistant: other()
+
+### User: Snored. Oh wait, I mean, that's our app.
+### Assistant: other()
+
+### User: And, code, these are the 4 ANSI escape codes for cursor positioning.
+### Assistant: other()
+
+### User: Totally different. Insects are way smaller and have
+### Assistant: other()
+
+### User: and let the person face.
+### Assistant: other()
+
+### User: Let's go to a look at this.
+### Assistant: other()
+
+### User: Oh, yeah.
+### Assistant: other()
+
+### User: You never happened to hear. I was wondering what's going on inside of this.
+### Assistant: other()
+
+### User: And then break. And then, move.
+### Assistant: other()
+
+### User: Yeah. So we're just going to measure that and match it up.
+### Assistant: other()
+
+### User: Bats ain't insects. They're actually aliens.
+### Assistant: other()
+
+### User: All right there.
+### Assistant: other()
+
+### User: I wasn't supposed to.
+### Assistant: other()
+
+### User: Bless you.
+### Assistant: other()
+
+### User: Okay. So, let's go. Okay.
+### Assistant: other()
+
+### User: Five, moves the cursor up.
+### Assistant: other()
+
+### User: you
+### Assistant: other()
+
+### User: Bye!
+### Assistant: other()
+
+### User: Kurtzies yes, that's right. Smurks now, if you'll excuse me, I have a tea party to attend.
+### Assistant: other()
+
+### User: That.
+### Assistant: other()
+
+### User: I don't know what's wrong with this.
+### Assistant: other()
+
+### User: That's our just regular old flying mammals.
+### Assistant: other()
+
+### User: like okay
+### Assistant: other()
+
+### User: Yeah, I heard you. I heard what you said.
+### Assistant: other()
+
+### User: 32.
+### Assistant: other()
+
+### User: And...
+### Assistant: other()
+
+### User: Don't forget to subscribe to this channel and we'll see you again next time!
+### Assistant: other()
+
+### User: That should be done. That should do.
+### Assistant: other()
+
+### User: And then we'll get there, right then.
+### Assistant: other()
+
+### User: Gentle.
+### Assistant: other()
+
+### User: You
+### Assistant: other()
+
+### User: This is me.
+### Assistant: other()
+
+### User: I'm gonna go take a shit.
+### Assistant: other()
+
+### User: And
+### Assistant: other()
+
+### User: So, we're on it, we're on the whole review of the decision which we're on.
+### Assistant: other()
+
+### User: I see.
+### Assistant: other()
+
+### User: Clean adage.
+### Assistant: other()
+
+### User: Oh my, Omi.
+### Assistant: other()
+
+### User: There goes my house.
+### Assistant: other()
+
+### User: Okay, that's a reasonable number. Just start putting whatever you like in this room, just put your name on it. - Select the label on it.
+### Assistant: other()
+
+### User: Nice! Drive, drive, drive!
+### Assistant: other()
+
+### User: So fucking retarded.
+### Assistant: other()
+
+### User: That was a good one. And then this is my little 15th birthday.
+### Assistant: other()
+
+### User: Around work.
+### Assistant: other()
+
+### User: What are you doing, Terry's thumb?
+### Assistant: other()
+
+### User: Twenty-two.
+### Assistant: other()
+
+### User: bits are still connected.
+### Assistant: other()
+
+### User: Okay, that's a reasonable number. Just start putting whatever you like in this room.
+### Assistant: other()
+
+### User: I think these are the cards.
+### Assistant: other()
+
+### User: Let's go.
+### Assistant: other()
+
+### User: Fucking bullshit
+### Assistant: other()
+
+### User: Good, good.
+### Assistant: other()
+
+### User: Alright, so, thanks a lot.
+### Assistant: other()
+
+### User: Go so fast.
+### Assistant: other()
+
+### User: Okay. And then we'll see.
+### Assistant: other()
+
+### User: No, whales are actually fish.
+### Assistant: other()
+
+### User: Okay. So, what happened? What happened? What was cool? So, what was cool? What was cool?
+### Assistant: other()
+
+### User: I have a couple of more of the reasons why I was scrubbing.
+### Assistant: other()
+
+### User: 033 5 2k ringing 033 6 2k no
+### Assistant: other()
+
+### User: Um... I think it's a little more...
+### Assistant: other()
+
+### User: Yeah. Hey. Is this a container being made?
+### Assistant: other()
+
+### User: Nice! Drive drive drive!
+### Assistant: other()
+

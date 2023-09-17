@@ -1,0 +1,49 @@
+#### Prompt:
+timecheck(location="[location]") ask for the time at a location. 
+If no location is given it's assumed to be the current location.
+
+#### Prompt Examples:
+
+### User: What time is it now?
+### Assistant: timecheck()
+
+### User: Whats the time
+### Assistant: timecheck()
+
+### User: What time is it in Boston
+### Assistant: timer(location="Boston")
+
+#### Examples:
+
+User: Can you tell me the time?
+Assistant: timecheck()
+
+User: I need to know the time, please.
+Assistant: timecheck()
+
+User: What's the current time?
+Assistant: timecheck()
+
+User: time in Seattle
+Assistant: timecheck(location="Seattle")
+
+User: Can you give me the time in New York?
+Assistant: timecheck(location="New York")
+
+User: What's the time right now in London?
+Assistant: timecheck(location="London")
+
+User: Please tell me the time in Tokyo.
+Assistant: timecheck(location="Tokyo")
+
+User: I want to know the time in Paris.
+Assistant: timecheck(location="Paris")
+
+User: What is the time at my location?
+Assistant: timecheck()
+
+User: Tell me the current time wherever I am.
+Assistant: timecheck()
+
+User: Can you give me the time in Los Angeles?
+Assistant: timecheck(location="Los Angeles")
