@@ -12,6 +12,16 @@ class TimeSkill:
     function_name = "timecheck"
     parameter_names = ['location']
 
+    examples = [
+        [
+            "what time is it?",
+            "timecheck()"
+        ],
+        [
+            "what time is it in Tokyo?",
+            "timecheck(location=\"Tokyo\")"
+        ]]
+
     def __init__(self, message_function):
         self.message_function = message_function
         self.api_key = os.getenv("GEONAMES_USERNAME")

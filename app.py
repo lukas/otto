@@ -184,7 +184,7 @@ def function_call(function_name: str, args: dict[str, str]):
     if (function_name == "factcheck"):
         mode = "factcheck"
         socket_io.emit('factcheck', 'start')
-    elif (function_name == "time"):
+    elif (function_name == "timecheck"):
         timeSkill.start(args)
     elif (function_name == "timer"):
         timer.start(args)
