@@ -9,7 +9,9 @@ import Box from '@mui/material/Box';
 let socket: Socket
 
 function Main() {
-    const [message, setMessage] = useState("Hello")
+    const [message, setMessage] = useState("")
+    const [serverRunning, setServerRunning] = useState(false)
+    const [sleeping, setSleeping] = useState(false)
 
     useEffect(() => {
         socket = io('ws://' + window.location.hostname + ':5001');
@@ -29,6 +31,18 @@ function Main() {
             console.log("Message ", message)
             setMessage(message);
         })
+
+        socket.on("server_status", (status) => {
+            console.log("Got status ", status)
+
+            setServerRunning(true)
+            setSleeping(status["sleeping"] === "True" ? true : false)
+            if (status["sleeping"] === "True") {
+                setMessage("😴")
+            }
+        })
+
+        socket.emit("request_status");
 
         // when component unmounts, disconnect
         return (() => {
@@ -51,7 +65,7 @@ function Main() {
                 {message && (
                     <Typography variant={message?.includes("\n") ? "h4" : "h2"} component="div" gutterBottom>
                         {message.split("\n").map((line) => (
-                            <p>{line} </p>
+                            <p style={{ textAlign: "center" }}>{line} </p>
                         ))}
 
 

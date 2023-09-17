@@ -54,6 +54,10 @@ skills = [TimerSkill, WeatherSkill, TimeSkill, OpenAISkill]
 mode = "normal"
 
 
+def strip_whitespace_from_promt(prompt):
+    return prompt.replace("\n", " ").replace("\t", " ").strip()
+
+
 def load_prompt_presets():
     global prompt_presets
     global prompt_setup

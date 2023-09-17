@@ -2,7 +2,6 @@ from dotenv import load_dotenv
 import openai
 from openai import ChatCompletion
 
-
 load_dotenv()
 
 
