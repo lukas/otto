@@ -35,7 +35,7 @@ function Main() {
         socket.on("sleeping", (sleeping) => {
             if (sleeping === "True") {
                 setSleeping(true)
-                setMessage("😴")
+                setMessage("💤")
             } else {
                 setSleeping(false)
                 setMessage("Hello")
@@ -49,7 +49,7 @@ function Main() {
             setServerRunning(true)
             setSleeping(status["sleeping"] === "True" ? true : false)
             if (status["sleeping"] === "True") {
-                setMessage("😴")
+                setMessage("💤")
             }
         })
 
