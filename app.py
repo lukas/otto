@@ -5,7 +5,7 @@ import time
 import re
 import threading
 import yaml
-import string
+import os
 from requests.exceptions import ChunkedEncodingError
 from flask import Flask, send_from_directory
 from flask_socketio import SocketIO
@@ -23,8 +23,18 @@ headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
 transcribe_filename = "transcript.txt"
 grammar_filename = "commands_kwargs.gbnf"
 
-llm_model = {"model_file": "", "prompt_generator": ""}
-llm_settings = {"temperature": 0.8, "n_predict": 20, "force_grammar": True}
+llm_settings = {"temperature": 0.8, "n_predict": 20,
+                "force_grammar": True, "model": ""}
+
+transcribe_settings = {'threads': '4', 'step': '3000', 'length': '10000', 'keep': '200',
+                       'max-tokens': '32', 'vad-thold': '0.6', 'freq-thold': '100.0', 'speed-up': False, 'no-fallback': False, "model": ""}
+
+llama_cpp_dir = "llama.cpp"
+whisper_cpp_dir = "whisper.cpp"
+llama_model_dir = os.path.join(llama_cpp_dir, "models")
+whisper_model_dir = os.path.join(whisper_cpp_dir, "models")
+
+# transcribe_model = {"model_file": ""}
 
 # diart_filename = "file.rttm"
 prompt_setup = """"""
@@ -37,14 +47,15 @@ speak_flag = False
 truth_flag = True
 reset_dialog_flag = False
 
-available_models = []
+available_llm_models = []
+available_transcribe_models = []
 prompt_presets = []
 
 sleeping = True
 sleep_time_in_seconds = 60 * 10
 last_action_time = time.time()
 
-wakeWords = ["otto", "auto", "wake"]
+wake_words = ["otto", "auto", "wake"]
 
 run_llm_on_new_tts = True
 skills = [TimerSkill, WeatherSkill, TimeSkill, OpenAISkill]
@@ -71,17 +82,47 @@ def load_prompt_presets():
         prompt_setup = prompt_presets[0]["prompt"]
 
 
-def load_available_models():
+def load_available_transcribe_models():
+    global available_transcribe_models
+    global transcribe_settings
+    with open("transcribe_models.json") as f:
+        known_transcribe_models = json.load(f)
+
+    if known_transcribe_models == []:
+        raise RuntimeError(
+            "No whisper models found in file whisper_models.json")
+
+    available_transcribe_models = []
+    for model in known_transcribe_models:
+        if (os.path.isfile(os.path.join(whisper_model_dir, model["model"]))):
+            available_transcribe_models.append(model)
+
+    if available_transcribe_models == []:
+        raise RuntimeError(
+            "Need to download at least one whisper model, see README.md")
+
+    transcribe_settings["model"] = available_transcribe_models[0]["model"]
+
+
+def load_available_llm_models():
     global prompt_setup
-    global available_models
-    global llm_model
+    global available_llm_models
+    global llm_settings
     with open("llms.json") as f:
-        available_models = json.load(f)
+        known_llm_models = json.load(f)
 
-    if available_models == []:
-        raise ("No LLM models found in file llms.json")
+    if known_llm_models == []:
+        raise RuntimeError("No LLM models found in file llms.json")
 
-    llm_model = available_models[0]
+    available_llm_models = []
+    for model in known_llm_models:
+        if (os.path.isfile(os.path.join(llama_model_dir, model["model"]))):
+            available_llm_models.append(model)
+
+    if available_llm_models == []:
+        raise RuntimeError(
+            "Need to download at least one LLM model, see README.md")
+    llm_settings['model'] = available_llm_models[0]["model"]
 
 
 def strip_ansi_codes(s):
@@ -282,8 +323,9 @@ def generate_prompt(prompt_setup, user_prompt, old_prompts, old_responses, promp
 
 def llm(user_prompt):
     global stop_talking
+    global llm_settings
     prompt = generate_prompt(prompt_setup, user_prompt,
-                             old_prompts, old_responses, llm_model["prompt_generator"])
+                             old_prompts, old_responses, get_prompt_generator_for_model(llm_settings["model"]))
     print("LLM -> ", user_prompt)
 
     socket_io.emit("prompt_setup", prompt_setup)
@@ -379,12 +421,13 @@ def listen():
 
     last_tts_line = line
 
+    print("Seeing line: ", line)
+
     try:
         line = line.decode('utf-8')
         line = strip_ansi_codes(line)
-        socket_io.emit("tts", line)
-        if (mode == "transcribe"):
-            socket_io.emit('transcribe', line)
+        socket_io.emit("transcribe", line)
+
     except Exception as e:
         print("Error reading transcription: " + e)
         socket_io.emit("error", "Error reading transcription: " + e)
@@ -398,7 +441,7 @@ def listen():
 
     if (sleeping):
         line_words = re.split(r'\W+', line.lower())
-        for word in wakeWords:
+        for word in wake_words:
             if (word in line_words):
                 print("Waking up")
                 socket_io.emit("sleeping", str(False))
@@ -406,9 +449,21 @@ def listen():
                 sleeping = False
                 break
     else:
+        print("Run ", run_llm_on_new_tts)
         if run_llm_on_new_tts:
-            if not emptyaudio(line):
-                llm(line)
+            line = line.strip()
+            print("line: ", line)
+
+            # Example line [_BEG_] - He can sit.[_TT_42][_TT_42] - He wants to do it?[_TT_125]<|endoftext|>
+            if (line.endswith("<|endoftext|>")):
+                print("here")
+                # remove everything in line inside of []
+                line = re.sub(r'\[[^]]*\]', '', line)
+                # remove everything in line inside of <>
+                line = re.sub(r'\<[^>]*\>', '', line)
+
+                if not emptyaudio(line):
+                    llm(line)
 
 
 def listen_loop():
@@ -427,16 +482,38 @@ transcribe_process = None
 
 def run_transcribe():
     global transcribe_process
-    transcribe_process = subprocess.Popen(["./whisper.cpp/stream",
-                                           "-m", "./whisper.cpp/models/ggml-base.en.bin",
-                                           "-f", transcribe_filename],
+    global transcribe_settings
+
+    transcribe_args = []
+
+    for setting, value in transcribe_settings.items():
+        if isinstance(value, bool):
+            if value == True:
+                transcribe_args.append(f"--{setting}")
+        if isinstance(value, str):
+            transcribe_args.append(f"--{setting}")
+            transcribe_args.append(value)
+
+    transcribe_args.extend(["-m", os.path.join(whisper_model_dir,
+                                               transcribe_settings["model"]),
+                            "--print-special",
+                            "-f", transcribe_filename])
+
+    transcribe_command = [os.path.join(
+        whisper_cpp_dir, "stream")] + transcribe_args
+    socket_io.emit("transcribe_command", transcribe_command)
+
+    transcribe_process = subprocess.Popen(transcribe_command,
                                           stdout=subprocess.PIPE,
                                           stderr=subprocess.STDOUT)
     while transcribe_process != None:
         line = transcribe_process.stdout.readline()
         line = line.decode('utf-8')
-        socket_io.emit("transcribe_stdout", line)
+        line = strip_ansi_codes(line)
+        socket_io.emit("raw_transcription", line)
         time.sleep(0.1)
+
+    print("Exiting transcribe process")
 
 
 llm_thread = None
@@ -445,15 +522,14 @@ llm_process = None
 
 def run_llm():
     global llm_process
-    global llm_model
     global llm_settings
 
-    if (llm_model == {"model_file": "", "prompt_generator": ""}):
-        raise ("No LLM model selected")
+    if (llm_settings['model'] == ""):
+        raise RuntimeError("No LLM model selected")
 
-    args = ["./llama.cpp/server",
-            "-m", "llama.cpp/" +
-            llm_model["model_file"],
+    args = [os.path.join(llama_cpp_dir, "server"),
+            "-m", os.path.join(llama_model_dir,
+                               llm_settings["model"]),
             "--ctx-size", "2048",
             "--threads", "10",
             "--n-gpu-layers", "1"]
@@ -466,6 +542,27 @@ def run_llm():
         line = line.decode('utf-8')
         socket_io.emit("llm_stdout", line)
         time.sleep(0.1)
+
+
+def get_prompt_generator_for_model(model: str):
+    global available_llm_models
+    # find model file in available_llm_models and return prompt_generator
+    model = next(
+        (item for item in available_llm_models if item["model"] == model), None)
+    if (model == None):
+        raise RuntimeError(
+            "Could not find prompt generator for model: " + model)
+    return model["prompt_generator"]
+
+
+def update_llm_settings(new_llm_settings: dict):
+    global llm_settings
+    llm_settings = {**llm_settings, **new_llm_settings}
+
+
+def update_transcribe_settings(new_transcribe_settings: dict):
+    global transcribe_settings
+    transcribe_settings = {**transcribe_settings, **new_transcribe_settings}
 
 
 app = Flask(__name__, static_url_path='', static_folder='frontend/build')
@@ -515,9 +612,11 @@ def reset_dialog():
 
 
 @socket_io.on('start_llm')
-def start_llm():
+def start_llm(llm_settings: dict = {}):
     global llm_thread
     stop_llm()
+
+    update_llm_settings(llm_settings)
 
     llm_thread = threading.Thread(target=run_llm)
     llm_thread.start()
@@ -539,9 +638,11 @@ def stop_talking():
 
 
 @socket_io.on('start_transcribe')
-def start_transcribe():
+def start_transcribe(transcribe_settings: dict = {}):
     global transcribe_thread
     stop_transcribe()
+
+    update_transcribe_settings(transcribe_settings)
 
     transcribe_thread = threading.Thread(target=run_transcribe)
     transcribe_thread.start()
@@ -558,33 +659,33 @@ def stop_transcribe():
 
 @socket_io.on('start_automation')
 def start_automation(args):
-    # global listening
-    # global t
-
-    print("Starting Automation: ", args)
-
-    global llm_model
+    # global llm_model
     global llm_settings
-    if ('llm_model' in args):
-        # find the first model in available_models where model_file equals llm_model
-        llm_model = next(
-            (item for item in available_models if item["model_file"] == args['llm_model']), None)
-        print("LLM Model Set: ", llm_model)
-        if (llm_model == None):
+    global transcribe_model
+
+    # if ('model_file' in args):
+    #     llm_model = next(
+    #         (item for item in available_llm_models if item["model_file"] == args['model_file']), None)
+    #     if (llm_model == None):
+    #         raise (
+    #             f"Could not find llm model {args['llm_model']} in available_models")
+
+    if ('transcribe_model' in args):
+        # find the first model in available_transcribe_models where model_file equals transcribe_model
+        transcribe_model = next(
+            (item for item in available_transcribe_models if item["model"] == args['transcribe_model']), None)
+        if (transcribe_model == None):
             raise (
-                f"Could not find llm model {args['llm_model']} in available_models")
+                f"Could not find transcribe model {args['transcribe_model']} in available_models"
+            )
 
     if 'llm_settings' in args:
-        if 'temperature' in args['llm_settings']:
-            llm_settings['temperature'] = args['llm_settings']['temperature']
+        update_llm_settings(args['llm_settings'])
 
-        if 'n_predict' in args['llm_settings']:
-            llm_settings['n_predict'] = args['llm_settings']['n_predict']
+    if 'transcribe_settings' in args:
+        update_transcribe_settings(args['transcribe_settings'])
 
-        if 'force_grammar' in args['llm_settings']:
-            llm_settings['force_grammar'] = args['llm_settings']['force_grammar']
-
-    if args['run_tts'] == True:
+    if args['run_transcribe'] == True:
         start_transcribe()
 
     global run_llm_on_new_tts
@@ -625,17 +726,20 @@ def update_status():
     global run_llm_on_new_tts
     global speak_flag
     global reset_dialog_flag
-    global llm_model
-    global available_models
+    global llm_settings
+    global transcribe_setting
+    global available_transcribe_models
     global prompt_presets
     status = {
         "sleeping": str(sleeping),
         "run_llm": run_llm_on_new_tts,
         "speak_flag": speak_flag,
         "reset_dialog_flag": reset_dialog_flag,
-        "llm_model": llm_model["model_file"],
-        "available_models": available_models,
-        "prompt_presets": prompt_presets
+        "llm_settings": llm_settings,
+        "transcribe_settings": transcribe_settings,
+        "available_llm_models": available_llm_models,
+        "prompt_presets": prompt_presets,
+        "available_transcribe_models": available_transcribe_models
     }
     print("Updating Status", status)
     socket_io.emit("server_status", status)
@@ -647,14 +751,15 @@ def call(call_str):
 
 
 if __name__ == '__main__':
-    load_available_models()
+    load_available_llm_models()
+    load_available_transcribe_models()
     load_prompt_presets()
 
     listen_thread = threading.Thread(target=listen_loop)
     listen_thread.start()
 
     update_status()
-    start_automation({"run_tts": True, "run_llm": True,
-                     "reset_dialog": True, "run_speak": False, "llm_model": available_models[0]["model_file"]})
+    start_automation({"run_transcribe": True, "run_llm": True,
+                     "reset_dialog": True, "run_speak": False})
 
     socket_io.run(app, port=5001, host="0.0.0.0")

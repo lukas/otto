@@ -1,0 +1,14 @@
+[
+    {
+        "model": "ggml-small.en.bin"
+    },
+    {
+        "model": "ggml-medium.en.bin"
+    },
+    {
+        "model": "ggml-base.en.bin"
+    },
+    {
+        "model": "ggml-tiny.en.bin"
+    }
+]

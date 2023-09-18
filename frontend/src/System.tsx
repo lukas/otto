@@ -72,142 +72,41 @@ function System() {
   const [sleeping, setSleeping] = useState(false)
   const [factCheck, setFactCheck] = useState(false)
   const [promptPresets, setPromptPresets] = useState([] as Array<{ name: string, prompt: string }>)
-  const [availableModels, setAvailableModels] = useState([] as Array<{ model_file: string, prompt_generator: string }>)
+
+  const [availableLLMModels, setAvailableLLMModels] = useState([] as Array<{ model: string, prompt_generator: string }>)
+  const [availableTranscribeModels, setAvailableTranscribeModels] = useState([] as Array<{ model: string }>)
+  const [llmModelIndex, setLLMModelIndex] = React.useState(0);
+  const [transcribeModelIndex, setTranscribeModelIndex] = React.useState(0);
+
   const [prompt, setPrompt] = useState("")
   const [response, setResponse] = useState("")
   const [promptSetup, setPromptSetup] = useState("")
   const [promptSetupIndex, setPromptSetupIndex] = React.useState(0);
-  const [llmModelIndex, setLLMModelIndex] = React.useState(0);
   const [userPrompt, setUserPrompt] = useState("")
   const [oldPrompts, setOldPrompts] = useState({})
   const [rawTranscription, setRawTranscription] = useState("")
   const [transcription, setTranscription] = useState("")
   const [rawLLM, setRawLLM] = useState("")
   const [tabValue, setTabValue] = React.useState(0);
-  const [llmSettings, setLLMSettings] = useState({ temperature: "0.8", n_predict: "10", forceGrammar: true })
+  const [llmSettings, setLLMSettings] = useState({ model: "", temperature: "0.8", n_predict: "10", forceGrammar: true })
+  const [transcribeSettings, setTranscribeSettings] = useState({ model: "", threads: "4", step: "3000", length: "10000", keep: "200", "max-tokens": "32", "vad-thold": "0.6", "freq-thold": "100.0", "speed-up": false, "no-fallback": false })
+
   const [functionCalls, setFunctionCalls] = useState([] as Array<string>)
   const [userFunctionCallStr, setUserFunctionCallStr] = useState("")
-  const [runTTSFlag, setRunTTSFlag] = React.useState(true)
+  const [runTranscribeFlag, setRunTranscribeFlag] = React.useState(true)
   const [runLLMFlag, setRunLLMFlag] = React.useState(true)
   const [runSpeakFlag, setRunSpeakFlag] = React.useState(true)
   const [resetDialogFlag, setResetDialogFlag] = React.useState(true)
-  const [llmModel, setLLMModel] = React.useState("llama-2-7b-32k-instruct.ggmlv3.q4_1.bin")
+
+
 
   const handleChange = (event: React.SyntheticEvent, newTabValue: number) => {
     setTabValue(newTabValue);
   };
 
 
-
-  useEffect(() => {
-    socket = io('ws://' + window.location.hostname + ':5001');
-
-    socket.on("sleeping", (sleeping) => {
-      if (sleeping === "True") {
-        setSleeping(true)
-      } else {
-        setSleeping(false)
-      }
-    })
-
-
-    socket.on("prompt", (newPrompt) => {
-      console.log("NP ", newPrompt)
-      setPrompt(prompt => (newPrompt as string));
-      setResponse(response => "");
-    })
-
-    socket.on("response", (token) => {
-      setResponse(response => response += token);
-    })
-
-    socket.on("prompt_setup", (newPromptSetup) => {
-      setPromptSetup(promptSetup => (newPromptSetup as string));
-    })
-
-    socket.on("user_prompt", (newUserPrompt) => {
-      setUserPrompt(userPrompt => (newUserPrompt as string));
-    })
-
-    socket.on("old_prompts", (newOldPrompts) => {
-      setOldPrompts(oldPrompts => newOldPrompts)
-    })
-    socket.on("transcribe_stdout", (newTranscription) => {
-      setRawTranscription(rawTranscription => rawTranscription + (newTranscription as string) + "\n");
-    })
-
-    socket.on("tts", (newTranscription) => {
-      setTranscription(transcription => transcription + (newTranscription as string) + "\n");
-    })
-    socket.on("llm_stdout", (newLLM) => {
-      setRawLLM(rawLLM => rawLLM + (newLLM as string) + "\n")
-    })
-
-    socket.on("factcheck", (newTruth) => {
-      setFactCheck(factCheck => newTruth === "True" ? true : false)
-    })
-
-    socket.on("function_call", (newFunctionCall) => {
-      const argStr = Object.keys(newFunctionCall["args"]).map(key => {
-        return (key + "=\"" + newFunctionCall["args"][key]) + "\""
-      }).join(", ")
-      const newFunctionCallStr = newFunctionCall["function_name"] + "(" + argStr + ")"
-      setFunctionCalls(functionCalls => [...functionCalls, newFunctionCallStr])
-    })
-
-    socket.on("server_status", (status) => {
-      console.log("Got status ", status)
-      setServerRunning(true)
-      setSleeping(status["sleeping"] === "True" ? true : false)
-      setRunSpeakFlag(status["speak_flag"] === "True" ? true : false)
-      setResetDialogFlag(status["reset_dialog_flag"] === "True" ? true : false)
-      setLLMModel(status["llm_model"] ?? "")
-      setAvailableModels(status["available_models"] ?? [])
-      setPromptPresets(status["prompt_presets"] ?? [])
-      if (status["prompt_presets"].length > 0) {
-        setPromptSetup(status["prompt_presets"][0].prompt)
-      }
-
-
-    })
-
-    socket.emit("user_prompt", userPrompt)
-
-    socket.emit("request_status");
-
-    // when component unmounts, disconnect
-    return (() => {
-      socket.disconnect()
-    })
-  }, [])
-
-  const serverStatus = serverRunning ? sleeping ? "Sleeping" : "Listening" : "Not Running"
-  const functionCallStr = functionCalls.join("\n")
-  return (
-
-
-
-    <div>
-      <AppBar position="static" sx={{ flexDirection: "row" }}   >
-        <Typography marginLeft={"12px"}>Otto Bot</Typography>
-        <Typography marginLeft={"auto"} marginRight={"12px"}>{serverStatus}</Typography>
-      </AppBar>
-
-      <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-        <Tabs value={tabValue} onChange={handleChange} aria-label="basic tabs example">
-          <Tab label="Dialog" {...a11yProps(0)} />
-          <Tab label="Raw Logs" {...a11yProps(1)} />
-          <Tab label="Transcription Logs" {...a11yProps(2)} />
-          <Tab label="LLM Logs" {...a11yProps(3)} />
-          <Tab label="Call Logs" {...a11yProps(4)} />
-
-
-        </Tabs>
-      </Box>
-
-
-
-
+  function dialogSettingsPanel() {
+    return (
       <CustomTabPanel value={tabValue} index={0}>
 
         <Paper sx={{ m: "12px", p: "12px" }}>
@@ -273,20 +172,16 @@ function System() {
         </Paper>
 
       </CustomTabPanel>
+    )
+  }
 
-      <CustomTabPanel value={tabValue} index={1}>
-        <Button color="inherit" onClick={() => {
-          socket.emit("start_automation",
-            {
-              "run_tts": runTTSFlag, "run_llm": runLLMFlag, "run_speak": runSpeakFlag,
-              "reset_dialog": resetDialogFlag, "llm_model": llmModel,
-              "llm_settings": llmSettings
-            });
-        }}>Start Automation</Button>
-        <Button color="inherit" onClick={() => { socket.emit("stop_automation"); }}>Stop Automation</Button>
-
-        <FormGroup>
-          {availableModels.length > 0 ? (
+  function llmSettingsPanel() {
+    return (
+      <CustomTabPanel value={tabValue} index={3} >
+        <Button color="inherit" onClick={() => { socket.emit("start_llm", llmSettings); }}>Start LLM</Button>
+        <Button color="inherit" onClick={() => { socket.emit("stop_llm"); setRawLLM(rawLLM => ""); }}>Stop LLM</Button>
+        <FormGroup row sx={{ mt: "8px", display: 'flex', flexDirection: 'column' }}>
+          {availableLLMModels.length > 0 ? (
             <FormControl sx={{ mb: 1, width: 300 }}>
               <InputLabel id="preset-label">Model</InputLabel>
               <Select
@@ -298,20 +193,16 @@ function System() {
                 value={String(llmModelIndex)}
                 onChange={(e: SelectChangeEvent) => {
                   setLLMModelIndex(Number(e.target.value))
-                  setLLMModel(availableModels[Number(e.target.value)].model_file);
+                  setLLMSettings((llmSettings) => { return { ...llmSettings, model: availableLLMModels[Number(e.target.value)].model } })
                 }}>
-                {availableModels.map((model, i) => (
-                  <MenuItem key={i} value={i}>{model.model_file}</MenuItem>
+                {availableLLMModels.map((model, i) => (
+                  <MenuItem key={i} value={i}>{model.model}</MenuItem>
                 ))}
               </Select>
             </FormControl>
           ) : (
             <p>No Models found from Server</p>
           )}
-          <FormControlLabel control={<Switch checked={runTTSFlag} onChange={(v) => setRunTTSFlag(v.target.checked)} />} label="Run Text to Speech" />
-          <FormControlLabel control={<Switch checked={runLLMFlag} onChange={(v) => setRunLLMFlag(v.target.checked)} />} label="Run LLM" />
-          <FormControlLabel control={<Switch checked={runSpeakFlag} onChange={(v) => setRunSpeakFlag(v.target.checked)} />} label="Run Speaking" />
-          <FormControlLabel control={<Switch checked={resetDialogFlag} onChange={(v) => setResetDialogFlag(v.target.checked)} />} label="Reset Dialog Each Time" />
           <FormControlLabel control={<Switch checked={llmSettings.forceGrammar} onChange={(v) => setLLMSettings((llmSettings) => { return { ...llmSettings, forceGrammar: v.target.checked } })} />} label="Force Grammar" />
 
           <TextField id="outlined-basic" label="Temperature" value={llmSettings.temperature}
@@ -319,6 +210,42 @@ function System() {
             onChange={(e) => { }} />
           <TextField style={{ marginTop: "8px", width: '200px' }} id="N Predict" label=" N Predict" value={llmSettings.n_predict}
             onChange={(e) => { setLLMSettings((llmSettings) => { return { ...llmSettings, n_predict: e.target.value } }) }} />
+        </FormGroup>
+        {(rawLLM !== "") && (
+          <Paper sx={{ m: "12px" }} >
+            <Typography variant="h5" sx={{ textAlign: 'center' }}>LLM Logs</Typography>
+            <pre style={{ height: "500px", overflow: "auto", display: "flex", flexDirection: "column-reverse" }}>
+              {rawLLM}
+
+            </pre>
+          </Paper>
+        )}
+      </CustomTabPanel>
+
+    )
+  }
+
+  function systemSettingsPanel() {
+    return (
+      <CustomTabPanel value={tabValue} index={1}>
+        <Button color="inherit" onClick={() => {
+          socket.emit("start_automation",
+            {
+              "run_transcribe": runTranscribeFlag, "run_llm": runLLMFlag, "run_speak": runSpeakFlag,
+              "reset_dialog": resetDialogFlag,
+              "llm_settings": llmSettings,
+              "transcribe_settings": transcribeSettings
+            });
+        }}>Start Automation</Button>
+        <Button color="inherit" onClick={() => { socket.emit("stop_automation"); }}>Stop Automation</Button>
+
+        <FormGroup>
+
+          <FormControlLabel control={<Switch checked={runTranscribeFlag} onChange={(v) => setRunTranscribeFlag(v.target.checked)} />} label="Run Transcription" />
+          <FormControlLabel control={<Switch checked={runLLMFlag} onChange={(v) => setRunLLMFlag(v.target.checked)} />} label="Run LLM" />
+          <FormControlLabel control={<Switch checked={runSpeakFlag} onChange={(v) => setRunSpeakFlag(v.target.checked)} />} label="Run Speaking" />
+          <FormControlLabel control={<Switch checked={resetDialogFlag} onChange={(v) => setResetDialogFlag(v.target.checked)} />} label="Reset Dialog Each Time" />
+
         </FormGroup>
         {
           (prompt !== "") && (
@@ -344,40 +271,80 @@ function System() {
           )
         }
       </CustomTabPanel>
+    )
+  }
+
+  function transcribeSettingsPanel() {
+    return (
       <CustomTabPanel value={tabValue} index={2}>
-        <Button color="inherit" onClick={() => { socket.emit("start_transcribe"); }}>Start Transcription</Button>
+        <Button color="inherit" onClick={() => { socket.emit("start_transcribe", transcribeSettings); }}>Start Transcription</Button>
         <Button color="inherit" onClick={() => { socket.emit("stop_transcribe"); setRawTranscription(rawTranscription => ""); }}>Stop Transcription</Button>
-        {(rawTranscription !== "") && (
-          <Paper sx={{ m: "12px" }} style={{ height: "100%", overflow: "auto" }}>
-            <Typography variant="h5" sx={{ textAlign: 'center' }}>Raw Response</Typography>
-            <pre style={{ height: "500px", overflow: "auto", display: "flex", flexDirection: "column-reverse" }}>
-              {rawTranscription}
+        <FormGroup row sx={{ mt: "8px", display: 'flex', flexDirection: 'column' }}>
+          {availableTranscribeModels.length > 0 ? (
+            <FormControl sx={{ mb: 1, width: 300 }}>
+              <InputLabel id="preset-label">Model</InputLabel>
+              <Select
 
-            </pre>
-          </Paper>
-        )}
-      </CustomTabPanel>
+                labelId="modell"
+                style={{ width: "400px", maxHeight: "48px" }}
+                input={<OutlinedInput label="Model" />}
+                label="Model"
+                value={String(transcribeModelIndex)}
+                onChange={(e: SelectChangeEvent) => {
+                  setTranscribeModelIndex(Number(e.target.value))
+                  setTranscribeSettings((t) => {
+                    return { ...t, model: availableTranscribeModels[Number(e.target.value)].model }
+                  })
+                }}>
+                {availableTranscribeModels.map((model, i) => (
+                  <MenuItem key={i} value={i}>{model.model}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          ) : (
+            <p>No Transcribe Models found from Server</p>
+          )
+          }
 
-      <CustomTabPanel value={tabValue} index={3} >
-        <Button color="inherit" onClick={() => { socket.emit("start_llm"); }}>Start LLM</Button>
-        <Button color="inherit" onClick={() => { socket.emit("stop_llm"); setRawLLM(rawLLM => ""); }}>Stop LLM</Button>
+          <TextField style={{ marginTop: "8px", width: '200px' }} id="Number Threads" label="Number Threads" value={transcribeSettings.threads}
+            onChange={(e) => { setTranscribeSettings((transcribeSettings) => { return { ...transcribeSettings, threads: e.target.value } }) }} />
+          <TextField style={{ marginTop: "8px", width: '200px' }} id="Step" label="Step (ms)" value={transcribeSettings.step}
+            onChange={(e) => { setTranscribeSettings((transcribeSettings) => { return { ...transcribeSettings, step: e.target.value } }) }} />
+          <TextField style={{ marginTop: "8px", width: '200px' }} id="Length" label="Length (ms)" value={transcribeSettings.length}
+            onChange={(e) => { setTranscribeSettings((transcribeSettings) => { return { ...transcribeSettings, length: e.target.value } }) }} />
+          <TextField style={{ marginTop: "8px", width: '200px' }} id="Keep" label="Keep (ms)" value={transcribeSettings.keep}
+            onChange={(e) => { setTranscribeSettings((transcribeSettings) => { return { ...transcribeSettings, keep: e.target.value } }) }} />
+          <TextField style={{ marginTop: "8px", width: '200px' }} id="Max Tokens" label="Max Tokens" value={transcribeSettings['max-tokens']}
+            onChange={(e) => { setTranscribeSettings((transcribeSettings) => { return { ...transcribeSettings, 'max-tokens': e.target.value } }) }} />
+          <TextField style={{ marginTop: "8px", width: '200px' }} id="Vad" label="Vad Threshold" value={transcribeSettings['vad-thold']}
+            onChange={(e) => { setTranscribeSettings((transcribeSettings) => { return { ...transcribeSettings, 'val-thold': e.target.value } }) }} />
+          <TextField style={{ marginTop: "8px", width: '200px' }} id="Freq" label="Freq Threshold" value={transcribeSettings.keep}
+            onChange={(e) => { setTranscribeSettings((transcribeSettings) => { return { ...transcribeSettings, 'freq-thold': e.target.value } }) }} />
 
-        {(rawLLM !== "") && (
-          <Paper sx={{ m: "12px" }} >
-            <Typography variant="h5" sx={{ textAlign: 'center' }}>Raw Response</Typography>
-            <pre style={{ height: "500px", overflow: "auto", display: "flex", flexDirection: "column-reverse" }}>
-              {rawLLM}
+        </FormGroup >
+        {
+          (rawTranscription !== "") && (
+            <Paper sx={{ m: "12px" }} style={{ height: "100%", overflow: "auto" }}>
+              <Typography variant="h5" sx={{ textAlign: 'center' }}>Transcription Logs</Typography>
+              <pre style={{ height: "500px", overflow: "auto", display: "flex", flexDirection: "column-reverse" }}>
+                {rawTranscription}
 
-            </pre>
-          </Paper>
-        )}
-      </CustomTabPanel>
+              </pre>
+            </Paper>
+          )
+        }
+      </CustomTabPanel >
+    )
 
+  }
+
+  function skillSettingsPanel() {
+    return (
       <CustomTabPanel value={tabValue} index={4} >
 
 
         <Paper sx={{ m: "12px" }} >
-          <Typography variant="h5" sx={{ textAlign: 'center' }}>Call Log</Typography>
+          <Typography variant="h5" sx={{ textAlign: 'center' }}>Skills Call Log</Typography>
           <pre style={{ height: "500px", overflow: "auto", display: "flex", flexDirection: "column-reverse" }}>
             {functionCallStr}
 
@@ -392,6 +359,123 @@ function System() {
         </Paper>
 
       </CustomTabPanel>
+    )
+  }
+
+
+  useEffect(() => {
+    socket = io('ws://' + window.location.hostname + ':5001');
+
+    socket.on("sleeping", (sleeping) => {
+      if (sleeping === "True") {
+        setSleeping(true)
+      } else {
+        setSleeping(false)
+      }
+    })
+
+
+    socket.on("prompt", (newPrompt) => {
+      console.log("NP ", newPrompt)
+      setPrompt(prompt => (newPrompt as string));
+      setResponse(response => "");
+    })
+
+    socket.on("response", (token) => {
+      setResponse(response => response += token);
+    })
+
+    socket.on("prompt_setup", (newPromptSetup) => {
+      setPromptSetup(promptSetup => (newPromptSetup as string));
+    })
+
+    socket.on("user_prompt", (newUserPrompt) => {
+      setUserPrompt(userPrompt => (newUserPrompt as string));
+    })
+
+    socket.on("old_prompts", (newOldPrompts) => {
+      setOldPrompts(oldPrompts => newOldPrompts)
+    })
+    socket.on("raw_transcription", (newTranscription) => {
+      setRawTranscription(rawTranscription => rawTranscription + (newTranscription as string) + "\n");
+    })
+
+    socket.on("transcribe", (newTranscription) => {
+      setTranscription(transcription => transcription + (newTranscription as string) + "\n");
+    })
+    socket.on("llm_stdout", (newLLM) => {
+      setRawLLM(rawLLM => rawLLM + (newLLM as string) + "\n")
+    })
+
+    socket.on("factcheck", (newTruth) => {
+      setFactCheck(factCheck => newTruth === "True" ? true : false)
+    })
+
+    socket.on("function_call", (newFunctionCall) => {
+      const argStr = Object.keys(newFunctionCall["args"]).map(key => {
+        return (key + "=\"" + newFunctionCall["args"][key]) + "\""
+      }).join(", ")
+      const newFunctionCallStr = newFunctionCall["function_name"] + "(" + argStr + ")"
+      setFunctionCalls(functionCalls => [...functionCalls, newFunctionCallStr])
+    })
+
+    socket.on("server_status", (status) => {
+      console.log("Got status ", status)
+      setServerRunning(true)
+      setSleeping(status["sleeping"] === "True" ? true : false)
+      setRunSpeakFlag(status["speak_flag"] === "True" ? true : false)
+      setResetDialogFlag(status["reset_dialog_flag"] === "True" ? true : false)
+      setAvailableLLMModels(status["available_llm_models"] ?? [])
+      setAvailableTranscribeModels(status["available_transcribe_models"] ?? [])
+      setLLMSettings(status["llm_settings"] ?? {})
+      setTranscribeSettings(status["transcribe_settings"] ?? {})
+
+      setPromptPresets(status["prompt_presets"] ?? [])
+      if (status["prompt_presets"].length > 0) {
+        setPromptSetup(status["prompt_presets"][0].prompt)
+      }
+
+
+    })
+
+    socket.emit("user_prompt", userPrompt)
+
+    socket.emit("request_status");
+
+    // when component unmounts, disconnect
+    return (() => {
+      socket.disconnect()
+    })
+  }, [])
+
+  const serverStatus = serverRunning ? sleeping ? "Sleeping" : "Listening" : "Not Running"
+  const functionCallStr = functionCalls.join("\n")
+  return (
+
+
+
+    <div>
+      <AppBar position="static" sx={{ flexDirection: "row" }}   >
+        <Typography marginLeft={"12px"}>Otto Bot</Typography>
+        <Typography marginLeft={"auto"} marginRight={"12px"}>{serverStatus}</Typography>
+      </AppBar>
+
+      <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+        <Tabs value={tabValue} onChange={handleChange} aria-label="basic tabs example">
+          <Tab label="Dialog" {...a11yProps(0)} />
+          <Tab label="Raw Logs" {...a11yProps(1)} />
+          <Tab label="Transcription" {...a11yProps(2)} />
+          <Tab label="LLM" {...a11yProps(3)} />
+          <Tab label="Skills" {...a11yProps(4)} />
+
+
+        </Tabs>
+      </Box>
+      {dialogSettingsPanel()}
+      {systemSettingsPanel()}
+      {transcribeSettingsPanel()}
+      {llmSettingsPanel()}
+      {skillSettingsPanel()}
 
     </div >
 
