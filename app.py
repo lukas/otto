@@ -34,10 +34,7 @@ whisper_cpp_dir = "whisper.cpp"
 llama_model_dir = os.path.join(llama_cpp_dir, "models")
 whisper_model_dir = os.path.join(whisper_cpp_dir, "models")
 
-# transcribe_model = {"model_file": ""}
-
-# diart_filename = "file.rttm"
-prompt_setup = """"""
+prompt_setup = ""
 
 old_prompts = []
 old_responses = []
@@ -139,37 +136,6 @@ def emptyaudio(audiostr):
         return False
 
 
-# def number_people_talking(lookback_duration=1.0):
-#     newest_timestamp = 0
-#     speakers = set()
-#     p = subprocess.Popen(
-#         ["tail", "-10", "-r", diart_filename], stdout=subprocess.PIPE)
-#     diart_lines = ""
-#     for line in p.stdout.readlines():
-#         line = line.decode('utf-8')
-#         diart_lines += line + "\n"
-#         data = line.split(" ")
-#         timestamp = float(data[3])
-#         duration = float(data[4])
-#         speaker = data[7]
-#         if (newest_timestamp == 0):
-#             newest_timestamp = timestamp+duration
-#         else:
-#             if (timestamp > newest_timestamp - lookback_duration):
-#                 pass
-#             else:
-#                 break
-
-#         speakers.add(speaker)
-
-#     diart_log.write(diart_lines)
-
-#     diart_log.write("Speakers: {speakers}")
-#     diart_log.flush()
-#     return len(speakers)
-
-
-# llm_log_data = ""
 def cleanup_text_to_speak(text):
     # remove text inside parenthesis
     text = re.sub(r'\([^)]*\)', '', text)
@@ -181,6 +147,7 @@ def cleanup_text_to_speak(text):
 def message(text):
     print("Sending message ", text)
     socket_io.emit("message", text)
+
 
 try:
     timer = TimerSkill(message)
@@ -201,6 +168,7 @@ try:
     openAISkill = OpenAISkill(message)
 except Exception as e:
     print("Error loading openai skill: ", e)
+
 
 def parse_function_call(call_str: str) -> (str, dict[str, str]):
     call_str = call_str.strip()
@@ -312,15 +280,14 @@ def generate_prompt_chat(prompt_setup, user_prompt, old_prompts, old_responses):
 
 def generate_prompt_instruct(prompt_setup, user_prompt, old_prompts, old_responses):
     prompt_header = f"""### System:
-    {prompt_setup}
-
-    """
+{prompt_setup}
+"""
 
     chat_prompt = ""
     for old_prompt, old_response in zip(old_prompts, old_responses):
-        chat_prompt += f"### User:\n{old_prompt}\n### Assistant:n{old_response}\n"
+        chat_prompt += f"### User: {old_prompt}\n### Assistant: {old_response}\n"
 
-    prompt = f"{prompt_header} {chat_prompt}\n### User:\n{user_prompt}\n### Assistant:\n"
+    prompt = f"{prompt_header} {chat_prompt}\n### User: {user_prompt}\n### Assistant: "
     return prompt
 
 
