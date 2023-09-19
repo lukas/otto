@@ -182,12 +182,25 @@ def message(text):
     print("Sending message ", text)
     socket_io.emit("message", text)
 
+try:
+    timer = TimerSkill(message)
+except Exception as e:
+    print("Error loading timer skill: ", e)
 
-timer = TimerSkill(message)
-weather = WeatherSkill(message)
-timeSkill = TimeSkill(message)
-openAISkill = OpenAISkill(message)
+try:
+    weather = WeatherSkill(message)
+except Exception as e:
+    print("Error loading weather skill: ", e)
 
+try:
+    timeSkill = TimeSkill(message)
+except Exception as e:
+    print("Error loading time skill: ", e)
+
+try:
+    openAISkill = OpenAISkill(message)
+except Exception as e:
+    print("Error loading openai skill: ", e)
 
 def parse_function_call(call_str: str) -> (str, dict[str, str]):
     call_str = call_str.strip()
