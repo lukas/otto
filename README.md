@@ -26,7 +26,7 @@ make
 
 ### Step 2 Download models to run
 
-Download a llama model and put it in llama/models
+Download a llama model
 
 For example:
 ```
@@ -34,10 +34,12 @@ cd llama/models
 wget https://huggingface.co/TheBloke/Llama-2-7B-GGUF/resolve/main/llama-2-7b.Q4_K_M.gguf
 ```
 
-Download a whisper model 
+Download a whisper model
+
 ```
-
-
+cd whisper
+bash ./models/download-ggml-model.sh base.en
+```
 
 ### Step 3: Run backend
 
