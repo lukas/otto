@@ -1,0 +1,14 @@
+[
+    {
+        "model": "llama-2-13b.gguf",
+        "prompt_generator": "instruct"
+    },
+    {
+        "model": "llama-2-13b-chat-gguf",
+        "prompt_generator": "chat"
+    },
+    {
+        "model": "llama-2-7b-32k-instruct.Q4_K_M.gguf",
+        "prompt_generator": "instruct"
+    }
+]
