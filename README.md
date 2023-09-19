@@ -72,13 +72,20 @@ pip install -r requirements.txt
 pip install -r requirements_skills.txt
 ```
 
-### Step 3: Run backend
+### Step 3: Install yarn packages
+
+```
+cd frontend 
+yarn install
+```
+
+### Step 4: Run backend
 
 ```
 ./app.py
 ```
 
-### Step 4: Run frontend
+### Step 5: Run frontend
 
 ```
 cd frontend && yarn start
