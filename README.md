@@ -24,7 +24,20 @@ cd whisper
 make
 ```
 
-### Step 2 Get a whisper and llama model to run
+### Step 2 Download models to run
+
+Download a llama model and put it in llama/models
+
+For example:
+```
+cd llama/models
+wget https://huggingface.co/TheBloke/Llama-2-7B-GGUF/resolve/main/llama-2-7b.Q4_K_M.gguf
+```
+
+Download a whisper model 
+```
+
+
 
 ### Step 3: Run backend
 
