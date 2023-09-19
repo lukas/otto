@@ -118,7 +118,7 @@ def load_available_llm_models():
 
     if available_llm_models == []:
         raise RuntimeError(
-            "Need to download at least one LLM model, see README.md")
+            "Need to download at least one LLM model and add model to llms.json, see README.md")
     llm_settings['model'] = available_llm_models[0]["model"]
 
 

@@ -14,5 +14,9 @@
     {
         "model": "ggml-finetuned-model-q4_0.gguf",
         "prompt_generator": "instruct"
+    },
+    {
+        "model": "llama-2-7b.Q4_K_M.gguf",
+        "prompt_generator": "instruct"
     }
 ]
