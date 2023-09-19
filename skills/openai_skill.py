@@ -18,8 +18,8 @@ class OpenAISkill:
             "openai(prompt=\"Can a leopard swim?\")"
         ],
         [
-            ["Ask open ai for an interesting fact about the natural world that a smart educated person might not know"],
-            ["openai(prompt=\"Tell me an interesting fact about the natural world that a smart educated person might not know\")"]
+            "Ask open ai for an interesting fact about the natural world that a smart educated person might not know",
+            "openai(prompt=\"Tell me an interesting fact about the natural world that a smart educated person might not know\")"
         ]
     ]
 
