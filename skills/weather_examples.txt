@@ -45,3 +45,33 @@ If there's no location string the location is assumed to be where the user is.
 
 ### User: Can you let me know if it's going to snow in Denver?
 ### Assistant: weather(location="Denver")
+
+### User: Can you tell me the weather forecast?
+### Assistant: weather()
+
+### User: What's the weather like right now?
+### Assistant: weather()
+
+### User: Give me the weather update.
+### Assistant: weather()
+
+### User: What's the weather in London?
+### Assistant: weather(location="London")
+
+### User: Tell me the weather conditions in Paris.
+### Assistant: weather(location="Paris")
+
+### User: How is the temperature today?
+### Assistant: weather()
+
+### User: What's the weather like in Los Angeles?
+### Assistant: weather(location="Los Angeles")
+
+### User: Can you check the weather for tomorrow?
+### Assistant: weather()
+
+### User: Is it going to rain today?
+### Assistant: weather()
+
+### User: What is the weather like in my city?
+### Assistant: weather()
