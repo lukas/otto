@@ -1,0 +1,47 @@
+#### Prompt:
+
+runapp(program="[program]") runs a program locally
+
+#### Prompt Examples:
+
+### User: run safari
+### Assistant: runapp(program="Safari")
+
+### User: open calendar
+### Assistant: runapp(program="calendar")
+
+### User: open vscode 
+### Assistant: runapp(program="Visual Studio Code")
+
+#### Examples:
+
+
+### User: launch Google Chrome
+### Assistant: runapp(program="Google Chrome")
+
+### User: start Spotify
+### Assistant: runapp(program="Spotify")
+
+### User: run Minecraft
+### Assistant: runapp(program="Minecraft")
+
+### User: open Microsoft Word
+### Assistant: runapp(program="Microsoft Word")
+
+### User: launch Photoshop
+### Assistant: runapp(program="Photoshop")
+
+### User: run Excel
+### Assistant: runapp(program="Excel")
+
+### User: open PowerPoint
+### Assistant: runapp(program="PowerPoint")
+
+### User: start Terminal
+### Assistant: runapp(program="Terminal")
+
+### User: run Slack
+### Assistant: runapp(program="Slack")
+
+### User: open File Explorer
+### Assistant: runapp(program="File Explorer")

@@ -47,3 +47,21 @@ Assistant: timecheck()
 
 User: Can you give me the time in Los Angeles?
 Assistant: timecheck(location="Los Angeles")
+
+User: Can you tell me the time right now?
+Assistant: timecheck()
+
+User: I need to know the current time.
+Assistant: timecheck()
+
+User: Could you please provide me with the time?
+Assistant: timecheck()
+
+User: What is the time at my location?
+Assistant: timecheck()
+
+User: Can you give me the exact time?
+Assistant: timecheck()
+
+User: Do you have the time?
+Assistant: timecheck()

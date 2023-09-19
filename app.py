@@ -61,6 +61,7 @@ wake_words = ["otto", "auto", "wake"]
 run_llm_on_new_transcription = True
 skills = [TimerSkill, WeatherSkill, TimeSkill,
           OpenAISkill, RunAppSkill, MathSkill]
+skill_instances = []
 
 
 def strip_whitespace_from_promt(prompt):
@@ -150,25 +151,15 @@ def message(text):
     socket_io.emit("message", text)
 
 
-try:
-    timer = TimerSkill(message)
-except Exception as e:
-    print("Error loading timer skill: ", e)
-
-try:
-    weather = WeatherSkill(message)
-except Exception as e:
-    print("Error loading weather skill: ", e)
-
-try:
-    timeSkill = TimeSkill(message)
-except Exception as e:
-    print("Error loading time skill: ", e)
-
-try:
-    openAISkill = OpenAISkill(message)
-except Exception as e:
-    print("Error loading openai skill: ", e)
+def load_skills():
+    global skills
+    global skill_instances
+    for skill in skills:
+        try:
+            skill_instance = skill(message)
+            skill_instances.append(skill_instance)
+        except Exception as e:
+            print("Error loading skill: ", e)
 
 
 def parse_function_call(call_str: str) -> (str, dict[str, str]):
@@ -206,7 +197,7 @@ def function_call(function_name: str, args: dict[str, str]):
     action_happened = True
 
     if function_name != "other":
-        for skill in skills:
+        for skill in skill_instances:
             if function_name == skill.function_name:
                 skill.start(args)
                 break
@@ -716,6 +707,7 @@ def call(call_str):
 
 
 if __name__ == '__main__':
+    load_skills()
     load_available_llm_models()
     load_available_transcribe_models()
     load_prompt_presets()

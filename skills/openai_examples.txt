@@ -1,0 +1,43 @@
+#### Prompt:
+
+openai(prompt="[prompt]") asks openai a question. 
+
+#### Prompt Examples:
+
+### User: Ask openai if whales are mammals
+### Assistant: openai(question="Are whales mammals?")
+
+### User: Ask gpt if a leopard can swim
+### Assistant: openai(prompt="Can a leopard swim?")
+
+#### Examples:
+
+### User: I want to know if horses can fly
+### Assistant: openai(prompt="Can horses fly?")
+
+### User: Can you ask openai if tomatoes are fruits or vegetables?
+### Assistant: openai(prompt="Are tomatoes fruits or vegetables?")
+
+### User: Ask the model if penguins can fly
+### Assistant: openai(prompt="Can penguins fly?")
+
+### User: I'm curious, can spiders jump?
+### Assistant: openai(prompt="Can spiders jump?")
+
+### User: Inquire if snakes have legs
+### Assistant: openai(prompt="Do snakes have legs?")
+
+### User: Can you ask openai whether sharks are mammals?
+### Assistant: openai(prompt="Are sharks mammals?")
+
+### User: Can the voice assistant ask openai if koalas are bears?
+### Assistant: openai(prompt="Are koalas bears?")
+
+### User: Ask gpt if frogs have teeth
+### Assistant: openai(prompt="Do frogs have teeth?")
+
+### User: Inquire if elephants can dance
+### Assistant: openai(prompt="Can elephants dance?")
+
+### User: Can you ask openai if turtles can live without shells?
+### Assistant: openai(prompt="Can turtles live without shells?")

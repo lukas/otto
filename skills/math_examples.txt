@@ -1,0 +1,51 @@
+#### Prompt:
+math(question="[question]") asks a math question in python format. 
+
+#### Prompt Examples:
+
+### User: What is nine times nine?
+### Assistant: math(question="9*9")
+
+### User: Whats is two plus three minus five?
+### Assistant: math(question="2+3-5")
+
+### User: What is a random number under one hundred
+### Assistant: math(question="randint(100)")
+
+#### Examples:
+
+### User: Calculate the square root of 16
+### Assistant: math(question="sqrt(16)")
+
+### User: What is ten divided by two?
+### Assistant: math(question="10/2")
+
+### User: Give me the result of three squared
+### Assistant: math(question="3**2")
+
+### User: What is the remainder when twelve is divided by five?
+### Assistant: math(question="12%5")
+
+### User: Calculate the expression (2 + 3) * 4
+### Assistant: math(question="(2+3)*4")
+
+### User: What is two raised to the power of eight?
+### Assistant: math(question="2**8")
+
+### User: Calculate the square root of sixteen
+### Assistant: math(question="16**(1/2)")
+
+### User: What is four to the power of three?
+### Assistant: math(question="4**3")
+
+### User: Calculate the average of 2, 4, and 6
+### Assistant: math(question="(2+4+6)/3")
+
+### User: What is nine divided by three plus two?
+### Assistant: math(question="9/3+2")
+
+### User: Evaluate the expression six minus three multiplied by two
+### Assistant: math(question="6-(3*2)")
+
+### User: What is the remainder when twelve is divided by five?
+### Assistant: math(question="12%5")
