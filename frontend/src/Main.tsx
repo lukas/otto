@@ -24,7 +24,7 @@ function Main() {
         })
 
         socket.on("transcribe", (transcription) => {
-            setMessage(transcription);
+            // setMessage(transcription);
         })
 
         socket.on("message", (message) => {

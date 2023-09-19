@@ -15,13 +15,17 @@ from generate_grammar import generate_grammar
 from skills.timer import TimerSkill
 from skills.weather import WeatherSkill
 from skills.time import TimeSkill
-from skills.openaiskill import OpenAISkill
+from skills.openai_skill import OpenAISkill
+from skills.math_skill import MathSkill
+from skills.run_app_skill import RunAppSkill
 
 
 url = "http://127.0.0.1:8080/completion"
 headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
 transcribe_filename = "transcript.txt"
 grammar_filename = "commands_kwargs.gbnf"
+llm_log_file = "llm_log.txt"
+
 
 llm_settings = {"temperature": 0.8, "n_predict": 20,
                 "force_grammar": True, "model": ""}
@@ -54,12 +58,9 @@ last_action_time = time.time()
 
 wake_words = ["otto", "auto", "wake"]
 
-run_llm_on_new_tts = True
-skills = [TimerSkill, WeatherSkill, TimeSkill, OpenAISkill]
-
-
-# modes: normal, transcribe, factcheck, timer, calendar, weather, news
-mode = "normal"
+run_llm_on_new_transcription = True
+skills = [TimerSkill, WeatherSkill, TimeSkill,
+          OpenAISkill, RunAppSkill, MathSkill]
 
 
 def strip_whitespace_from_promt(prompt):
@@ -203,29 +204,15 @@ def function_call(function_name: str, args: dict[str, str]):
                    "function_name": function_name, "args": args})
 
     action_happened = True
-    if (function_name == "factcheck"):
-        mode = "factcheck"
-        socket_io.emit('factcheck', 'start')
-    elif (function_name == "timecheck"):
-        timeSkill.start(args)
-    elif (function_name == "timer"):
-        timer.start(args)
-    elif (function_name == "calendar"):
-        socket_io.emit('calendar')
-    elif (function_name == "weather"):
-        weather.start(args)
-    elif (function_name == "news"):
-        socket_io.emit('news')
-    elif (function_name == "transcribe"):
-        mode = "transcribe"
-        socket_io.emit('transcribe')
-    elif (function_name == "openai"):
-        openAISkill.start(args)
-    else:
-        action_happened = False
 
-    if (action_happened):
-        last_action_time = time.time()
+    if function_name != "other":
+        for skill in skills:
+            if function_name == skill.function_name:
+                skill.start(args)
+                break
+
+        if (action_happened):
+            last_action_time = time.time()
 
 
 def function_call_str(function_call_str):
@@ -244,15 +231,6 @@ def end_response(response):
 
 
 def end_response_chunk(left_to_read):
-    if (truth_flag):
-        print("Left to read: ", left_to_read)
-        left_to_read = left_to_read.strip()
-        if (left_to_read.lower().startswith("true")):
-            socket_io.emit('factcheck', 'true')
-        if (left_to_read.lower().startswith("false")):
-
-            socket_io.emit('factcheck', 'false')
-
     if (speak_flag):
         cur_time = time.time()
         subprocess.run(
@@ -299,6 +277,12 @@ def generate_prompt(prompt_setup, user_prompt, old_prompts, old_responses, promp
         return generate_prompt_chat(prompt_setup, user_prompt, old_prompts, old_responses)
     raise (
         f"Unknown LLM model prompt generator {prompt_generator}")
+
+
+def log_llm(user_prompt, response):
+    with open(llm_log_file, "a") as llm_log:
+        print(
+            f"### User: {user_prompt}\n### Assistant: {response}\n", file=llm_log)
 
 
 def llm(user_prompt):
@@ -370,6 +354,7 @@ def llm(user_prompt):
 
     if left_to_read != "":
         end_response_chunk(left_to_read)
+        log_llm(user_prompt, response)
         end_response(response)
         left_to_read = ""
 
@@ -416,6 +401,7 @@ def listen():
 
     # if last_action was more than sleep_timer secongs ago, go to sleep
     if (time.time() - last_action_time > sleep_time_in_seconds):
+        print("Going to sleep")
         socket_io.emit("sleeping", str(True))
         sleeping = True
 
@@ -429,21 +415,22 @@ def listen():
                 sleeping = False
                 break
     else:
-        print("Run ", run_llm_on_new_tts)
-        if run_llm_on_new_tts:
+        print("Awake, running on new transcription ",
+              run_llm_on_new_transcription)
+        if run_llm_on_new_transcription:
             line = line.strip()
             print("line: ", line)
 
             # Example line [_BEG_] - He can sit.[_TT_42][_TT_42] - He wants to do it?[_TT_125]<|endoftext|>
-            if (line.endswith("<|endoftext|>")):
-                print("here")
-                # remove everything in line inside of []
-                line = re.sub(r'\[[^]]*\]', '', line)
-                # remove everything in line inside of <>
-                line = re.sub(r'\<[^>]*\>', '', line)
+            # if (line.endswith("<|endoftext|>")):
+            # remove everything in line inside of []
 
-                if not emptyaudio(line):
-                    llm(line)
+            line = re.sub(r'\[[^]]*\]', '', line)
+            # remove everything in line inside of <>
+            line = re.sub(r'\<[^>]*\>', '', line)
+            print(f"cleaned line: {line} emptyaudio {emptyaudio(line)}")
+            if not emptyaudio(line):
+                llm(line)
 
 
 def listen_loop():
@@ -668,10 +655,10 @@ def start_automation(args):
     if args['run_transcribe'] == True:
         start_transcribe()
 
-    global run_llm_on_new_tts
+    global run_llm_on_new_transcription
     if args['run_llm'] == True:
         start_llm()
-        run_llm_on_new_tts = True
+        run_llm_on_new_transcription = True
 
     global reset_dialog_flag
     if args['reset_dialog'] == True:
@@ -689,10 +676,8 @@ def start_automation(args):
 
 @socket_io.on('stop_automation')
 def stop_automation():
-    global run_llm_on_new_tts
-    # global t
-    run_llm_on_new_tts = False
-    # t = None
+    global run_llm_on_new_transcription
+    run_llm_on_new_transcription = False
 
 
 @socket_io.on('connect')
@@ -703,7 +688,7 @@ def handle_connect():
 @socket_io.on('request_status')
 def update_status():
     # global listening
-    global run_llm_on_new_tts
+    global run_llm_on_new_transcription
     global speak_flag
     global reset_dialog_flag
     global llm_settings
@@ -712,7 +697,7 @@ def update_status():
     global prompt_presets
     status = {
         "sleeping": str(sleeping),
-        "run_llm": run_llm_on_new_tts,
+        "run_llm": run_llm_on_new_transcription,
         "speak_flag": speak_flag,
         "reset_dialog_flag": reset_dialog_flag,
         "llm_settings": llm_settings,

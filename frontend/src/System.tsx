@@ -320,6 +320,10 @@ function System() {
             onChange={(e) => { setTranscribeSettings((transcribeSettings) => { return { ...transcribeSettings, 'val-thold': e.target.value } }) }} />
           <TextField style={{ marginTop: "8px", width: '200px' }} id="Freq" label="Freq Threshold" value={transcribeSettings.keep}
             onChange={(e) => { setTranscribeSettings((transcribeSettings) => { return { ...transcribeSettings, 'freq-thold': e.target.value } }) }} />
+          <FormControlLabel control={<Switch checked={transcribeSettings['no-fallback']} onChange={
+            (e) => { setTranscribeSettings((transcribeSettings) => { return { ...transcribeSettings, 'no-fallback': e.target.checked } }) }} />} label="No Fallback" />
+          <FormControlLabel control={<Switch checked={transcribeSettings['speed-up']} onChange={
+            (e) => { setTranscribeSettings((transcribeSettings) => { return { ...transcribeSettings, 'speed-up': e.target.checked } }) }} />} label="2x Speed" />
 
         </FormGroup >
         {
