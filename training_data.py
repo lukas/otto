@@ -3,6 +3,7 @@
 import re
 import argparse
 from openai import ChatCompletion
+import json
 
 
 def parse_example_file(file) -> (str, list[dict], list[dict]):
@@ -43,7 +44,7 @@ def parse_example_file(file) -> (str, list[dict], list[dict]):
 
                     elif (line.startswith('### Assistant:')):
                         # get part of line after the :
-                        cur_answer = line.split(":", 1)[1]
+                        cur_answer = line.split(":", 1)[1].strip()
                         example = {"user": cur_user_prompt,
                                    "answer": cur_answer}
                         if (section == "prompt examples"):
@@ -65,7 +66,10 @@ def create_training_data_file(files):
     for file in files:
         prompt, prompt_examples, file_examples = parse_example_file(file)
         examples.append(file_examples)
-    print(examples)
+
+    for example in examples:
+        for line in example:
+            print(json.dumps(line))
 
 
 def prompt_examples_to_string(prompt_examples: [dict]):
