@@ -2,7 +2,7 @@
 from skills.timer import TimerSkill
 from skills.weather import WeatherSkill
 from skills.time import TimeSkill
-from skills.openaiskill import OpenAISkill
+from skills.openai_skill import OpenAISkill
 
 skills = [TimerSkill, WeatherSkill, TimeSkill, OpenAISkill]
 
