@@ -361,7 +361,7 @@ last_tts_line = ""
 
 
 def listen():
-    global run_llm_on_new_tts
+    global run_llm_on_new_transcription
     global sleep_time_in_seconds
     global sleeping
     global last_tts_line
@@ -372,31 +372,50 @@ def listen():
     except Exception as e:
         print("Error reading transcription: " + e)
 
-    if (line == last_tts_line):  # don't call llm twice on the same line if it returns quickly
-        return
-
-    last_tts_line = line
-
-    print("Seeing line: ", line)
-
     try:
         line = line.decode('utf-8')
         line = strip_ansi_codes(line)
-        socket_io.emit("transcribe", line)
-
     except Exception as e:
         print("Error reading transcription: " + e)
         socket_io.emit("error", "Error reading transcription: " + e)
         return
+
+    if (line == last_tts_line):  # don't call llm twice on the same line if it returns quickly
+        return
+
+    socket_io.emit("transcribe", line)
+
+    last_tts_line = line
+
     # lines.append(line)
 
-    # if last_action was more than sleep_timer secongs ago, go to sleep
-    if (time.time() - last_action_time > sleep_time_in_seconds):
-        print("Going to sleep")
-        socket_io.emit("sleeping", str(True))
-        sleeping = True
+    if (not sleeping):
+        # if last_action was more than sleep_timer secongs ago, go to sleep
+        if (time.time() - last_action_time > sleep_time_in_seconds):
+            print("Going to sleep")
+            socket_io.emit("sleeping", str(True))
+            sleeping = True
 
-    if (sleeping):
+        print("Awake, running on new transcription ",
+              run_llm_on_new_transcription)
+        if run_llm_on_new_transcription:
+            line = line.strip()
+            print("line: ", line)
+
+            # Example line from whisper.cpp
+            #  [_BEG_] - He can sit.[_TT_42][_TT_42] - He wants to do it?[_TT_125]<|endoftext|>
+
+            # remove everything in line inside of []
+            line = re.sub(r'\[[^]]*\]', '', line)
+            # remove everything in line inside of <>
+            line = re.sub(r'\<[^>]*\>', '', line)
+
+            print(f"cleaned line: {line} emptyaudio {emptyaudio(line)}")
+            if not emptyaudio(line):
+                llm(line)
+
+    else:
+        # sleeping
         line_words = re.split(r'\W+', line.lower())
         for word in wake_words:
             if (word in line_words):
@@ -405,23 +424,6 @@ def listen():
                 last_tts_line = line  # don't call llm on the wake word
                 sleeping = False
                 break
-    else:
-        print("Awake, running on new transcription ",
-              run_llm_on_new_transcription)
-        if run_llm_on_new_transcription:
-            line = line.strip()
-            print("line: ", line)
-
-            # Example line [_BEG_] - He can sit.[_TT_42][_TT_42] - He wants to do it?[_TT_125]<|endoftext|>
-            # if (line.endswith("<|endoftext|>")):
-            # remove everything in line inside of []
-
-            line = re.sub(r'\[[^]]*\]', '', line)
-            # remove everything in line inside of <>
-            line = re.sub(r'\<[^>]*\>', '', line)
-            print(f"cleaned line: {line} emptyaudio {emptyaudio(line)}")
-            if not emptyaudio(line):
-                llm(line)
 
 
 def listen_loop():
