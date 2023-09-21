@@ -147,7 +147,7 @@ if __name__ == '__main__':
 
     argparser.add_argument('--files', metavar='file', type=str, nargs='+',
                            help='example files to parse')
-    argparser.add_argument('-t', '--training_data-file', action='store_true',
+    argparser.add_argument('-t', '--training-data-file', action='store_true',
                            help="generate training data file")
     argparser.add_argument('-p', '--prompt', action='store_true',
                            help="generate training data collection prompt")

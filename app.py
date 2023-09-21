@@ -20,6 +20,9 @@ from skills.time import TimeSkill
 from skills.openai_skill import OpenAISkill
 from skills.math_skill import MathSkill
 from skills.run_app_skill import RunAppSkill
+# from skills.notes_skill import NotesSkill
+from skills.story_skill import StorySkill
+from skills.news_skill import NewsSkill
 
 
 headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
@@ -61,7 +64,7 @@ wake_words = ["otto", "auto", "wake"]
 
 run_llm_on_new_transcription = True
 skills = [TimerSkill, WeatherSkill, TimeSkill,
-          OpenAISkill, RunAppSkill, MathSkill]
+          OpenAISkill, RunAppSkill, MathSkill, StorySkill, NewsSkill]
 skill_instances = []
 
 
@@ -145,10 +148,7 @@ def emptyaudio(audiostr):
     if (audiostr.strip() == ""):
         return True
 
-    if (audiostr.strip().startswith("[") or audiostr.strip().startswith("(")):
-        return True
-    else:
-        return False
+    return False
 
 
 def cleanup_text_to_speak(text):
@@ -212,8 +212,12 @@ def function_call(function_name: str, args: dict[str, str]):
     if function_name != "other":
         for skill in skill_instances:
             if function_name == skill.function_name:
-                skill.start(args)
-                break
+                try:
+                    skill.start(args)
+                    break
+                except Exception as e:
+                    error_output(
+                        f"Exception happened in skill {skill.function_name}, {e}")
 
         if (action_happened):
             last_action_time = time.time()
@@ -361,6 +365,8 @@ def listen():
             line = re.sub(r'\[[^]]*\]', '', line)
             # remove everything in line inside of <>
             line = re.sub(r'\<[^>]*\>', '', line)
+            # remove everything in line inside of ()
+            line = re.sub(r'\([^>]*\)', '', line)
 
             print(f"cleaned line: {line} emptyaudio {emptyaudio(line)}")
             if not emptyaudio(line):
@@ -372,6 +378,7 @@ def listen():
         for word in wake_words:
             if (word in line_words):
                 print("Waking up")
+                last_action_time = time.time()
                 socket_io.emit("sleeping", str(False))
                 last_tts_line = line  # don't call llm on the wake word
                 sleeping = False
@@ -486,7 +493,7 @@ def set_prompt_setup(new_prompt_setup):
 
 @socket_io.on('manual_prompt')
 def manual_prompt(user_prompt):
-    llama_server(user_prompt)
+    generate_prompt_and_call_llm(user_prompt)
 
 
 @socket_io.on('reset_dialog')

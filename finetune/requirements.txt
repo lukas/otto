@@ -1,0 +1,6 @@
+peft
+torch
+bitsandbytes
+accelerate
+datasets
+openai
