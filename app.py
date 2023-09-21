@@ -10,6 +10,8 @@ from requests.exceptions import ChunkedEncodingError
 from flask import Flask, send_from_directory
 from flask_socketio import SocketIO
 from markupsafe import escape
+
+import llama_server
 from generate_grammar import generate_grammar
 
 from skills.timer import TimerSkill
@@ -20,7 +22,6 @@ from skills.math_skill import MathSkill
 from skills.run_app_skill import RunAppSkill
 
 
-url = "http://127.0.0.1:8080/completion"
 headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
 transcribe_filename = "transcript.txt"
 grammar_filename = "commands_kwargs.gbnf"
@@ -62,6 +63,18 @@ run_llm_on_new_transcription = True
 skills = [TimerSkill, WeatherSkill, TimeSkill,
           OpenAISkill, RunAppSkill, MathSkill]
 skill_instances = []
+
+
+def llm_output(line):
+    socket_io.emit("llm_stdout", line)
+
+
+def error_output(line):
+    socket_io.emit("error", line)
+
+
+def llm_response_output(line):
+    socket_io.emit("response", line)
 
 
 def strip_whitespace_from_promt(prompt):
@@ -221,17 +234,11 @@ def end_response(response):
     function_call_str(response)
 
 
-def end_response_chunk(left_to_read):
+def end_response_chunk_speak(left_to_read):
     if (speak_flag):
         cur_time = time.time()
         subprocess.run(
             ["say", cleanup_text_to_speak(left_to_read)])
-        elapsed_time = time.time() - cur_time
-        print("Elapsed time: ", elapsed_time)
-
-        # if (number_people_talking() > 1):
-        #    print("Stopping because multiple people are talking")
-        #    break
 
 
 def generate_prompt_chat(prompt_setup, user_prompt, old_prompts, old_responses):
@@ -276,12 +283,12 @@ def log_llm(user_prompt, response):
             f"### User: {user_prompt}\n### Assistant: {response}\n", file=llm_log)
 
 
-def llm(user_prompt):
+def generate_prompt_and_call_llm(user_prompt):
     global stop_talking
     global llm_settings
     prompt = generate_prompt(prompt_setup, user_prompt,
                              old_prompts, old_responses, get_prompt_generator_for_model(llm_settings["model"]))
-    print("LLM -> ", user_prompt)
+    # print("LLM -> ", user_prompt)
 
     socket_io.emit("prompt_setup", prompt_setup)
     socket_io.emit("old_prompts", {
@@ -290,64 +297,11 @@ def llm(user_prompt):
 
     socket_io.emit("prompt", prompt)
 
-    llama_request = {"n_predict": llm_settings["n_predict"],
-                     "prompt": prompt,
-                     "stream": True,
-                     "temperature": llm_settings["temperature"]}
+    grammar_string = generate_grammar(skills)
 
-    if ("force_grammar" in llm_settings and llm_settings["force_grammar"]):
-        # with open(grammar_filename) as f:
-        #     grammar_string = f.read()
-        #     llama_request['grammar'] = grammar_string
-        grammar_string = generate_grammar(skills)
-        llama_request['grammar'] = grammar_string
-
-    try:
-        resp = requests.post(url, json=llama_request, stream=True)
-    except requests.exceptions.ConnectionError as e:
-        socket_io.emit("error", "LLM Connection Error")
-        print("LLM Connection Error")
-        return
-
-    try:
-        response = ""
-        left_to_read = ""
-        for line in resp.iter_lines():
-            if line:
-                try:
-                    line = line.decode('utf-8')
-                    content = line.split(": ", 1)[1]
-                    data = json.loads(content)
-                except Exception as e:
-                    print(f"Couldn't parse line {line} - exeception {e} ")
-                    continue
-
-                token = data['content']
-
-                if not line:
-                    break
-
-                socket_io.emit("response", token)
-                response += token
-                left_to_read += token
-                if (token == "." or token == "?" or token == "!" or token == ","):
-                    end_response_chunk(left_to_read)
-                    left_to_read = ""
-
-                if (stop_talking):
-                    break
-    except requests.exceptions.ChunkedEncodingError as e:
-        socket_io.emit("error", "LLM Connection Error")
-        print("LLM Connection Error")
-        return
-    finally:
-        stop_talking = False
-
-    if left_to_read != "":
-        end_response_chunk(left_to_read)
-        log_llm(user_prompt, response)
-        end_response(response)
-        left_to_read = ""
+    response = llama_server.call_llm(
+        prompt, llm_settings, grammar_string, end_response, None, error_output, llm_response_output)
+    log_llm(user_prompt, response)
 
     if (reset_dialog_flag):
         pass
@@ -361,7 +315,7 @@ last_tts_line = ""
 
 
 def listen():
-    global run_llm_on_new_tts
+    global run_llm_on_new_transcription
     global sleep_time_in_seconds
     global sleeping
     global last_tts_line
@@ -372,31 +326,48 @@ def listen():
     except Exception as e:
         print("Error reading transcription: " + e)
 
-    if (line == last_tts_line):  # don't call llm twice on the same line if it returns quickly
-        return
-
-    last_tts_line = line
-
-    print("Seeing line: ", line)
-
     try:
         line = line.decode('utf-8')
         line = strip_ansi_codes(line)
-        socket_io.emit("transcribe", line)
-
     except Exception as e:
         print("Error reading transcription: " + e)
         socket_io.emit("error", "Error reading transcription: " + e)
         return
-    # lines.append(line)
 
-    # if last_action was more than sleep_timer secongs ago, go to sleep
-    if (time.time() - last_action_time > sleep_time_in_seconds):
-        print("Going to sleep")
-        socket_io.emit("sleeping", str(True))
-        sleeping = True
+    if (line == last_tts_line):  # don't call llm twice on the same line if it returns quickly
+        return
 
-    if (sleeping):
+    socket_io.emit("transcribe", line)
+
+    last_tts_line = line
+
+    if (not sleeping):
+        # if last_action was more than sleep_timer secongs ago, go to sleep
+        if (time.time() - last_action_time > sleep_time_in_seconds):
+            print("Going to sleep")
+            socket_io.emit("sleeping", str(True))
+            sleeping = True
+
+        print("Awake, running on new transcription ",
+              run_llm_on_new_transcription)
+        if run_llm_on_new_transcription:
+            line = line.strip()
+            print("line: ", line)
+
+            # Example line from whisper.cpp
+            #  [_BEG_] - He can sit.[_TT_42][_TT_42] - He wants to do it?[_TT_125]<|endoftext|>
+
+            # remove everything in line inside of []
+            line = re.sub(r'\[[^]]*\]', '', line)
+            # remove everything in line inside of <>
+            line = re.sub(r'\<[^>]*\>', '', line)
+
+            print(f"cleaned line: {line} emptyaudio {emptyaudio(line)}")
+            if not emptyaudio(line):
+                generate_prompt_and_call_llm(line)
+
+    else:
+        # sleeping
         line_words = re.split(r'\W+', line.lower())
         for word in wake_words:
             if (word in line_words):
@@ -405,23 +376,6 @@ def listen():
                 last_tts_line = line  # don't call llm on the wake word
                 sleeping = False
                 break
-    else:
-        print("Awake, running on new transcription ",
-              run_llm_on_new_transcription)
-        if run_llm_on_new_transcription:
-            line = line.strip()
-            print("line: ", line)
-
-            # Example line [_BEG_] - He can sit.[_TT_42][_TT_42] - He wants to do it?[_TT_125]<|endoftext|>
-            # if (line.endswith("<|endoftext|>")):
-            # remove everything in line inside of []
-
-            line = re.sub(r'\[[^]]*\]', '', line)
-            # remove everything in line inside of <>
-            line = re.sub(r'\<[^>]*\>', '', line)
-            print(f"cleaned line: {line} emptyaudio {emptyaudio(line)}")
-            if not emptyaudio(line):
-                llm(line)
 
 
 def listen_loop():
@@ -478,30 +432,6 @@ llm_thread = None
 llm_process = None
 
 
-def run_llm():
-    global llm_process
-    global llm_settings
-
-    if (llm_settings['model'] == ""):
-        raise RuntimeError("No LLM model selected")
-
-    args = [os.path.join(llama_cpp_dir, "server"),
-            "-m", os.path.join(llama_model_dir,
-                               llm_settings["model"]),
-            "--ctx-size", "2048",
-            "--threads", "10",
-            "--n-gpu-layers", "1"]
-
-    llm_process = subprocess.Popen(args,
-                                   stdout=subprocess.PIPE,
-                                   stderr=subprocess.STDOUT)
-    while llm_process != None:
-        line = llm_process.stdout.readline()
-        line = line.decode('utf-8')
-        socket_io.emit("llm_stdout", line)
-        time.sleep(0.1)
-
-
 def get_prompt_generator_for_model(model: str):
     global available_llm_models
     # find model file in available_llm_models and return prompt_generator
@@ -556,7 +486,7 @@ def set_prompt_setup(new_prompt_setup):
 
 @socket_io.on('manual_prompt')
 def manual_prompt(user_prompt):
-    llm(user_prompt)
+    llama_server(user_prompt)
 
 
 @socket_io.on('reset_dialog')
@@ -570,23 +500,16 @@ def reset_dialog():
 
 
 @socket_io.on('start_llm')
-def start_llm(llm_settings: dict = {}):
-    global llm_thread
-    stop_llm()
-
-    update_llm_settings(llm_settings)
-
-    llm_thread = threading.Thread(target=run_llm)
-    llm_thread.start()
+def start_llm(new_llm_settings: dict = {}):
+    global llm_settings
+    update_llm_settings(new_llm_settings)
+    llama_server.restart_llm_server(llm_settings, llama_cpp_dir,
+                                    llama_model_dir, llm_output)
 
 
 @socket_io.on('stop_llm')
 def stop_llm():
-    global llm_process
-    global llm_thread
-    if (llm_process != None):
-        llm_process.terminate()
-        llm_process = None
+    llama_server.stop_llm_server()
 
 
 @socket_io.on('stop_talking')

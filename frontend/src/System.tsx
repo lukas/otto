@@ -452,7 +452,9 @@ function System() {
     })
   }, [])
 
-  const serverStatus = serverRunning ? sleeping ? "Sleeping" : "Listening" : "Not Running"
+  const serverStatus = serverRunning ?
+    sleeping ? "Sleeping" : runLLMFlag ? "Running" : "Listening, Not Automatically Responding"
+    : "Disconnected from Server"
   const functionCallStr = functionCalls.join("\n")
   return (
 

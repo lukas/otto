@@ -45,3 +45,34 @@ runapp(program="[program]") runs a program locally
 
 ### User: open File Explorer
 ### Assistant: runapp(program="File Explorer")
+
+### User: launch calculator
+### Assistant: runapp(program="Calculator")
+
+### User: start Spotify
+### Assistant: runapp(program="Spotify")
+
+### User: run Chrome
+### Assistant: runapp(program="Google Chrome")
+
+### User: open Word
+### Assistant: runapp(program="Microsoft Word")
+
+### User: launch Excel
+### Assistant: runapp(program="Microsoft Excel")
+
+### User: start PowerPoint
+### Assistant: runapp(program="Microsoft PowerPoint")
+
+### User: open Photoshop
+### Assistant: runapp(program="Adobe Photoshop")
+
+### User: start Firefox
+### Assistant: runapp(program="Mozilla Firefox")
+
+### User: run Terminal
+### Assistant: runapp(program="Terminal")
+
+### User: open Visual Studio
+### Assistant: runapp(program="Visual Studio")
+

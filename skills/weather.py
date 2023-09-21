@@ -25,7 +25,7 @@ class WeatherSkill:
         self.message_function = message_function
         self.api_key = os.getenv("OPENWEATHERMAP_API_KEY")
         if (self.api_key == None):
-            raise Exception(
+            raise RuntimeError(
                 "No OpenWeatherMap API key found in .env file! Go to openweathermap.org to get a free key and put in .env as OPENWEATHERMAP_API_KEY")
 
     def start(self, args: dict[str, str]):

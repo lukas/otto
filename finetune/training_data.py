@@ -87,7 +87,10 @@ The voice assistant has the command:
 {prompt}
 Some examples of how a user might say this command and the response is:
 {prompt_examples_to_string(prompt_examples)}
-Please give me more examples of ways that a user might query this command and the correct response.'''
+Please give me more examples of ways that a user might query this command and the correct response.
+
+Please make sure the examples start with ### User and ### Assistant.
+'''
 
     return data_collection_prompt
 
