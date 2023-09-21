@@ -11,6 +11,8 @@ import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer, set_seed, Trainer, TrainingArguments, BitsAndBytesConfig, \
     DataCollatorForLanguageModeling, Trainer, TrainingArguments
 from datasets import load_dataset
+from transformers.trainer_callback import TrainerControl, TrainerState
+from transformers.training_args import TrainingArguments
 
 def load_model(model_name, bnb_config):
     n_gpus = torch.cuda.device_count()
@@ -62,11 +64,11 @@ def preprocess_dataset(tokenizer: AutoTokenizer, max_length: int, seed, dataset:
     :param tokenizer (AutoTokenizer): Model Tokenizer
     :param max_length (int): Maximum number of tokens to emit from tokenizer
     """
-    
+
     # Add prompt to each sample
     print("Preprocessing dataset...")
     dataset = dataset.map(create_prompt_formats)#, batched=True)
-    
+
     # Apply preprocessing to each batch of the dataset & and remove 'instruction', 'context', 'response', 'category' fields
     _preprocessing_function = partial(preprocess_batch, max_length=max_length, tokenizer=tokenizer)
     dataset = dataset.map(
@@ -77,7 +79,7 @@ def preprocess_dataset(tokenizer: AutoTokenizer, max_length: int, seed, dataset:
 
     # Filter out samples that have input_ids exceeding max_length
     dataset = dataset.filter(lambda sample: len(sample["input_ids"]) < max_length)
-    
+
     # Shuffle dataset
     dataset = dataset.shuffle(seed=seed)
 
@@ -114,14 +116,14 @@ def create_prompt_formats(sample):
     INTRO_BLURB = "Below is an instruction that describes a task. Write a response that appropriately completes the request.\n"
     INSTRUCTION_KEY = "### User:"
     RESPONSE_KEY = "### Answer:"
-    
+
     blurb = f"{INTRO_BLURB}"
     instruction = f"{INSTRUCTION_KEY} {sample['user']}"
     response = f"{RESPONSE_KEY}\n{sample['answer']}"
-    
+
 
     formatted_prompt = f"{blurb}\n{instruction}\n{response}\n"
-    
+
     sample["text"] = formatted_prompt
 
     return sample
@@ -159,6 +161,41 @@ def print_trainable_parameters(model, use_4bit=False):
         f"all params: {all_param:,d} || trainable params: {trainable_params:,d} || trainable%: {100 * trainable_params / all_param}"
     )
 
+from transformers.integrations import WandbCallback
+import wandb
+
+class WandbLlamaCallback(WandbCallback):
+    def __init__(self, tokenizer):
+        self.tokenizer = tokenizer
+    
+    def on_step_end(self, args: TrainingArguments, state: TrainerState, control: TrainerControl, **kwargs):
+        print("Step end ")
+        # print("Kwargs  ", kwargs)
+        return super().on_step_end(args, state, control, **kwargs)
+    
+
+    def on_epoch_end(self, args, state, control, **kwargs):
+        print("EKwargs  ", kwargs)
+
+        tokenizer = kwargs['tokenizer']
+        train_dataloader = kwargs['train_dataloader']
+        print(train_dataloader)
+        print(tokenizer)
+        for data in train_dataloader:
+            print(data)
+            print(dir(train_dataloader))
+            tokenizer.decode(train_dataloader['input_ids'], skip_special_tokens=True)
+         
+
+        wandb.log({}, commit=False)
+        
+        super().on_epoch_end(args, state, control, **kwargs)
+        
+        print("Kwargs   ", kwargs)
+        print("State    ", state)
+
+
+
 def train(model, tokenizer, dataset, output_dir):
     # Apply preprocessing to the model to prepare it by
     # 1 - Enabling gradient checkpointing to reduce memory usage during fine-tuning
@@ -173,33 +210,45 @@ def train(model, tokenizer, dataset, output_dir):
     # Create PEFT config for these modules and wrap the model to PEFT
     peft_config = create_peft_config(modules)
     model = get_peft_model(model, peft_config)
-    
+
     # Print information about the percentage of trainable parameters
     print_trainable_parameters(model)
-    
+
+
+    os.environ["WANDB_PROJECT"] = "otto" # log to your project
+    os.environ["WANDB_LOG_MODEL"] = "all" # log your models
+
+
+    ds = dataset['train'].train_test_split(test_size=0.3)
+
     # Training parameters
     trainer = Trainer(
         model=model,
-        train_dataset=dataset,
+        train_dataset=ds['train'],
+        eval_dataset=ds['test'],
         args=TrainingArguments(
             per_device_train_batch_size=1,
             gradient_accumulation_steps=4,
             warmup_steps=2,
-            max_steps=20,
+            max_steps=2000,
+            eval_steps=10,
             learning_rate=2e-4,
             fp16=True,
             logging_steps=1,
             output_dir="outputs",
             optim="paged_adamw_8bit",
+            report_to="wandb",
         ),
+        # callbacks=[WandbLlamaCallback()],
+
         data_collator=DataCollatorForLanguageModeling(tokenizer, mlm=False)
     )
-    
+
     model.config.use_cache = False  # re-enable for inference to speed up predictions for similar inputs
-    
+
     ### SOURCE https://github.com/artidoro/qlora/blob/main/qlora.py
     # Verifying the datatypes before training
-    
+
     dtypes = {}
     for _, p in model.named_parameters():
         dtype = p.dtype
@@ -209,27 +258,27 @@ def train(model, tokenizer, dataset, output_dir):
     for k, v in dtypes.items(): total+= v
     for k, v in dtypes.items():
         print(k, v, v/total)
-     
+
     do_train = True
-    
+
     # Launch training
     print("Training...")
-    
+
     if do_train:
         train_result = trainer.train()
         metrics = train_result.metrics
         trainer.log_metrics("train", metrics)
         trainer.save_metrics("train", metrics)
         trainer.save_state()
-        print(metrics)    
-    
+        print(metrics)
+
     ###
-    
+
     # Saving model
     print("Saving last checkpoint of the model...")
     os.makedirs(output_dir, exist_ok=True)
     trainer.model.save_pretrained(output_dir)
-    
+
     # Free memory for merging weights
     del model
     del trainer
@@ -240,7 +289,7 @@ def train(model, tokenizer, dataset, output_dir):
 
 
 
-def merge_and_save_model(checkpoint_dir, merged_dir):
+def merge_and_save_model(checkpoint_dir, merged_dir, base_model_name):
     model = AutoPeftModelForCausalLM.from_pretrained(checkpoint_dir, device_map="auto", torch_dtype=torch.bfloat16)
     merged_model = model.merge_and_unload()
 
@@ -252,22 +301,17 @@ def merge_and_save_model(checkpoint_dir, merged_dir):
     tokenizer.save_pretrained(merged_dir)
 
 
-
-
-
-
-
-
 if __name__ == '__main__':
     argparse = argparse.ArgumentParser()
     argparse.add_argument("--checkpoint_dir", type=str, default="models/final_checkpoint")
     argparse.add_argument("--base_model_name", type=str, default="meta-llama/Llama-2-7b-hf")
     argparse.add_argument("--merged_dir", type=str, default="models/final_merged_checkpoint")
     argparse.add_argument("--llama_path", type=str, default="../llama.cpp")
+    argparse.add_argument("--gguf-filename", type=str, default="ggml-finetuned-model-q4_0.gguf")
     argparse.add_argument("--load-dataset", action='store_true')
     argparse.add_argument("--train-model", action='store_true')
     argparse.add_argument("--merge-model", action='store_true')
-    argparse.add_argument("--convert-model", action='store_true') 
+    argparse.add_argument("--convert-model", action='store_true')
     argparse.add_argument("--all", action='store_true')
     args = argparse.parse_args()
 
@@ -286,19 +330,19 @@ if __name__ == '__main__':
         bnb_config = create_bnb_config()
         model, tokenizer = load_model(args.base_model_name, bnb_config)
 
-        dataset = load_dataset("../dataset", split="train")
+        dataset = load_dataset("json", data_files="dataset/training_data.json")
         max_length = get_max_length(model)
 
         seed = 42
         dataset = preprocess_dataset(tokenizer, max_length, seed, dataset)
 
     if args.train_model:
-        print("Training on dataset of length", len(dataset))
+        print("Training on dataset of length", len(dataset['train']))
         train(model, tokenizer, dataset, args.checkpoint_dir)
 
     if args.merge_model:
         print(f"Merging model and saving to {args.merged_dir}")
-        merge_and_save_model(args.checkpoint_dir, args.merged_dir)
+        merge_and_save_model(args.checkpoint_dir, args.merged_dir, args.base_model_name)
 
     if args.convert_model:
 
@@ -307,12 +351,12 @@ if __name__ == '__main__':
         subprocess.run(["python", os.path.join(args.llama_path, "convert.py"), args.merged_dir],
                                           stdout=subprocess.PIPE,
                                           stderr=subprocess.STDOUT)
-    
-        subprocess.run([os.path.join(args.llama_path, "quantize"), os.path.join(args.merged_dir, "ggml-model-f16.gguf"), os.path.join(llama_model_path, "ggml-model-q4_0.gguf"), "q4_0"])
 
-    
+        subprocess.run([os.path.join(args.llama_path, "quantize"), os.path.join(args.merged_dir, "ggml-model-f16.gguf"), os.path.join(llama_model_path, args.gguf_filename), "q4_0"])
 
-    
+
+
+
 
 
 
