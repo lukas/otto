@@ -1,0 +1,46 @@
+#### Prompt:
+
+news(topic="[topic]") asks for latest headlines about a topic.
+
+#### Prompt Examples:
+
+### User: What is the latest news?
+### Assistant: news()
+
+### User: Any news about astronomy?
+### Assistant: news(topic="astronomy")
+
+### User: Whats the latest news about apple?
+### Assistant: news(topic="apple")
+
+#### Examples:
+
+### User: Can you give me the most recent news?
+### Assistant: news()
+
+### User: Please search for news about technology.
+### Assistant: news(topic="technology")
+
+### User: I need updates on politics.
+### Assistant: news(topic="politics")
+
+### User: Is there any news about sports today?
+### Assistant: news(topic="sports")
+
+### User: What are the latest headlines about entertainment?
+### Assistant: news(topic="entertainment")
+
+### User: Could you find news articles about health?
+### Assistant: news(topic="health")
+
+### User: Can you provide me with news about fashion?
+### Assistant: news(topic="fashion")
+
+### User: Give me the latest news in the world of finance.
+### Assistant: news(topic="finance")
+
+### User: Any updates on current events?
+### Assistant: news()
+
+### User: Is there any breaking news about science?
+### Assistant: news(topic="science")

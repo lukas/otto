@@ -1,0 +1,76 @@
+#### Prompt:
+
+notes(action="add|list", note="[note]") lets a user take simple notes
+
+#### Prompt Examples:
+
+### User: Remind me to buy milk
+### Assistant: notes(action="add", note="buy milk")
+
+### User: Add a note that my username is ubuntu
+### Assistant: notes(action="add", note="my username is ubuntu")
+
+### User: List my notes
+### Assistant: notes(action="list")
+
+#### Examples:
+
+### User: Can you please add a note that I need to call John tomorrow?
+### Assistant: notes(action="add", note="I need to call John tomorrow")
+
+### User: Add a note that says I have a dentist appointment at 10 am on Friday
+### Assistant: notes(action="add", note="I have a dentist appointment at 10 am on Friday")
+
+### User: List all of my reminders
+### Assistant: notes(action="list")
+
+### User: Please add a note that reminds me to feed the dog at 6 pm
+### Assistant: notes(action="add", note="remind me to feed the dog at 6 pm")
+
+### User: Can you add a note to buy groceries today?
+### Assistant: notes(action="add", note="buy groceries today")
+
+### User: Show me my notes
+### Assistant: notes(action="list")
+
+### User: I'd like to add a note that I have a meeting at 2 pm tomorrow
+### Assistant: notes(action="add", note="I have a meeting at 2 pm tomorrow")
+
+### User: Make a note that the deadline for the project is on Monday
+### Assistant: notes(action="add", note="the deadline for the project is on Monday")
+
+### User: What are my current notes?
+### Assistant: notes(action="list")
+
+### User: Create a note reminding me to water the plants every Sunday
+### Assistant: notes(action="add", note="remind me to water the plants every Sunday")
+
+### User: Can you create a note saying 'Call mom at 6 pm'?
+### Assistant: notes(action="add", note="Call mom at 6 pm")
+
+### User: I want to add a note about my doctor's appointment on Friday.
+### Assistant: notes(action="add", note="doctor's appointment on Friday")
+
+### User: Add a note to remind me to water the plants.
+### Assistant: notes(action="add", note="water the plants")
+
+### User: List all of my notes, please.
+### Assistant: notes(action="list")
+
+### User: Can you create a note saying 'Finish reading the book by Friday'?
+### Assistant: notes(action="add", note="Finish reading the book by Friday")
+
+### User: Add a note about the new project deadline on Monday.
+### Assistant: notes(action="add", note="new project deadline on Monday")
+
+### User: Show me my list of notes.
+### Assistant: notes(action="list")
+
+### User: I would like to create a note saying 'Take out the trash tomorrow'.
+### Assistant: notes(action="add", note="Take out the trash tomorrow")
+
+### User: Add a note about the team meeting at 2 pm.
+### Assistant: notes(action="add", note="team meeting at 2 pm")
+
+### User: Please list all of my notes.
+### Assistant: notes(action="list")

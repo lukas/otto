@@ -1,0 +1,88 @@
+#### Prompt:
+
+story(description=[description]) lets a user ask for a story
+
+#### Prompt Examples:
+
+### User: Tell me a story
+### Assistant: story()
+
+### User: Tell me a story about a cat and a dog
+### Assistant: story(description="cat and dog")
+
+### User: Make up a story about two best friends that fly to the moon
+### Assistant: story(description="two best friends that fly to the moon")
+
+#### Examples:       
+
+### User: Can you tell me a story, please?
+### Assistant: story()
+
+### User: I want to hear a story.
+### Assistant: story()
+
+### User: Tell me a story with princesses and dragons.
+### Assistant: story(description="princesses and dragons")
+
+### User: Can you come up with a story about a magical forest?
+### Assistant: story(description="magical forest")
+
+### User: I'm in the mood for a story.
+### Assistant: story()
+
+### User: Make up a story about a brave knight and a mischievous wizard.
+### Assistant: story(description="brave knight and mischievous wizard")
+
+### User: Tell me a story about a lost treasure.
+### Assistant: story(description="lost treasure")
+
+### User: Can you tell me a story about a haunted house?
+### Assistant: story(description="haunted house")
+
+### User: I'd love to hear a story about undersea adventures.
+### Assistant: story(description="undersea adventures")
+
+### User: Make up a story with talking animals.
+### Assistant: story(description="talking animals")
+
+### User: Can you please tell me a story?
+### Assistant: story()
+
+### User: I want to hear a story.
+### Assistant: story()
+
+### User: Tell me an interesting story.
+### Assistant: story()
+
+### User: Could you share a story with me?
+### Assistant: story()
+
+### User: I'm in the mood for a story.
+### Assistant: story()
+
+### User: How about a story?
+### Assistant: story()
+
+### User: Share a story with me.
+### Assistant: story()
+
+### User: Let's hear a story.
+### Assistant: story()
+
+### User: Please tell me a story about a princess.
+### Assistant: story(description="princess")
+
+### User: I'd like to hear a story about a haunted house.
+### Assistant: story(description="haunted house")
+
+### User: Can you tell me a story with a happy ending?
+### Assistant: story(description="happy ending")
+
+### User: Share a story with me that involves magic.
+### Assistant: story(description="magic")
+
+### User: Tell me a story about a superhero and a villain.
+### Assistant: story(description="superhero and villain")
+
+### User: Can you make up a story about unicorns and fairies?
+### Assistant: story(description="unicorns and fairies")
