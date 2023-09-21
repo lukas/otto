@@ -67,9 +67,8 @@ def preprocess_dataset(tokenizer: AutoTokenizer, max_length: int, seed, dataset:
 
     # Add prompt to each sample
     print("Preprocessing dataset...")
-    dataset = dataset.map(create_prompt_formats)#, batched=True)
+    dataset = dataset.map(create_prompt_formats)
 
-    # Apply preprocessing to each batch of the dataset & and remove 'instruction', 'context', 'response', 'category' fields
     _preprocessing_function = partial(preprocess_batch, max_length=max_length, tokenizer=tokenizer)
     dataset = dataset.map(
         _preprocessing_function,
@@ -109,20 +108,23 @@ def preprocess_batch(batch, tokenizer, max_length):
         truncation=True,
     )
 
-
-def create_prompt_formats(sample):
-
-
+def create_prompt(user, answer, include_response=True):
     INTRO_BLURB = "Below is an instruction that describes a task. Write a response that appropriately completes the request.\n"
     INSTRUCTION_KEY = "### User:"
     RESPONSE_KEY = "### Answer:"
 
     blurb = f"{INTRO_BLURB}"
-    instruction = f"{INSTRUCTION_KEY} {sample['user']}"
-    response = f"{RESPONSE_KEY}\n{sample['answer']}"
-
+    instruction = f"{INSTRUCTION_KEY} {user}"
+    if (include_response):
+        response = f"{RESPONSE_KEY} {answer}"
+    else:
+        response = f"{RESPONSE_KEY} "
 
     formatted_prompt = f"{blurb}\n{instruction}\n{response}\n"
+    return formatted_prompt
+
+def create_prompt_formats(sample, include_response=True):
+    formatted_prompt = create_prompt(sample['user'], sample['answer'], include_response=include_response)
 
     sample["text"] = formatted_prompt
 
@@ -300,6 +302,23 @@ def merge_and_save_model(checkpoint_dir, merged_dir, base_model_name):
     tokenizer = AutoTokenizer.from_pretrained(base_model_name)
     tokenizer.save_pretrained(merged_dir)
 
+def test_model(model, tokenizer, dataset):
+    prompts = []
+    responses = []
+    device = "cuda:0"
+    for data in dataset['train']:
+        print("data ",data)
+        prompt = create_prompt(data['user'], data['answer'], include_response=False)
+        response = data['answer']
+
+ 
+        inputs = tokenizer(prompt, padding=True, truncation=True, max_length=get_max_length(model), return_tensors="pt").to(device)
+        outputs = model.generate(**inputs, max_new_tokens=100)
+        print("prompt ", prompt)
+        print("response ", response)
+        print("output ", tokenizer.decode(outputs[0], skip_special_tokens=True))
+
+    
 
 if __name__ == '__main__':
     argparse = argparse.ArgumentParser()
@@ -308,6 +327,8 @@ if __name__ == '__main__':
     argparse.add_argument("--merged_dir", type=str, default="models/final_merged_checkpoint")
     argparse.add_argument("--llama_path", type=str, default="../llama.cpp")
     argparse.add_argument("--gguf-filename", type=str, default="ggml-finetuned-model-q4_0.gguf")
+    argparse.add_argument("--training-data", type=str, default="dataset/training_data.json")
+    argparse.add_argument("--test-model", action='store_true')
     argparse.add_argument("--load-dataset", action='store_true')
     argparse.add_argument("--train-model", action='store_true')
     argparse.add_argument("--merge-model", action='store_true')
@@ -334,11 +355,14 @@ if __name__ == '__main__':
         max_length = get_max_length(model)
 
         seed = 42
-        dataset = preprocess_dataset(tokenizer, max_length, seed, dataset)
+        processed_dataset = preprocess_dataset(tokenizer, max_length, seed, dataset)
+
+    if args.test_model:
+        test_model(model, tokenizer, dataset)
 
     if args.train_model:
-        print("Training on dataset of length", len(dataset['train']))
-        train(model, tokenizer, dataset, args.checkpoint_dir)
+        print("Training on dataset of length", len(processed_dataset['train']))
+        train(model, tokenizer, processed_dataset, args.checkpoint_dir)
 
     if args.merge_model:
         print(f"Merging model and saving to {args.merged_dir}")
