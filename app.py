@@ -230,7 +230,7 @@ def function_call_str(function_call_str):
         return
 
     function_name, args = results
-
+    print("Calling function ", function_name)
     function_call(function_name, args)
 
 
