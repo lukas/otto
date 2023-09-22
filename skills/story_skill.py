@@ -31,6 +31,7 @@ class StorySkill:
         if ('description' in args):
             prompt += args['description']
 
+        self.message_function("Ok I'm thinking of a story...")
         s = self._ask_gpt_story(prompt)
 
     # Could also do this with llama
