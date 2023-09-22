@@ -322,6 +322,7 @@ def test_model(model, tokenizer, dataset):
 
         inputs = tokenizer(prompt, padding=True, truncation=True, max_length=get_max_length(
             model), return_tensors="pt").to(device)
+
         outputs = model.generate(**inputs, max_new_tokens=100)
         print("prompt ", prompt)
         print("response ", response)

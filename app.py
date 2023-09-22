@@ -305,6 +305,7 @@ def generate_prompt_and_call_llm(user_prompt):
 
     response = llama_server.call_llm(
         prompt, llm_settings, grammar_string, end_response, None, error_output, llm_response_output)
+    print("Response: ", response)
     log_llm(user_prompt, response)
 
     if (reset_dialog_flag):
@@ -323,6 +324,8 @@ def listen():
     global sleep_time_in_seconds
     global sleeping
     global last_tts_line
+    global last_action_time
+
     p = subprocess.Popen(
         ["tail", "-1", transcribe_filename], stdout=subprocess.PIPE)
     try:
@@ -368,7 +371,7 @@ def listen():
             # remove everything in line inside of ()
             line = re.sub(r'\([^>]*\)', '', line)
 
-            print(f"cleaned line: {line} emptyaudio {emptyaudio(line)}")
+            print(f"cleaned line: {line}")
             if not emptyaudio(line):
                 generate_prompt_and_call_llm(line)
 
