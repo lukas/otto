@@ -172,10 +172,14 @@ def speak_text(text):
     currently_speaking = False
 
 
-def message(text):
-    print("Sending message ", text)
-    socket_io.emit("message", text)
-    speak_text(text)
+def message(text, type=None):
+    if (type == "timer"):
+        print("Time ", text)
+        socket_io.emit("timer", text)
+    else:
+        print("Sending message ", text)
+        socket_io.emit("message", text)
+    # speak_text(text)
 
 
 def load_skills():
@@ -507,6 +511,23 @@ def set_prompt_setup(new_prompt_setup):
     global prompt_setup
     prompt_setup = new_prompt_setup
 
+# announce that the device is speaking to turn off tts
+
+
+@socket_io.on('start_speaking')
+def start_speaking():
+    global last_speaking_time
+    global currently_speaking
+    currently_speaking = True
+
+
+@socket_io.on('stop_speaking')
+def stop_speaking():
+    global last_speaking_time
+    global currently_speaking
+    last_speaking_time = time.time()
+    currently_speaking = False
+
 
 @socket_io.on('manual_prompt')
 def manual_prompt(user_prompt):
@@ -625,6 +646,7 @@ def handle_connect():
 
 @socket_io.on('request_status')
 def update_status():
+    print("Status Requested")
     # global listening
     global run_llm_on_new_transcription
     global speak_flag

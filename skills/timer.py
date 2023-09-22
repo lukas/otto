@@ -7,8 +7,9 @@ class TimerSkill:
     function_name = "timer"
     parameter_names = ['duration']
 
-    def __init__(self, message_function):
+    def __init__(self, message_function, socket_io=None):
         self.message_function = message_function
+        self.socket_io = socket_io
 
     def start(self, args: list[str]):
         time_string = args["duration"]
@@ -56,13 +57,24 @@ class TimerSkill:
         return ", ".join(result_parts)
 
     def _timer_function(self, seconds: int, callback=None):
+        global stop_timer
+        stop_timer = False
         self.message_function(
             f"Starting timer for {self._seconds_to_duration(seconds)}")
-        time.sleep(seconds)
+        start_time = time.time()
+
+        while time.time() - start_time < seconds or stop_timer:
+            time.sleep(1)
+            self.message_function(
+                int(seconds - (time.time() - start_time)), type="timer")
+
         if callback:
             callback()
         else:
             self.message_function(f"Elapsed time: {seconds} seconds")
+
+    def _stop_timer(self):
+        stop_timer = True
 
     def _run_timer(self, seconds: int):
         # Launch the timer function in a separate thread
