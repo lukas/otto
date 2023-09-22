@@ -1,4 +1,3 @@
-
 import os
 import subprocess
 import argparse
@@ -6,23 +5,38 @@ import bitsandbytes as bnb
 from datasets import load_dataset
 from functools import partial
 import os
-from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training, AutoPeftModelForCausalLM
+from peft import (
+    LoraConfig,
+    get_peft_model,
+    prepare_model_for_kbit_training,
+    AutoPeftModelForCausalLM,
+)
 import torch
-from transformers import AutoModelForCausalLM, AutoTokenizer, set_seed, Trainer, TrainingArguments, BitsAndBytesConfig, \
-    DataCollatorForLanguageModeling, Trainer, TrainingArguments
+from transformers import (
+    AutoModelForCausalLM,
+    AutoTokenizer,
+    set_seed,
+    Trainer,
+    TrainingArguments,
+    BitsAndBytesConfig,
+    DataCollatorForLanguageModeling,
+    Trainer,
+    TrainingArguments,
+)
 from datasets import load_dataset
 from transformers.trainer_callback import TrainerControl, TrainerState
 from transformers.training_args import TrainingArguments
 
+
 def load_model(model_name, bnb_config):
     n_gpus = torch.cuda.device_count()
-    max_memory = f'{24000}MB'
+    max_memory = f"{24000}MB"
 
     model = AutoModelForCausalLM.from_pretrained(
         model_name,
-        quantization_config=bnb_config,
-        device_map="auto", # dispatch efficiently the model on the available ressources
-        max_memory = {i: max_memory for i in range(n_gpus)},
+        # quantization_config=bnb_config,
+        # device_map="auto", # dispatch efficiently the model on the available ressources
+        # max_memory = {i: max_memory for i in range(n_gpus)},
     )
     tokenizer = AutoTokenizer.from_pretrained(model_name, use_auth_token=True)
 
@@ -30,7 +44,6 @@ def load_model(model_name, bnb_config):
     tokenizer.pad_token = tokenizer.eos_token
 
     return model, tokenizer
-
 
 
 def create_bnb_config():
@@ -42,6 +55,7 @@ def create_bnb_config():
     )
 
     return bnb_config
+
 
 def create_peft_config(modules):
     """
@@ -59,6 +73,7 @@ def create_peft_config(modules):
 
     return config
 
+
 def preprocess_dataset(tokenizer: AutoTokenizer, max_length: int, seed, dataset: str):
     """Format & tokenize it so it is ready for training
     :param tokenizer (AutoTokenizer): Model Tokenizer
@@ -69,7 +84,9 @@ def preprocess_dataset(tokenizer: AutoTokenizer, max_length: int, seed, dataset:
     print("Preprocessing dataset...")
     dataset = dataset.map(create_prompt_formats)
 
-    _preprocessing_function = partial(preprocess_batch, max_length=max_length, tokenizer=tokenizer)
+    _preprocessing_function = partial(
+        preprocess_batch, max_length=max_length, tokenizer=tokenizer
+    )
     dataset = dataset.map(
         _preprocessing_function,
         batched=True,
@@ -83,6 +100,7 @@ def preprocess_dataset(tokenizer: AutoTokenizer, max_length: int, seed, dataset:
     dataset = dataset.shuffle(seed=seed)
 
     return dataset
+
 
 def get_max_length(model):
     conf = model.config
@@ -108,6 +126,7 @@ def preprocess_batch(batch, tokenizer, max_length):
         truncation=True,
     )
 
+
 def create_prompt(user, answer, include_response=True):
     INTRO_BLURB = "Below is an instruction that describes a task. Write a response that appropriately completes the request.\n"
     INSTRUCTION_KEY = "### User:"
@@ -115,7 +134,7 @@ def create_prompt(user, answer, include_response=True):
 
     blurb = f"{INTRO_BLURB}"
     instruction = f"{INSTRUCTION_KEY} {user}"
-    if (include_response):
+    if include_response:
         response = f"{RESPONSE_KEY} {answer}"
     else:
         response = f"{RESPONSE_KEY} "
@@ -123,24 +142,31 @@ def create_prompt(user, answer, include_response=True):
     formatted_prompt = f"{blurb}\n{instruction}\n{response}\n"
     return formatted_prompt
 
+
 def create_prompt_formats(sample, include_response=True):
-    formatted_prompt = create_prompt(sample['user'], sample['answer'], include_response=include_response)
+    formatted_prompt = create_prompt(
+        sample["user"], sample["answer"], include_response=include_response
+    )
 
     sample["text"] = formatted_prompt
 
     return sample
 
+
 def find_all_linear_names(model):
-    cls = bnb.nn.Linear4bit #if args.bits == 4 else (bnb.nn.Linear8bitLt if args.bits == 8 else torch.nn.Linear)
+    cls = (
+        bnb.nn.Linear4bit
+    )  # if args.bits == 4 else (bnb.nn.Linear8bitLt if args.bits == 8 else torch.nn.Linear)
     lora_module_names = set()
     for name, module in model.named_modules():
         if isinstance(module, cls):
-            names = name.split('.')
+            names = name.split(".")
             lora_module_names.add(names[0] if len(names) == 1 else names[-1])
 
-    if 'lm_head' in lora_module_names:  # needed for 16-bit
-        lora_module_names.remove('lm_head')
+    if "lm_head" in lora_module_names:  # needed for 16-bit
+        lora_module_names.remove("lm_head")
     return list(lora_module_names)
+
 
 def print_trainable_parameters(model, use_4bit=False):
     """
@@ -163,39 +189,44 @@ def print_trainable_parameters(model, use_4bit=False):
         f"all params: {all_param:,d} || trainable params: {trainable_params:,d} || trainable%: {100 * trainable_params / all_param}"
     )
 
+
 from transformers.integrations import WandbCallback
 import wandb
+
 
 class WandbLlamaCallback(WandbCallback):
     def __init__(self, tokenizer):
         self.tokenizer = tokenizer
-    
-    def on_step_end(self, args: TrainingArguments, state: TrainerState, control: TrainerControl, **kwargs):
+
+    def on_step_end(
+        self,
+        args: TrainingArguments,
+        state: TrainerState,
+        control: TrainerControl,
+        **kwargs,
+    ):
         print("Step end ")
         # print("Kwargs  ", kwargs)
         return super().on_step_end(args, state, control, **kwargs)
-    
 
     def on_epoch_end(self, args, state, control, **kwargs):
         print("EKwargs  ", kwargs)
 
-        tokenizer = kwargs['tokenizer']
-        train_dataloader = kwargs['train_dataloader']
+        tokenizer = kwargs["tokenizer"]
+        train_dataloader = kwargs["train_dataloader"]
         print(train_dataloader)
         print(tokenizer)
         for data in train_dataloader:
             print(data)
             print(dir(train_dataloader))
-            tokenizer.decode(train_dataloader['input_ids'], skip_special_tokens=True)
-         
+            tokenizer.decode(train_dataloader["input_ids"], skip_special_tokens=True)
 
         wandb.log({}, commit=False)
-        
+
         super().on_epoch_end(args, state, control, **kwargs)
-        
+
         print("Kwargs   ", kwargs)
         print("State    ", state)
-
 
 
 def train(model, tokenizer, dataset, output_dir):
@@ -216,18 +247,16 @@ def train(model, tokenizer, dataset, output_dir):
     # Print information about the percentage of trainable parameters
     print_trainable_parameters(model)
 
+    os.environ["WANDB_PROJECT"] = "otto"  # log to your project
+    os.environ["WANDB_LOG_MODEL"] = "all"  # log your models
 
-    os.environ["WANDB_PROJECT"] = "otto" # log to your project
-    os.environ["WANDB_LOG_MODEL"] = "all" # log your models
-
-
-    ds = dataset['train'].train_test_split(test_size=0.3)
+    ds = dataset["train"].train_test_split(test_size=0.3)
 
     # Training parameters
     trainer = Trainer(
         model=model,
-        train_dataset=ds['train'],
-        eval_dataset=ds['test'],
+        train_dataset=ds["train"],
+        eval_dataset=ds["test"],
         args=TrainingArguments(
             per_device_train_batch_size=1,
             gradient_accumulation_steps=4,
@@ -242,11 +271,12 @@ def train(model, tokenizer, dataset, output_dir):
             report_to="wandb",
         ),
         # callbacks=[WandbLlamaCallback()],
-
-        data_collator=DataCollatorForLanguageModeling(tokenizer, mlm=False)
+        data_collator=DataCollatorForLanguageModeling(tokenizer, mlm=False),
     )
 
-    model.config.use_cache = False  # re-enable for inference to speed up predictions for similar inputs
+    model.config.use_cache = (
+        False  # re-enable for inference to speed up predictions for similar inputs
+    )
 
     ### SOURCE https://github.com/artidoro/qlora/blob/main/qlora.py
     # Verifying the datatypes before training
@@ -254,12 +284,14 @@ def train(model, tokenizer, dataset, output_dir):
     dtypes = {}
     for _, p in model.named_parameters():
         dtype = p.dtype
-        if dtype not in dtypes: dtypes[dtype] = 0
+        if dtype not in dtypes:
+            dtypes[dtype] = 0
         dtypes[dtype] += p.numel()
     total = 0
-    for k, v in dtypes.items(): total+= v
     for k, v in dtypes.items():
-        print(k, v, v/total)
+        total += v
+    for k, v in dtypes.items():
+        print(k, v, v / total)
 
     do_train = True
 
@@ -287,12 +319,10 @@ def train(model, tokenizer, dataset, output_dir):
     torch.cuda.empty_cache()
 
 
-
-
-
-
 def merge_and_save_model(checkpoint_dir, merged_dir, base_model_name):
-    model = AutoPeftModelForCausalLM.from_pretrained(checkpoint_dir, device_map="auto", torch_dtype=torch.bfloat16)
+    model = AutoPeftModelForCausalLM.from_pretrained(
+        checkpoint_dir, device_map="auto", torch_dtype=torch.bfloat16
+    )
     merged_model = model.merge_and_unload()
 
     os.makedirs(merged_dir, exist_ok=True)
@@ -302,38 +332,53 @@ def merge_and_save_model(checkpoint_dir, merged_dir, base_model_name):
     tokenizer = AutoTokenizer.from_pretrained(base_model_name)
     tokenizer.save_pretrained(merged_dir)
 
+
 def test_model(model, tokenizer, dataset):
     prompts = []
     responses = []
-    device = "cuda:0"
-    for data in dataset['train']:
-        print("data ",data)
-        prompt = create_prompt(data['user'], data['answer'], include_response=False)
-        response = data['answer']
+    # device = "cuda:0"
+    for data in dataset["train"]:
+        print("data ", data)
+        prompt = create_prompt(data["user"], data["answer"], include_response=False)
+        response = data["answer"]
 
- 
-        inputs = tokenizer(prompt, padding=True, truncation=True, max_length=get_max_length(model), return_tensors="pt").to(device)
+        inputs = tokenizer(
+            prompt,
+            # padding=True,
+            # truncation=True,
+            # max_length=get_max_length(model),
+            return_tensors="pt",
+        )
         outputs = model.generate(**inputs, max_new_tokens=100)
         print("prompt ", prompt)
         print("response ", response)
         print("output ", tokenizer.decode(outputs[0], skip_special_tokens=True))
 
-    
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     argparse = argparse.ArgumentParser()
-    argparse.add_argument("--checkpoint_dir", type=str, default="models/final_checkpoint")
-    argparse.add_argument("--base_model_name", type=str, default="meta-llama/Llama-2-7b-hf")
-    argparse.add_argument("--merged_dir", type=str, default="models/final_merged_checkpoint")
+    argparse.add_argument(
+        "--checkpoint_dir", type=str, default="models/final_checkpoint"
+    )
+    argparse.add_argument(
+        "--base_model_name", type=str, default="meta-llama/Llama-2-7b-hf"
+    )
+    argparse.add_argument(
+        "--merged_dir", type=str, default="models/final_merged_checkpoint"
+    )
     argparse.add_argument("--llama_path", type=str, default="../llama.cpp")
-    argparse.add_argument("--gguf-filename", type=str, default="ggml-finetuned-model-q4_0.gguf")
-    argparse.add_argument("--training-data", type=str, default="dataset/training_data.json")
-    argparse.add_argument("--test-model", action='store_true')
-    argparse.add_argument("--load-dataset", action='store_true')
-    argparse.add_argument("--train-model", action='store_true')
-    argparse.add_argument("--merge-model", action='store_true')
-    argparse.add_argument("--convert-model", action='store_true')
-    argparse.add_argument("--all", action='store_true')
+    argparse.add_argument(
+        "--gguf-filename", type=str, default="ggml-finetuned-model-q4_0.gguf"
+    )
+    argparse.add_argument(
+        "--training-data", type=str, default="dataset/training_data.json"
+    )
+    argparse.add_argument("--test-model", action="store_true")
+    argparse.add_argument("--load-dataset", action="store_true")
+    argparse.add_argument("--train-model", action="store_true")
+    argparse.add_argument("--merge-model", action="store_true")
+    argparse.add_argument("--convert-model", action="store_true")
+    argparse.add_argument("--all", action="store_true")
     args = argparse.parse_args()
 
     llama_model_path = os.path.join(args.llama_path, "models")
@@ -346,11 +391,11 @@ if __name__ == '__main__':
         args.convert_model = True
 
     if args.load_dataset:
-        print("Preprocessing dataset")
-
+        print("Loading model")
         bnb_config = create_bnb_config()
         model, tokenizer = load_model(args.base_model_name, bnb_config)
 
+        print("Preprocessing dataset")
         dataset = load_dataset("json", data_files="dataset/training_data.json")
         max_length = get_max_length(model)
 
@@ -361,7 +406,7 @@ if __name__ == '__main__':
         test_model(model, tokenizer, dataset)
 
     if args.train_model:
-        print("Training on dataset of length", len(processed_dataset['train']))
+        print("Training on dataset of length", len(processed_dataset["train"]))
         train(model, tokenizer, processed_dataset, args.checkpoint_dir)
 
     if args.merge_model:
@@ -369,21 +414,19 @@ if __name__ == '__main__':
         merge_and_save_model(args.checkpoint_dir, args.merged_dir, args.base_model_name)
 
     if args.convert_model:
-
         print(f"Converting to gguf format and saving to {llama_model_filename}")
 
-        subprocess.run(["python", os.path.join(args.llama_path, "convert.py"), args.merged_dir],
-                                          stdout=subprocess.PIPE,
-                                          stderr=subprocess.STDOUT)
+        subprocess.run(
+            ["python", os.path.join(args.llama_path, "convert.py"), args.merged_dir],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+        )
 
-        subprocess.run([os.path.join(args.llama_path, "quantize"), os.path.join(args.merged_dir, "ggml-model-f16.gguf"), os.path.join(llama_model_path, args.gguf_filename), "q4_0"])
-
-
-
-
-
-
-
-
-
-
+        subprocess.run(
+            [
+                os.path.join(args.llama_path, "quantize"),
+                os.path.join(args.merged_dir, "ggml-model-f16.gguf"),
+                os.path.join(llama_model_path, args.gguf_filename),
+                "q4_0",
+            ]
+        )
