@@ -69,7 +69,7 @@ skill_instances = []
 
 currently_speaking = False
 last_speaking_time = time.time()
-speaking_delay = 1.2
+speaking_delay = 2
 
 
 def llm_output(line):
@@ -375,8 +375,9 @@ def listen():
                 last_tts_line = line  # don't call llm on the wake word
                 sleeping = False
                 break
-    elif currently_speaking or time.time() - last_speaking_time < speaking_delay:
+    elif currently_speaking or (time.time() - last_speaking_time) < speaking_delay:
         # if currently speaking or just finished speaking, don't call llm
+        print("Currently speaking so skipping")
         pass
     else:
         # if last_action was more than sleep_timer secongs ago, go to sleep

@@ -18,12 +18,12 @@ function Main() {
     const [sleeping, setSleeping] = useState(false)
     const [soundFlag, setSoundFlag] = useState(false)
     const [timer, setTimer] = useState(0)
-    const speakFlag = true;
+
     let utterance: SpeechSynthesisUtterance;
-    function newMessage(message: string) {
+    function newMessage(message: string, soundFlag: boolean) {
         setMessage(message);
-        if (speakFlag) {
-            console.log("Speaking ", message)
+
+        if (soundFlag) {
             socket.emit("start_speaking");
             utterance = new SpeechSynthesisUtterance(message);
             utterance.onend = () => {
@@ -54,7 +54,7 @@ function Main() {
         })
 
         socket.on("message", (message) => {
-            newMessage(message);
+            newMessage(message, soundFlag);
         })
 
         socket.on("timer", (newTime) => {
@@ -67,7 +67,7 @@ function Main() {
                 setMessage("💤")
             } else {
                 setSleeping(false)
-                newMessage("Hello")
+                newMessage("Hello", soundFlag)
             }
 
         })
@@ -89,7 +89,7 @@ function Main() {
         return (() => {
             socket.disconnect()
         })
-    }, [])
+    }, [soundFlag])
 
     return (
         <Box alignItems="center"
@@ -102,7 +102,8 @@ function Main() {
 
 
                 <IconButton aria-label="sound" onClick={() => {
-                    setSoundFlag(!soundFlag); stopSpeaking()
+                    setSoundFlag(!soundFlag);
+                    if (soundFlag === false) { stopSpeaking() }
                 }}>
 
                     {soundFlag ? <VolumeUpIcon /> : <VolumeOffIcon />}
