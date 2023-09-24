@@ -20,6 +20,9 @@ from skills.time import TimeSkill
 from skills.openai_skill import OpenAISkill
 from skills.math_skill import MathSkill
 from skills.run_app_skill import RunAppSkill
+# from skills.notes_skill import NotesSkill
+from skills.story_skill import StorySkill
+from skills.news_skill import NewsSkill
 
 
 headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
@@ -61,8 +64,12 @@ wake_words = ["otto", "auto", "wake"]
 
 run_llm_on_new_transcription = True
 skills = [TimerSkill, WeatherSkill, TimeSkill,
-          OpenAISkill, RunAppSkill, MathSkill]
+          OpenAISkill, RunAppSkill, MathSkill, StorySkill, NewsSkill]
 skill_instances = []
+
+currently_speaking = False
+last_speaking_time = time.time()
+speaking_delay = 1.2
 
 
 def llm_output(line):
@@ -145,10 +152,7 @@ def emptyaudio(audiostr):
     if (audiostr.strip() == ""):
         return True
 
-    if (audiostr.strip().startswith("[") or audiostr.strip().startswith("(")):
-        return True
-    else:
-        return False
+    return False
 
 
 def cleanup_text_to_speak(text):
@@ -159,9 +163,23 @@ def cleanup_text_to_speak(text):
     return text
 
 
-def message(text):
-    print("Sending message ", text)
-    socket_io.emit("message", text)
+def speak_text(text):
+    global last_speaking_time
+    global currently_speaking
+    currently_speaking = True
+    subprocess.call(["say", text])
+    last_speaking_time = time.time()
+    currently_speaking = False
+
+
+def message(text, type=None):
+    if (type == "timer"):
+        print("Time ", text)
+        socket_io.emit("timer", text)
+    else:
+        print("Sending message ", text)
+        socket_io.emit("message", text)
+    # speak_text(text)
 
 
 def load_skills():
@@ -212,8 +230,12 @@ def function_call(function_name: str, args: dict[str, str]):
     if function_name != "other":
         for skill in skill_instances:
             if function_name == skill.function_name:
-                skill.start(args)
-                break
+                try:
+                    skill.start(args)
+                    break
+                except Exception as e:
+                    error_output(
+                        f"Exception happened in skill {skill.function_name}, {e}")
 
         if (action_happened):
             last_action_time = time.time()
@@ -226,7 +248,7 @@ def function_call_str(function_call_str):
         return
 
     function_name, args = results
-
+    print("Calling function ", function_name)
     function_call(function_name, args)
 
 
@@ -235,10 +257,7 @@ def end_response(response):
 
 
 def end_response_chunk_speak(left_to_read):
-    if (speak_flag):
-        cur_time = time.time()
-        subprocess.run(
-            ["say", cleanup_text_to_speak(left_to_read)])
+    pass
 
 
 def generate_prompt_chat(prompt_setup, user_prompt, old_prompts, old_responses):
@@ -301,6 +320,7 @@ def generate_prompt_and_call_llm(user_prompt):
 
     response = llama_server.call_llm(
         prompt, llm_settings, grammar_string, end_response, None, error_output, llm_response_output)
+    print("Response: ", response)
     log_llm(user_prompt, response)
 
     if (reset_dialog_flag):
@@ -319,6 +339,10 @@ def listen():
     global sleep_time_in_seconds
     global sleeping
     global last_tts_line
+    global last_action_time
+    global currently_speaking
+    global last_speaking_time
+
     p = subprocess.Popen(
         ["tail", "-1", transcribe_filename], stdout=subprocess.PIPE)
     try:
@@ -340,8 +364,21 @@ def listen():
     socket_io.emit("transcribe", line)
 
     last_tts_line = line
-
-    if (not sleeping):
+    if sleeping:
+        # sleeping
+        line_words = re.split(r'\W+', line.lower())
+        for word in wake_words:
+            if (word in line_words):
+                print("Waking up")
+                last_action_time = time.time()
+                socket_io.emit("sleeping", str(False))
+                last_tts_line = line  # don't call llm on the wake word
+                sleeping = False
+                break
+    elif currently_speaking or time.time() - last_speaking_time < speaking_delay:
+        # if currently speaking or just finished speaking, don't call llm
+        pass
+    else:
         # if last_action was more than sleep_timer secongs ago, go to sleep
         if (time.time() - last_action_time > sleep_time_in_seconds):
             print("Going to sleep")
@@ -361,21 +398,12 @@ def listen():
             line = re.sub(r'\[[^]]*\]', '', line)
             # remove everything in line inside of <>
             line = re.sub(r'\<[^>]*\>', '', line)
+            # remove everything in line inside of ()
+            line = re.sub(r'\([^>]*\)', '', line)
 
-            print(f"cleaned line: {line} emptyaudio {emptyaudio(line)}")
+            print(f"cleaned line: {line}")
             if not emptyaudio(line):
                 generate_prompt_and_call_llm(line)
-
-    else:
-        # sleeping
-        line_words = re.split(r'\W+', line.lower())
-        for word in wake_words:
-            if (word in line_words):
-                print("Waking up")
-                socket_io.emit("sleeping", str(False))
-                last_tts_line = line  # don't call llm on the wake word
-                sleeping = False
-                break
 
 
 def listen_loop():
@@ -483,10 +511,27 @@ def set_prompt_setup(new_prompt_setup):
     global prompt_setup
     prompt_setup = new_prompt_setup
 
+# announce that the device is speaking to turn off tts
+
+
+@socket_io.on('start_speaking')
+def start_speaking():
+    global last_speaking_time
+    global currently_speaking
+    currently_speaking = True
+
+
+@socket_io.on('stop_speaking')
+def stop_speaking():
+    global last_speaking_time
+    global currently_speaking
+    last_speaking_time = time.time()
+    currently_speaking = False
+
 
 @socket_io.on('manual_prompt')
 def manual_prompt(user_prompt):
-    llama_server(user_prompt)
+    generate_prompt_and_call_llm(user_prompt)
 
 
 @socket_io.on('reset_dialog')
@@ -601,6 +646,7 @@ def handle_connect():
 
 @socket_io.on('request_status')
 def update_status():
+    print("Status Requested")
     # global listening
     global run_llm_on_new_transcription
     global speak_flag

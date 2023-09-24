@@ -1,3 +1,6 @@
+
+from transformers.integrations import WandbCallback
+import wandb
 import os
 import subprocess
 import argparse
@@ -34,9 +37,15 @@ def load_model(model_name, bnb_config):
 
     model = AutoModelForCausalLM.from_pretrained(
         model_name,
+        # comment to run fast
         # quantization_config=bnb_config,
         # device_map="auto", # dispatch efficiently the model on the available ressources
         # max_memory = {i: max_memory for i in range(n_gpus)},
+
+        quantization_config=bnb_config,
+        device_map="auto",  # dispatch efficiently the model on the available ressources
+        max_memory={i: max_memory for i in range(n_gpus)},
+
     )
     tokenizer = AutoTokenizer.from_pretrained(model_name, use_auth_token=True)
 
@@ -85,8 +94,8 @@ def preprocess_dataset(tokenizer: AutoTokenizer, max_length: int, seed, dataset:
     dataset = dataset.map(create_prompt_formats)
 
     _preprocessing_function = partial(
-        preprocess_batch, max_length=max_length, tokenizer=tokenizer
-    )
+
+        preprocess_batch, max_length=max_length, tokenizer=tokenizer)
     dataset = dataset.map(
         _preprocessing_function,
         batched=True,
@@ -94,7 +103,8 @@ def preprocess_dataset(tokenizer: AutoTokenizer, max_length: int, seed, dataset:
     )
 
     # Filter out samples that have input_ids exceeding max_length
-    dataset = dataset.filter(lambda sample: len(sample["input_ids"]) < max_length)
+    dataset = dataset.filter(lambda sample: len(
+        sample["input_ids"]) < max_length)
 
     # Shuffle dataset
     dataset = dataset.shuffle(seed=seed)
@@ -145,8 +155,8 @@ def create_prompt(user, answer, include_response=True):
 
 def create_prompt_formats(sample, include_response=True):
     formatted_prompt = create_prompt(
-        sample["user"], sample["answer"], include_response=include_response
-    )
+
+        sample['user'], sample['answer'], include_response=include_response)
 
     sample["text"] = formatted_prompt
 
@@ -154,9 +164,9 @@ def create_prompt_formats(sample, include_response=True):
 
 
 def find_all_linear_names(model):
-    cls = (
-        bnb.nn.Linear4bit
-    )  # if args.bits == 4 else (bnb.nn.Linear8bitLt if args.bits == 8 else torch.nn.Linear)
+
+    # if args.bits == 4 else (bnb.nn.Linear8bitLt if args.bits == 8 else torch.nn.Linear)
+    cls = bnb.nn.Linear4bit
     lora_module_names = set()
     for name, module in model.named_modules():
         if isinstance(module, cls):
@@ -190,9 +200,6 @@ def print_trainable_parameters(model, use_4bit=False):
     )
 
 
-from transformers.integrations import WandbCallback
-import wandb
-
 
 class WandbLlamaCallback(WandbCallback):
     def __init__(self, tokenizer):
@@ -220,6 +227,7 @@ class WandbLlamaCallback(WandbCallback):
             print(data)
             print(dir(train_dataloader))
             tokenizer.decode(train_dataloader["input_ids"], skip_special_tokens=True)
+
 
         wandb.log({}, commit=False)
 
@@ -250,7 +258,8 @@ def train(model, tokenizer, dataset, output_dir):
     os.environ["WANDB_PROJECT"] = "otto"  # log to your project
     os.environ["WANDB_LOG_MODEL"] = "all"  # log your models
 
-    ds = dataset["train"].train_test_split(test_size=0.3)
+
+    ds = dataset['train'].train_test_split(test_size=0.3)
 
     # Training parameters
     trainer = Trainer(
@@ -274,11 +283,11 @@ def train(model, tokenizer, dataset, output_dir):
         data_collator=DataCollatorForLanguageModeling(tokenizer, mlm=False),
     )
 
-    model.config.use_cache = (
-        False  # re-enable for inference to speed up predictions for similar inputs
-    )
 
-    ### SOURCE https://github.com/artidoro/qlora/blob/main/qlora.py
+    # re-enable for inference to speed up predictions for similar inputs
+    model.config.use_cache = False
+
+    # SOURCE https://github.com/artidoro/qlora/blob/main/qlora.py
     # Verifying the datatypes before training
 
     dtypes = {}
@@ -288,6 +297,7 @@ def train(model, tokenizer, dataset, output_dir):
             dtypes[dtype] = 0
         dtypes[dtype] += p.numel()
     total = 0
+
     for k, v in dtypes.items():
         total += v
     for k, v in dtypes.items():
@@ -321,8 +331,9 @@ def train(model, tokenizer, dataset, output_dir):
 
 def merge_and_save_model(checkpoint_dir, merged_dir, base_model_name):
     model = AutoPeftModelForCausalLM.from_pretrained(
-        checkpoint_dir, device_map="auto", torch_dtype=torch.bfloat16
-    )
+
+        checkpoint_dir, device_map="auto", torch_dtype=torch.bfloat16)
+
     merged_model = model.merge_and_unload()
 
     os.makedirs(merged_dir, exist_ok=True)
@@ -336,53 +347,49 @@ def merge_and_save_model(checkpoint_dir, merged_dir, base_model_name):
 def test_model(model, tokenizer, dataset):
     prompts = []
     responses = []
-    # device = "cuda:0"
-    for data in dataset["train"]:
-        print("data ", data)
-        prompt = create_prompt(data["user"], data["answer"], include_response=False)
-        response = data["answer"]
 
-        inputs = tokenizer(
-            prompt,
-            # padding=True,
-            # truncation=True,
-            # max_length=get_max_length(model),
-            return_tensors="pt",
-        )
+    device = "cuda:0"
+    for data in dataset['train']:
+        print("data ", data)
+        prompt = create_prompt(
+            data['user'], data['answer'], include_response=False)
+        response = data['answer']
+
+        inputs = tokenizer(prompt, padding=True, truncation=True, max_length=get_max_length(
+            model), return_tensors="pt").to(device)
+
         outputs = model.generate(**inputs, max_new_tokens=100)
         print("prompt ", prompt)
         print("response ", response)
-        print("output ", tokenizer.decode(outputs[0], skip_special_tokens=True))
+        print("output ", tokenizer.decode(
+            outputs[0], skip_special_tokens=True))
 
 
 if __name__ == "__main__":
     argparse = argparse.ArgumentParser()
-    argparse.add_argument(
-        "--checkpoint_dir", type=str, default="models/final_checkpoint"
-    )
-    argparse.add_argument(
-        "--base_model_name", type=str, default="meta-llama/Llama-2-7b-hf"
-    )
-    argparse.add_argument(
-        "--merged_dir", type=str, default="models/final_merged_checkpoint"
-    )
+
+    argparse.add_argument("--checkpoint_dir", type=str,
+                          default="models/final_checkpoint")
+    argparse.add_argument("--base_model_name", type=str,
+                          default="meta-llama/Llama-2-7b-hf")
+    argparse.add_argument("--merged_dir", type=str,
+                          default="models/final_merged_checkpoint")
     argparse.add_argument("--llama_path", type=str, default="../llama.cpp")
-    argparse.add_argument(
-        "--gguf-filename", type=str, default="ggml-finetuned-model-q4_0.gguf"
-    )
-    argparse.add_argument(
-        "--training-data", type=str, default="dataset/training_data.json"
-    )
-    argparse.add_argument("--test-model", action="store_true")
-    argparse.add_argument("--load-dataset", action="store_true")
-    argparse.add_argument("--train-model", action="store_true")
-    argparse.add_argument("--merge-model", action="store_true")
-    argparse.add_argument("--convert-model", action="store_true")
-    argparse.add_argument("--all", action="store_true")
+    argparse.add_argument("--gguf-filename", type=str,
+                          default="ggml-finetuned-model-q4_0.gguf")
+    argparse.add_argument("--training-data", type=str,
+                          default="dataset/training_data.json")
+    argparse.add_argument("--test-model", action='store_true')
+    argparse.add_argument("--load-dataset", action='store_true')
+    argparse.add_argument("--train-model", action='store_true')
+    argparse.add_argument("--merge-model", action='store_true')
+    argparse.add_argument("--convert-model", action='store_true')
+    argparse.add_argument("--all", action='store_true')
     args = argparse.parse_args()
 
     llama_model_path = os.path.join(args.llama_path, "models")
-    llama_model_filename = os.path.join(llama_model_path, "models/ggml-model-q4_0.gguf")
+    llama_model_filename = os.path.join(
+        llama_model_path, "models/ggml-model-q4_0.gguf")
 
     if args.all:
         args.load_dataset = True
@@ -395,12 +402,13 @@ if __name__ == "__main__":
         bnb_config = create_bnb_config()
         model, tokenizer = load_model(args.base_model_name, bnb_config)
 
-        print("Preprocessing dataset")
-        dataset = load_dataset("json", data_files="dataset/training_data.json")
+
+        dataset = load_dataset("json", data_files=args.training_data)
         max_length = get_max_length(model)
 
         seed = 42
-        processed_dataset = preprocess_dataset(tokenizer, max_length, seed, dataset)
+        processed_dataset = preprocess_dataset(
+            tokenizer, max_length, seed, dataset)
 
     if args.test_model:
         test_model(model, tokenizer, dataset)
@@ -411,22 +419,19 @@ if __name__ == "__main__":
 
     if args.merge_model:
         print(f"Merging model and saving to {args.merged_dir}")
-        merge_and_save_model(args.checkpoint_dir, args.merged_dir, args.base_model_name)
+        merge_and_save_model(args.checkpoint_dir,
+                             args.merged_dir, args.base_model_name)
 
     if args.convert_model:
-        print(f"Converting to gguf format and saving to {llama_model_filename}")
 
-        subprocess.run(
-            ["python", os.path.join(args.llama_path, "convert.py"), args.merged_dir],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
-        )
 
-        subprocess.run(
-            [
-                os.path.join(args.llama_path, "quantize"),
-                os.path.join(args.merged_dir, "ggml-model-f16.gguf"),
-                os.path.join(llama_model_path, args.gguf_filename),
-                "q4_0",
-            ]
-        )
+        print(
+            f"Converting to gguf format and saving to {llama_model_filename}")
+
+        subprocess.run(["python", os.path.join(args.llama_path, "convert.py"), args.merged_dir],
+                       stdout=subprocess.PIPE,
+                       stderr=subprocess.STDOUT)
+
+        subprocess.run([os.path.join(args.llama_path, "quantize"), os.path.join(
+            args.merged_dir, "ggml-model-f16.gguf"), os.path.join(llama_model_path, args.gguf_filename), "q4_0"])
+

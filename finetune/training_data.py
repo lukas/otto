@@ -150,36 +150,19 @@ def generate_other_examples(files):
 
 if __name__ == "__main__":
     argparser = argparse.ArgumentParser(
-        description="Generate training data from example files"
-    )
 
-    argparser.add_argument(
-        "--files", metavar="file", type=str, nargs="+", help="example files to parse"
-    )
-    argparser.add_argument(
-        "-t",
-        "--training_data-file",
-        action="store_true",
-        help="generate training data file",
-    )
-    argparser.add_argument(
-        "-p",
-        "--prompt",
-        action="store_true",
-        help="generate training data collection prompt",
-    )
-    argparser.add_argument(
-        "-c",
-        "--collect-training-data",
-        action="store_true",
-        help="collect training data",
-    )
-    argparser.add_argument(
-        "-o",
-        "--generate-other-examples",
-        action="store_true",
-        help="generate other examples",
-    )
+        description='Generate training data from example files')
+
+    argparser.add_argument('--files', metavar='file', type=str, nargs='+',
+                           help='example files to parse')
+    argparser.add_argument('-t', '--training-data-file', action='store_true',
+                           help="generate training data file")
+    argparser.add_argument('-p', '--prompt', action='store_true',
+                           help="generate training data collection prompt")
+    argparser.add_argument('-c', '--collect-training-data', action='store_true',
+                           help="collect training data")
+    argparser.add_argument('-o', '--generate-other-examples', action='store_true',
+                           help="generate other examples")
 
     args = argparser.parse_args()
     if args.training_data_file:

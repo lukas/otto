@@ -26,7 +26,7 @@ math(question="[question]") asks a math question in python format.
 ### User: What is the remainder when twelve is divided by five?
 ### Assistant: math(question="12%5")
 
-### User: Calculate the expression (2 + 3) * 4
+### User: Calculate the expression two plus three times four
 ### Assistant: math(question="(2+3)*4")
 
 ### User: What is two raised to the power of eight?
@@ -38,7 +38,7 @@ math(question="[question]") asks a math question in python format.
 ### User: What is four to the power of three?
 ### Assistant: math(question="4**3")
 
-### User: Calculate the average of 2, 4, and 6
+### User: Calculate the average of two, four, and six
 ### Assistant: math(question="(2+4+6)/3")
 
 ### User: What is nine divided by three plus two?
@@ -49,3 +49,6 @@ math(question="[question]") asks a math question in python format.
 
 ### User: What is the remainder when twelve is divided by five?
 ### Assistant: math(question="12%5")
+
+### User: What's three times five?
+### Assistant: math(question="3*5")

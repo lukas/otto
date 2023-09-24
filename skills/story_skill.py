@@ -31,10 +31,11 @@ class StorySkill:
         if ('description' in args):
             prompt += args['description']
 
-        s = self._ask_gpt3(prompt)
+        self.message_function("Ok I'm thinking of a story...")
+        s = self._ask_gpt_story(prompt)
 
     # Could also do this with llama
-    def _ask_gpt3_story(self, question: str):
+    def _ask_gpt_story(self, question: str):
         response = ChatCompletion.create(
             model="gpt-3.5-turbo",
             messages=[
@@ -48,6 +49,5 @@ class StorySkill:
 
 if __name__ == '__main__':
     # for testing
-    math = MathSkill(print)
-    math.start({"question": "2+2"})
-    math.start({"question": "randint(3)"})
+    story_skill = StorySkill(print)
+    story_skill.start({"description": "frog and moose"})
