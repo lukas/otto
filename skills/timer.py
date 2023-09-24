@@ -10,6 +10,7 @@ class TimerSkill:
     def __init__(self, message_function, socket_io=None):
         self.message_function = message_function
         self.socket_io = socket_io
+        self._timer_thread = None
 
     def start(self, args: list[str]):
         time_string = args["duration"]
@@ -77,6 +78,10 @@ class TimerSkill:
         stop_timer = True
 
     def _run_timer(self, seconds: int):
+        if (self._timer_thread != None):
+            self._stop_timer()
+            self._timer_thread.join()
+
         # Launch the timer function in a separate thread
         self._timer_thread = threading.Thread(
             target=self._timer_function, args=[seconds])

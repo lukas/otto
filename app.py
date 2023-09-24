@@ -23,6 +23,14 @@ from skills.run_app_skill import RunAppSkill
 # from skills.notes_skill import NotesSkill
 from skills.story_skill import StorySkill
 from skills.news_skill import NewsSkill
+import wandb
+import weave
+from weave.monitoring import init_monitor
+
+WB_ENTITY = "l2k2"
+WB_PROJECT = "otto"
+WB_STREAM = "test-runs"
+mon = init_monitor(f"{WB_ENTITY}/{WB_PROJECT}/{WB_STREAM}")
 
 
 headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
@@ -77,7 +85,9 @@ def llm_output(line):
 
 
 def error_output(line):
-    socket_io.emit("error", line)
+    socket_io.emit("log", f"Error: {line}")
+
+    # socket_io.emit("error", line)
 
 
 def llm_response_output(line):
@@ -219,6 +229,7 @@ def parse_function_call(call_str: str) -> (str, dict[str, str]):
     return function_name, param_dict
 
 
+@mon.trace()
 def function_call(function_name: str, args: dict[str, str]):
     global last_action_time
 
@@ -302,6 +313,7 @@ def log_llm(user_prompt, response):
             f"### User: {user_prompt}\n### Assistant: {response}\n", file=llm_log)
 
 
+@mon.trace()
 def generate_prompt_and_call_llm(user_prompt):
     global stop_talking
     global llm_settings
@@ -318,9 +330,13 @@ def generate_prompt_and_call_llm(user_prompt):
 
     grammar_string = generate_grammar(skills)
 
+    socket_io.emit("log", f"Calling LLM: {user_prompt}")
+
     response = llama_server.call_llm(
         prompt, llm_settings, grammar_string, end_response, None, error_output, llm_response_output)
-    print("Response: ", response)
+
+    socket_io.emit("log", f"LLM Responded: {response}")
+
     log_llm(user_prompt, response)
 
     if (reset_dialog_flag):
@@ -331,14 +347,16 @@ def generate_prompt_and_call_llm(user_prompt):
     # llm_log.flush()
 
 
-last_tts_line = ""
+last_transcript_line = ""
+last_cleaned_transcript_line = ""
 
 
 def listen():
     global run_llm_on_new_transcription
     global sleep_time_in_seconds
     global sleeping
-    global last_tts_line
+    global last_transcript_line
+    global last_cleaned_transcript_line
     global last_action_time
     global currently_speaking
     global last_speaking_time
@@ -358,12 +376,13 @@ def listen():
         socket_io.emit("error", "Error reading transcription: " + e)
         return
 
-    if (line == last_tts_line):  # don't call llm twice on the same line if it returns quickly
+    if (line == last_transcript_line):  # don't call llm twice on the same line if it returns quickly
         return
 
     socket_io.emit("transcribe", line)
 
-    last_tts_line = line
+    last_transcript_line = line
+
     if sleeping:
         # sleeping
         line_words = re.split(r'\W+', line.lower())
@@ -375,9 +394,12 @@ def listen():
                 last_tts_line = line  # don't call llm on the wake word
                 sleeping = False
                 break
+        socket_io.emit("transcribe", "ignoring, sleeping")
     elif currently_speaking or (time.time() - last_speaking_time) < speaking_delay:
         # if currently speaking or just finished speaking, don't call llm
         print("Currently speaking so skipping")
+        socket_io.emit("transcribe", "ignoring, speaking")
+
         pass
     else:
         # if last_action was more than sleep_timer secongs ago, go to sleep
@@ -386,8 +408,6 @@ def listen():
             socket_io.emit("sleeping", str(True))
             sleeping = True
 
-        print("Awake, running on new transcription ",
-              run_llm_on_new_transcription)
         if run_llm_on_new_transcription:
             line = line.strip()
             print("line: ", line)
@@ -402,9 +422,11 @@ def listen():
             # remove everything in line inside of ()
             line = re.sub(r'\([^>]*\)', '', line)
 
-            print(f"cleaned line: {line}")
-            if not emptyaudio(line):
-                generate_prompt_and_call_llm(line)
+            if (line != last_cleaned_transcript_line):
+                last_cleaned_transcript_line = line
+
+                if not emptyaudio(line):
+                    generate_prompt_and_call_llm(line)
 
 
 def listen_loop():
@@ -647,7 +669,7 @@ def handle_connect():
 
 @socket_io.on('request_status')
 def update_status():
-    print("Status Requested")
+    socket_io.emit("log", "Server update status")
     # global listening
     global run_llm_on_new_transcription
     global speak_flag
@@ -656,6 +678,10 @@ def update_status():
     global transcribe_setting
     global available_transcribe_models
     global prompt_presets
+    skill_names = []
+    for skill in skills:
+        skill_names.append(skill.function_name +
+                           "(" + (",".join(skill.parameter_names)+")"))
     status = {
         "sleeping": str(sleeping),
         "run_llm": run_llm_on_new_transcription,
@@ -665,7 +691,8 @@ def update_status():
         "transcribe_settings": transcribe_settings,
         "available_llm_models": available_llm_models,
         "prompt_presets": prompt_presets,
-        "available_transcribe_models": available_transcribe_models
+        "available_transcribe_models": available_transcribe_models,
+        "available_skills": skill_names
     }
     print("Updating Status", status)
     socket_io.emit("server_status", status)

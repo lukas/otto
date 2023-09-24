@@ -118,17 +118,20 @@ function Main() {
 
             <Box height="500px" marginTop="100px" marginLeft="50px" marginRight="50px" display="flex"
                 flexDirection="column"
-                justifyContent="center">
+                justifyContent="center"
+            >
 
                 <img src={logo} alt="logo" style={{ height: "100px" }} />
                 {message && (
-                    <Typography variant={message?.includes("\n") ? "h6" : "h2"} component="div" gutterBottom>
-                        {message.split("\n").map((line, i) => (
-                            <p key={"Message line " + i} style={{ textAlign: "center" }}>{line} </p>
-                        ))}
+                    <Box height="300px" overflow="auto">
+                        <Typography variant={message?.length > 50 ? "h6" : "h2"} component="div" gutterBottom>
+                            {message.split("\n").map((line, i) => (
+                                <p key={"Message line " + i} style={{ textAlign: "center" }}>{line} </p>
+                            ))}
 
 
-                    </Typography>
+                        </Typography>
+                    </Box>
                 )}
             </Box>
         </Box >
