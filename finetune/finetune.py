@@ -241,8 +241,6 @@ class WandbLlamaCallback(WandbCallback):
 
 
 def train(model, tokenizer, dataset, output_dir, use_cuda, num_train_epochs=2):
-    if use_cuda == False:
-        device = None
 
     model.gradient_checkpointing_enable()
     model = prepare_model_for_kbit_training(model)
@@ -256,13 +254,9 @@ def train(model, tokenizer, dataset, output_dir, use_cuda, num_train_epochs=2):
     else:
         modules = find_all_linear_names(model)
 
-    print("Model ", model)
-    print("Model type ", type(model))
-    print("Modules ", modules)
     # Create PEFT config for these modules and wrap the model to PEFT
 
     peft_config = create_peft_config(modules)
-    print("Peft Config ", peft_config)
     model = get_peft_model(model, peft_config)
 
     # Print information about the percentage of trainable parameters
@@ -356,34 +350,36 @@ def train(model, tokenizer, dataset, output_dir, use_cuda, num_train_epochs=2):
     torch.cuda.empty_cache()
 
 
-def merge_and_save_model(checkpoint_dir, merged_dir, base_model_name):
+
+def load_model_from_checkpoint(checkpoint_dir, base_model_name):
     if (base_model_name.startswith('bert')):
         model = AutoPeftModelForCausalLM.from_pretrained(
-            checkpoint_dir,
-            is_decoder=True
+            checkpoint_dir,           
         )
     else:
         model = AutoPeftModelForCausalLM.from_pretrained(
             checkpoint_dir, device_map="auto", torch_dtype=torch.bfloat16)
 
+    tokenizer = AutoTokenizer.from_pretrained(base_model_name)
+
+    return model, tokenizer
+
+def merge_and_save_model(checkpoint_dir, merged_dir, base_model_name):
+
+    model, tokenizer = load_model_from_checkpoint(checkpoint_dir, base_model_name)
     merged_model = model.merge_and_unload()
 
     os.makedirs(merged_dir, exist_ok=True)
     merged_model.save_pretrained(merged_dir, safe_serialization=True)
 
     # save tokenizer for easy inference
-    tokenizer = AutoTokenizer.from_pretrained(base_model_name)
+    
     tokenizer.save_pretrained(merged_dir)
 
 
 def test_model(model, tokenizer, dataset, use_cuda):
     prompts = []
     responses = []
-
-    if (use_cuda):
-        device = "cuda:0"
-    else:
-        device = None
 
     for data in dataset['train']:
         print("data ", data)
@@ -395,6 +391,7 @@ def test_model(model, tokenizer, dataset, use_cuda):
             model), return_tensors="pt").to(device)
 
         outputs = model.generate(**inputs, max_new_tokens=100)
+        breakpoint()
         print("prompt ", prompt)
         print("response ", response)
         print("output ", tokenizer.decode(
@@ -421,6 +418,7 @@ if __name__ == "__main__":
     argparse.add_argument("--convert-model", action='store_true',
                           help="Convert model to gguf format to run in llama.cpp")
     argparse.add_argument("--num-train-epochs", type=int, default=2)
+    argparse.add_argument("--load-from-checkpoint", action='store_true')
     argparse.add_argument("--no-cuda", action='store_true',
                           help="Don't use cuda")
     argparse.add_argument("--bert", action='store_true',
@@ -438,6 +436,11 @@ if __name__ == "__main__":
 
     if args.no_cuda:
         use_cuda = False
+        device = None
+    else:
+        use_cuda = True
+        device = "cuda:0"
+
 
     if args.all:
         args.load_dataset = True
@@ -446,9 +449,12 @@ if __name__ == "__main__":
         args.convert_model = True
 
     print("Loading model")
-    bnb_config = create_bnb_config()
-    model, tokenizer = load_model(
-        args.base_model_name, bnb_config)
+    if args.load_from_checkpoint:
+        model, tokenizer = load_model_from_checkpoint(args.checkpoint_dir, args.base_model_name)
+    else:
+        bnb_config = create_bnb_config()
+        model, tokenizer = load_model(
+            args.base_model_name, bnb_config)
 
     print("Loading dataset")
     dataset = load_dataset("json", data_files=args.training_data)
