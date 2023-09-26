@@ -29,24 +29,29 @@ from transformers import (
 from datasets import load_dataset
 from transformers.trainer_callback import TrainerControl, TrainerState
 from transformers.training_args import TrainingArguments
+import transformers
 
 
-def load_model(model_name, bnb_config):
+def load_model(model_name, bnb_config, local_mode):
     n_gpus = torch.cuda.device_count()
     max_memory = f"{24000}MB"
 
-    model = AutoModelForCausalLM.from_pretrained(
-        model_name,
-        # comment to run fast
-        # quantization_config=bnb_config,
-        # device_map="auto", # dispatch efficiently the model on the available ressources
-        # max_memory = {i: max_memory for i in range(n_gpus)},
+    if (local_mode):
+        print("In local mode, using bert-base-uncased model for speed")
+        model = AutoModelForCausalLM.from_pretrained(
+            model_name,
+            is_decoder=True
+        )
+    else:
 
-        quantization_config=bnb_config,
-        device_map="auto",  # dispatch efficiently the model on the available ressources
-        max_memory={i: max_memory for i in range(n_gpus)},
+        model = AutoModelForCausalLM.from_pretrained(
+            model_name,
 
-    )
+            quantization_config=bnb_config,
+            device_map="auto",  # dispatch efficiently the model on the available ressources
+            max_memory={i: max_memory for i in range(n_gpus)},
+
+        )
     tokenizer = AutoTokenizer.from_pretrained(model_name, use_auth_token=True)
 
     # Needed for LLaMA tokenizer
@@ -165,16 +170,17 @@ def create_prompt_formats(sample, include_response=True):
 
 def find_all_linear_names(model):
 
-    # if args.bits == 4 else (bnb.nn.Linear8bitLt if args.bits == 8 else torch.nn.Linear)
     cls = bnb.nn.Linear4bit
     lora_module_names = set()
     for name, module in model.named_modules():
+
         if isinstance(module, cls):
             names = name.split(".")
             lora_module_names.add(names[0] if len(names) == 1 else names[-1])
 
     if "lm_head" in lora_module_names:  # needed for 16-bit
         lora_module_names.remove("lm_head")
+
     return list(lora_module_names)
 
 
@@ -245,11 +251,21 @@ def train(model, tokenizer, dataset, output_dir):
     # 2 - Using the prepare_model_for_kbit_training method from PEFT
     model = prepare_model_for_kbit_training(model)
 
-    # Get lora module names
-    modules = find_all_linear_names(model)
+    if (isinstance(model, transformers.models.bert.modeling_bert.BertLMHeadModel)):
+        print("Tokenizer ", tokenizer)
+        print("Pad Token", tokenizer.pad_token)
+        if (tokenizer.pad_token == None):
+            tokenizer.pad_token = tokenizer.sep_token
+        modules = ['query', 'key']
+    else:
+        modules = find_all_linear_names(model)
 
+    print("Model ", model)
+    print("Model type ", type(model))
+    print("Modules ", modules)
     # Create PEFT config for these modules and wrap the model to PEFT
     peft_config = create_peft_config(modules)
+    print("Peft Config ", peft_config)
     model = get_peft_model(model, peft_config)
 
     # Print information about the percentage of trainable parameters
@@ -344,11 +360,15 @@ def merge_and_save_model(checkpoint_dir, merged_dir, base_model_name):
     tokenizer.save_pretrained(merged_dir)
 
 
-def test_model(model, tokenizer, dataset):
+def test_model(model, tokenizer, dataset, local_mode):
     prompts = []
     responses = []
 
-    device = "cuda:0"
+    if (local_mode == False):
+        device = "cuda:0"
+    else:
+        device = None
+
     for data in dataset['train']:
         print("data ", data)
         prompt = create_prompt(
@@ -370,7 +390,7 @@ if __name__ == "__main__":
 
     argparse.add_argument("--checkpoint_dir", type=str,
                           default="models/final_checkpoint")
-    argparse.add_argument("--base_model_name", type=str,
+    argparse.add_argument("--base-model-name", type=str,
                           default="meta-llama/Llama-2-7b-hf")
     argparse.add_argument("--merged_dir", type=str,
                           default="models/final_merged_checkpoint")
@@ -380,10 +400,11 @@ if __name__ == "__main__":
     argparse.add_argument("--training-data", type=str,
                           default="dataset/training_data.json")
     argparse.add_argument("--test-model", action='store_true')
-    argparse.add_argument("--load-dataset", action='store_true')
     argparse.add_argument("--train-model", action='store_true')
     argparse.add_argument("--merge-model", action='store_true')
-    argparse.add_argument("--convert-model", action='store_true')
+    argparse.add_argument("--convert-model", action='store_true', help="Convert model to gguf format to run in llama.cpp")
+    argparse.add_argument("--local-mode", action='store_true', help="Run quickly on a machine with no GPU for testing")
+
     argparse.add_argument("--all", action='store_true')
     args = argparse.parse_args()
 
@@ -391,27 +412,30 @@ if __name__ == "__main__":
     llama_model_filename = os.path.join(
         llama_model_path, "models/ggml-model-q4_0.gguf")
 
+    if args.local_mode:
+        args.base_model_name="bert-base-uncased"
+
+
     if args.all:
         args.load_dataset = True
         args.train_model = True
         args.merge_model = True
         args.convert_model = True
 
-    if args.load_dataset:
-        print("Loading model")
-        bnb_config = create_bnb_config()
-        model, tokenizer = load_model(args.base_model_name, bnb_config)
+    print("Loading model")
+    bnb_config = create_bnb_config()
+    model, tokenizer = load_model(args.base_model_name, bnb_config, args.local_mode)
 
+    print("Loading dataset")
+    dataset = load_dataset("json", data_files=args.training_data)
+    max_length = get_max_length(model)
 
-        dataset = load_dataset("json", data_files=args.training_data)
-        max_length = get_max_length(model)
-
-        seed = 42
-        processed_dataset = preprocess_dataset(
-            tokenizer, max_length, seed, dataset)
+    seed = 42
+    processed_dataset = preprocess_dataset(
+        tokenizer, max_length, seed, dataset)
 
     if args.test_model:
-        test_model(model, tokenizer, dataset)
+        test_model(model, tokenizer, dataset, args.local_mode)
 
     if args.train_model:
         print("Training on dataset of length", len(processed_dataset["train"]))
