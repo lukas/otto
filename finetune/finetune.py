@@ -52,8 +52,10 @@ def load_model(model_name, bnb_config):
 
     tokenizer = AutoTokenizer.from_pretrained(model_name, use_auth_token=True)
 
-    # Needed for LLaMA tokenizer
-    tokenizer.pad_token = tokenizer.eos_token
+    if (model_name.startswith('bert')):
+        tokenizer.pad_token = tokenizer.sep_token
+    else:
+        tokenizer.pad_token = tokenizer.eos_token
 
     return model, tokenizer
 
@@ -248,10 +250,7 @@ def train(model, tokenizer, dataset, output_dir, use_cuda, num_train_epochs=2):
     model = prepare_model_for_kbit_training(model)
 
     if (isinstance(model, transformers.models.bert.modeling_bert.BertLMHeadModel)):
-        print("Tokenizer ", tokenizer)
-        print("Pad Token", tokenizer.pad_token)
-        if (tokenizer.pad_token == None):
-            tokenizer.pad_token = tokenizer.sep_token
+
         modules = ['query', 'key']
     else:
         modules = find_all_linear_names(model)
@@ -271,7 +270,7 @@ def train(model, tokenizer, dataset, output_dir, use_cuda, num_train_epochs=2):
     os.environ["WANDB_PROJECT"] = "otto"  # log to your project
     os.environ["WANDB_LOG_MODEL"] = "all"  # log your models
 
-    ds = dataset['train'].train_test_split(test_size=0.3)
+    split_dataset = dataset['train'].train_test_split(test_size=0.3)
     if use_cuda == False:
         model = model.to(device)
 
@@ -304,8 +303,8 @@ def train(model, tokenizer, dataset, output_dir, use_cuda, num_train_epochs=2):
 
     trainer = Trainer(
         model=model,
-        train_dataset=ds["train"],
-        eval_dataset=ds["test"],
+        train_dataset=split_dataset["train"],
+        eval_dataset=split_dataset["test"],
         args=training_args,
         # callbacks=[WandbLlamaCallback()],
         data_collator=DataCollatorForLanguageModeling(tokenizer, mlm=False),
