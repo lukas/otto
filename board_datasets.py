@@ -10,7 +10,8 @@ from weaveflow import cli
 def make_board(initial_entity_name: str, initial_project_name: str):
     varbar = panel_board.varbar()
 
-    entity_name_val = varbar.add("entity_name_val", initial_entity_name, hidden=True)
+    entity_name_val = varbar.add(
+        "entity_name_val", initial_entity_name, hidden=True)
     entity = ops_domain.entity(entity_name_val)
     varbar.add(
         "entity_name",
@@ -19,11 +20,13 @@ def make_board(initial_entity_name: str, initial_project_name: str):
         ),
     )
 
-    project_name_val = varbar.add("project_name_val", initial_project_name, hidden=True)
+    project_name_val = varbar.add(
+        "project_name_val", initial_project_name, hidden=True)
     project = ops_domain.project(entity_name_val, project_name_val)
     varbar.add(
         "project_name",
-        weave.panels.Dropdown(project_name_val, choices=entity.projects().name()),
+        weave.panels.Dropdown(
+            project_name_val, choices=entity.projects().name()),
     )
 
     dataset_name_val = varbar.add("dataset_name_val", "dataset", hidden=True)
@@ -31,7 +34,8 @@ def make_board(initial_entity_name: str, initial_project_name: str):
     varbar.add(
         "dataset_name",
         weave.panels.Dropdown(
-            dataset_name_val, choices=project.artifactType("Dataset").artifacts().name()
+            dataset_name_val, choices=project.artifactType(
+                "Dataset").artifacts().name()
         ),
     )
 
@@ -56,7 +60,7 @@ def make_board(initial_entity_name: str, initial_project_name: str):
             + "/obj",
         ),
     )
-
+    print(dir(dataset))
     main = weave.panels.Group(
         layoutMode="grid",
         showExpressions=True,
@@ -68,6 +72,7 @@ def make_board(initial_entity_name: str, initial_project_name: str):
         dataset_artifact_version.artifactSequence().versions().count(),
         layout=weave.panels.GroupPanelLayout(x=0, y=0, w=6, h=4),
     )
+
     main.add(
         "example_count",
         dataset.rows.count(),
@@ -109,4 +114,7 @@ def make_board(initial_entity_name: str, initial_project_name: str):
 
 
 if __name__ == "__main__":
-    cli.publish(make_board(settings.entity, settings.project), f"datasets")
+    entity = 'l2k2'
+    project = 'otto3'
+    # print(settings.entity, settings.project)
+    cli.publish(make_board(entity, project), f"datasets")

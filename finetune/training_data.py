@@ -2,6 +2,14 @@ import re
 import argparse
 from openai import ChatCompletion
 import json
+import os
+
+import openai
+
+openai.api_base = "https://api.wandb.ai/proxy/openai/v1"
+wandb_key = os.environ["WANDB_API_KEY"]
+openai_key = os.environ['OPENAI_API_KEY']
+openai.api_key = f"{wandb_key}:{openai_key}"
 
 
 def parse_example_file(file) -> (str, list[dict], list[dict]):
@@ -43,7 +51,8 @@ def parse_example_file(file) -> (str, list[dict], list[dict]):
                     elif line.startswith("### Assistant:"):
                         # get part of line after the :
                         cur_answer = line.split(":", 1)[1].strip()
-                        example = {"user": cur_user_prompt, "answer": cur_answer}
+                        example = {"user": cur_user_prompt,
+                                   "answer": cur_answer}
                         if section == "prompt examples":
                             prompt_examples.append(example)
                         else:

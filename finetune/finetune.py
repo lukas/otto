@@ -23,8 +23,6 @@ from transformers import (
     TrainingArguments,
     BitsAndBytesConfig,
     DataCollatorForLanguageModeling,
-    Trainer,
-    TrainingArguments,
 )
 from datasets import load_dataset
 from transformers.trainer_callback import TrainerControl, TrainerState
@@ -32,11 +30,11 @@ from transformers.training_args import TrainingArguments
 import transformers
 
 
-def load_model(model_name, bnb_config, local_mode):
+def load_model(model_name, bnb_config):
     n_gpus = torch.cuda.device_count()
     max_memory = f"{24000}MB"
 
-    if (local_mode):
+    if (model_name.startswith('bert')):
         print("In local mode, using bert-base-uncased model for speed")
         model = AutoModelForCausalLM.from_pretrained(
             model_name,
@@ -46,12 +44,12 @@ def load_model(model_name, bnb_config, local_mode):
 
         model = AutoModelForCausalLM.from_pretrained(
             model_name,
-
             quantization_config=bnb_config,
             device_map="auto",  # dispatch efficiently the model on the available ressources
             max_memory={i: max_memory for i in range(n_gpus)},
 
         )
+
     tokenizer = AutoTokenizer.from_pretrained(model_name, use_auth_token=True)
 
     # Needed for LLaMA tokenizer
@@ -206,7 +204,6 @@ def print_trainable_parameters(model, use_4bit=False):
     )
 
 
-
 class WandbLlamaCallback(WandbCallback):
     def __init__(self, tokenizer):
         self.tokenizer = tokenizer
@@ -232,8 +229,8 @@ class WandbLlamaCallback(WandbCallback):
         for data in train_dataloader:
             print(data)
             print(dir(train_dataloader))
-            tokenizer.decode(train_dataloader["input_ids"], skip_special_tokens=True)
-
+            tokenizer.decode(
+                train_dataloader["input_ids"], skip_special_tokens=True)
 
         wandb.log({}, commit=False)
 
@@ -243,12 +240,11 @@ class WandbLlamaCallback(WandbCallback):
         print("State    ", state)
 
 
-def train(model, tokenizer, dataset, output_dir):
-    # Apply preprocessing to the model to prepare it by
-    # 1 - Enabling gradient checkpointing to reduce memory usage during fine-tuning
-    model.gradient_checkpointing_enable()
+def train(model, tokenizer, dataset, output_dir, use_cuda, num_train_epochs=2):
+    if use_cuda == False:
+        device = None
 
-    # 2 - Using the prepare_model_for_kbit_training method from PEFT
+    model.gradient_checkpointing_enable()
     model = prepare_model_for_kbit_training(model)
 
     if (isinstance(model, transformers.models.bert.modeling_bert.BertLMHeadModel)):
@@ -264,6 +260,7 @@ def train(model, tokenizer, dataset, output_dir):
     print("Model type ", type(model))
     print("Modules ", modules)
     # Create PEFT config for these modules and wrap the model to PEFT
+
     peft_config = create_peft_config(modules)
     print("Peft Config ", peft_config)
     model = get_peft_model(model, peft_config)
@@ -274,19 +271,28 @@ def train(model, tokenizer, dataset, output_dir):
     os.environ["WANDB_PROJECT"] = "otto"  # log to your project
     os.environ["WANDB_LOG_MODEL"] = "all"  # log your models
 
-
     ds = dataset['train'].train_test_split(test_size=0.3)
+    if use_cuda == False:
+        model = model.to(device)
 
-    # Training parameters
-    trainer = Trainer(
-        model=model,
-        train_dataset=ds["train"],
-        eval_dataset=ds["test"],
-        args=TrainingArguments(
+        training_args = TrainingArguments(
             per_device_train_batch_size=1,
             gradient_accumulation_steps=4,
             warmup_steps=2,
-            max_steps=2000,
+            num_train_epochs=num_train_epochs,
+            eval_steps=10,
+            learning_rate=2e-4,
+            logging_steps=1,
+            output_dir="outputs",
+            no_cuda=True,
+            report_to="wandb",
+        )
+    else:
+        training_args = TrainingArguments(
+            per_device_train_batch_size=1,
+            gradient_accumulation_steps=4,
+            warmup_steps=2,
+            num_train_epochs=num_train_epochs,
             eval_steps=10,
             learning_rate=2e-4,
             fp16=True,
@@ -294,11 +300,16 @@ def train(model, tokenizer, dataset, output_dir):
             output_dir="outputs",
             optim="paged_adamw_8bit",
             report_to="wandb",
-        ),
+        )
+
+    trainer = Trainer(
+        model=model,
+        train_dataset=ds["train"],
+        eval_dataset=ds["test"],
+        args=training_args,
         # callbacks=[WandbLlamaCallback()],
         data_collator=DataCollatorForLanguageModeling(tokenizer, mlm=False),
     )
-
 
     # re-enable for inference to speed up predictions for similar inputs
     model.config.use_cache = False
@@ -346,9 +357,14 @@ def train(model, tokenizer, dataset, output_dir):
 
 
 def merge_and_save_model(checkpoint_dir, merged_dir, base_model_name):
-    model = AutoPeftModelForCausalLM.from_pretrained(
-
-        checkpoint_dir, device_map="auto", torch_dtype=torch.bfloat16)
+    if (base_model_name.startswith('bert')):
+        model = AutoPeftModelForCausalLM.from_pretrained(
+            checkpoint_dir,
+            is_decoder=True
+        )
+    else:
+        model = AutoPeftModelForCausalLM.from_pretrained(
+            checkpoint_dir, device_map="auto", torch_dtype=torch.bfloat16)
 
     merged_model = model.merge_and_unload()
 
@@ -360,11 +376,11 @@ def merge_and_save_model(checkpoint_dir, merged_dir, base_model_name):
     tokenizer.save_pretrained(merged_dir)
 
 
-def test_model(model, tokenizer, dataset, local_mode):
+def test_model(model, tokenizer, dataset, use_cuda):
     prompts = []
     responses = []
 
-    if (local_mode == False):
+    if (use_cuda):
         device = "cuda:0"
     else:
         device = None
@@ -392,9 +408,9 @@ if __name__ == "__main__":
                           default="models/final_checkpoint")
     argparse.add_argument("--base-model-name", type=str,
                           default="meta-llama/Llama-2-7b-hf")
-    argparse.add_argument("--merged_dir", type=str,
+    argparse.add_argument("--merged-dir", type=str,
                           default="models/final_merged_checkpoint")
-    argparse.add_argument("--llama_path", type=str, default="../llama.cpp")
+    argparse.add_argument("--llama-path", type=str, default="../llama.cpp")
     argparse.add_argument("--gguf-filename", type=str,
                           default="ggml-finetuned-model-q4_0.gguf")
     argparse.add_argument("--training-data", type=str,
@@ -402,8 +418,13 @@ if __name__ == "__main__":
     argparse.add_argument("--test-model", action='store_true')
     argparse.add_argument("--train-model", action='store_true')
     argparse.add_argument("--merge-model", action='store_true')
-    argparse.add_argument("--convert-model", action='store_true', help="Convert model to gguf format to run in llama.cpp")
-    argparse.add_argument("--local-mode", action='store_true', help="Run quickly on a machine with no GPU for testing")
+    argparse.add_argument("--convert-model", action='store_true',
+                          help="Convert model to gguf format to run in llama.cpp")
+    argparse.add_argument("--num-train-epochs", type=int, default=2)
+    argparse.add_argument("--no-cuda", action='store_true',
+                          help="Don't use cuda")
+    argparse.add_argument("--bert", action='store_true',
+                          help="Use bert for fast testing")
 
     argparse.add_argument("--all", action='store_true')
     args = argparse.parse_args()
@@ -412,9 +433,11 @@ if __name__ == "__main__":
     llama_model_filename = os.path.join(
         llama_model_path, "models/ggml-model-q4_0.gguf")
 
-    if args.local_mode:
-        args.base_model_name="bert-base-uncased"
+    if args.bert:
+        args.base_model_name = "bert-base-uncased"
 
+    if args.no_cuda:
+        use_cuda = False
 
     if args.all:
         args.load_dataset = True
@@ -424,7 +447,8 @@ if __name__ == "__main__":
 
     print("Loading model")
     bnb_config = create_bnb_config()
-    model, tokenizer = load_model(args.base_model_name, bnb_config, args.local_mode)
+    model, tokenizer = load_model(
+        args.base_model_name, bnb_config)
 
     print("Loading dataset")
     dataset = load_dataset("json", data_files=args.training_data)
@@ -435,11 +459,12 @@ if __name__ == "__main__":
         tokenizer, max_length, seed, dataset)
 
     if args.test_model:
-        test_model(model, tokenizer, dataset, args.local_mode)
+        test_model(model, tokenizer, dataset, use_cuda)
 
     if args.train_model:
         print("Training on dataset of length", len(processed_dataset["train"]))
-        train(model, tokenizer, processed_dataset, args.checkpoint_dir)
+        train(model, tokenizer, processed_dataset,
+              args.checkpoint_dir, use_cuda, args.num_train_epochs)
 
     if args.merge_model:
         print(f"Merging model and saving to {args.merged_dir}")
@@ -447,7 +472,6 @@ if __name__ == "__main__":
                              args.merged_dir, args.base_model_name)
 
     if args.convert_model:
-
 
         print(
             f"Converting to gguf format and saving to {llama_model_filename}")
@@ -458,4 +482,3 @@ if __name__ == "__main__":
 
         subprocess.run([os.path.join(args.llama_path, "quantize"), os.path.join(
             args.merged_dir, "ggml-model-f16.gguf"), os.path.join(llama_model_path, args.gguf_filename), "q4_0"])
-
