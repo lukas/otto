@@ -25,10 +25,13 @@ from transformers import (
     DataCollatorForLanguageModeling,
 )
 from datasets import load_dataset
-from transformers.trainer_callback import TrainerControl, TrainerState
+from transformers.trainer_callback import TrainerControl, TrainerState, TrainerCallback
 from transformers.training_args import TrainingArguments
 import transformers
 
+INTRO_BLURB = "Below is an instruction that describes a task. Write a response that appropriately completes the request.\n"
+INSTRUCTION_KEY = "### User: "
+RESPONSE_KEY = "### Answer: "
 
 def load_model(model_name, bnb_config):
     n_gpus = torch.cuda.device_count()
@@ -104,7 +107,7 @@ def preprocess_dataset(tokenizer: AutoTokenizer, max_length: int, seed, dataset:
     dataset = dataset.map(
         _preprocessing_function,
         batched=True,
-        remove_columns=["user", "answer"],
+        # remove_columns=["user", "answer"],
     )
 
     # Filter out samples that have input_ids exceeding max_length
@@ -143,18 +146,16 @@ def preprocess_batch(batch, tokenizer, max_length):
 
 
 def create_prompt(user, answer, include_response=True):
-    INTRO_BLURB = "Below is an instruction that describes a task. Write a response that appropriately completes the request.\n"
-    INSTRUCTION_KEY = "### User:"
-    RESPONSE_KEY = "### Answer:"
+
 
     blurb = f"{INTRO_BLURB}"
-    instruction = f"{INSTRUCTION_KEY} {user}"
+    instruction = f"{INSTRUCTION_KEY}{user}"
     if include_response:
-        response = f"{RESPONSE_KEY} {answer}"
+        response = f"{RESPONSE_KEY}{answer}"
     else:
-        response = f"{RESPONSE_KEY} "
+        response = f"{RESPONSE_KEY}"
 
-    formatted_prompt = f"{blurb}\n{instruction}\n{response}\n"
+    formatted_prompt = f"{blurb}\n{instruction}\n{response}"
     return formatted_prompt
 
 
@@ -206,9 +207,8 @@ def print_trainable_parameters(model, use_4bit=False):
     )
 
 
-class WandbLlamaCallback(WandbCallback):
-    def __init__(self, tokenizer):
-        self.tokenizer = tokenizer
+class WandbLlamaCallback(TrainerCallback):
+
 
     def on_step_end(
         self,
@@ -217,15 +217,31 @@ class WandbLlamaCallback(WandbCallback):
         control: TrainerControl,
         **kwargs,
     ):
+        # breakpoint()
         print("Step end ")
         # print("Kwargs  ", kwargs)
         return super().on_step_end(args, state, control, **kwargs)
+
+
+    def on_evaluate(self, args: TrainingArguments, state: TrainerState, control: TrainerControl, **kwargs):
+        print("Evaluate")
+        breakpoint()
+
+    def on_epoch_begin(self, args, state, control, **kwargs):
+        dataset = kwargs['train_dataloader'].dataset
+        model = kwargs['model']
+        tokenizer = kwargs['tokenizer']
+        test_and_log_raw_data(dataset=dataset, model=model, tokenizer=tokenizer, name="train_results")
+
+
+
 
     def on_epoch_end(self, args, state, control, **kwargs):
         print("EKwargs  ", kwargs)
 
         tokenizer = kwargs["tokenizer"]
         train_dataloader = kwargs["train_dataloader"]
+        
         print(train_dataloader)
         print(tokenizer)
         for data in train_dataloader:
@@ -243,7 +259,7 @@ class WandbLlamaCallback(WandbCallback):
 
 
 def train(model, tokenizer, dataset, output_dir, use_cuda, num_train_epochs=2):
-
+    
     model.gradient_checkpointing_enable()
     model = prepare_model_for_kbit_training(model)
 
@@ -260,14 +276,14 @@ def train(model, tokenizer, dataset, output_dir, use_cuda, num_train_epochs=2):
     # Print information about the percentage of trainable parameters
     print_trainable_parameters(model)
 
-    os.environ["WANDB_PROJECT"] = "otto"  # log to your project
-    os.environ["WANDB_LOG_MODEL"] = "all"  # log your models
+    # os.environ["WANDB_PROJECT"] = "otto"  # log to your project
+    # os.environ["WANDB_LOG_MODEL"] = "all"  # log your models
 
-    ds = dataset['train'].train_test_split(test_size=0.3)
     if use_cuda == False:
         model = model.to(device)
 
         training_args = TrainingArguments(
+            do_eval=True,
             per_device_train_batch_size=1,
             gradient_accumulation_steps=4,
             warmup_steps=2,
@@ -278,6 +294,7 @@ def train(model, tokenizer, dataset, output_dir, use_cuda, num_train_epochs=2):
             output_dir="outputs",
             no_cuda=True,
             report_to="wandb",
+
         )
     else:
         training_args = TrainingArguments(
@@ -296,10 +313,11 @@ def train(model, tokenizer, dataset, output_dir, use_cuda, num_train_epochs=2):
 
     trainer = Trainer(
         model=model,
-        train_dataset=ds["train"],
-        eval_dataset=ds["test"],
+        tokenizer=tokenizer,
+        train_dataset=dataset["train"],
+        eval_dataset=dataset["test"],
         args=training_args,
-        # callbacks=[WandbLlamaCallback()],
+        callbacks=[WandbLlamaCallback()],
         data_collator=DataCollatorForLanguageModeling(tokenizer, mlm=False),
     )
 
@@ -380,25 +398,59 @@ def merge_and_save_model(checkpoint_dir, merged_dir, base_model_name):
     tokenizer.save_pretrained(merged_dir)
 
 
-def test_model(model, tokenizer, dataset, use_cuda):
-    prompts = []
-    responses = []
+def get_output_text(model, tokenizer, prompt):
 
-    for data in dataset['train']:
-        print("data ", data)
+
+    inputs = tokenizer(prompt, padding=True, truncation=True, max_length=get_max_length(
+        model), return_tensors="pt").to(device)
+
+    outputs = model.generate(**inputs, max_new_tokens=100)
+    output_text = tokenizer.decode(
+        outputs[0], skip_special_tokens=True)
+    
+    return output_text
+
+def test_and_log_raw_data(model, tokenizer, dataset, name, num_examples=2):
+    raw_data = []
+    for i, input_data in enumerate(dataset["input_ids"]):
+        text = tokenizer.decode(input_data)
+        prompt_no_response_key, correct_response = text.split(RESPONSE_KEY, 1)
+        user_query = prompt_no_response_key.split(INSTRUCTION_KEY, 1)[1]
+
+        prompt = prompt_no_response_key + RESPONSE_KEY
+        inputs = tokenizer(prompt, padding=True, truncation=True, max_length=get_max_length(model), return_tensors='pt').to(device)
+        raw_outputs = model.generate(**inputs, max_new_tokens=100)
+        _, llm_response = tokenizer.decode(raw_outputs[0]).split(RESPONSE_KEY, 1)
+        raw_data.append([prompt, correct_response, llm_response])
+        if i > num_examples:
+            break
+
+    wandb.log({name: wandb.Table(data = raw_data, columns=["prompt", "response", "output_text"])})
+
+
+def test_and_log(model, tokenizer, dataset, name):
+    log_data=[]
+    for i, data in enumerate(dataset):
         prompt = create_prompt(
             data['user'], data['answer'], include_response=False)
+        
         response = data['answer']
 
-        inputs = tokenizer(prompt, padding=True, truncation=True, max_length=get_max_length(
-            model), return_tensors="pt").to(device)
+        output_text = get_output_text(model, tokenizer, prompt)
+        
+        log_data.append([prompt, response, output_text])
+        print("Prompt: ", prompt)
+        print("Response: ", response)
+        if i > 2:
+            break
 
-        outputs = model.generate(**inputs, max_new_tokens=100)
-        breakpoint()
-        print("prompt ", prompt)
-        print("response ", response)
-        print("output ", tokenizer.decode(
-            outputs[0], skip_special_tokens=True))
+    wandb.log({name: wandb.Table(data = log_data, columns=["prompt", "response", "output_text"])})
+
+
+def test_model(model, tokenizer, dataset):
+    test_and_log(model, tokenizer, dataset['train'], "train_results") 
+    test_and_log(model, tokenizer, dataset['test'], "test_results")
+
 
 
 if __name__ == "__main__":
@@ -426,13 +478,20 @@ if __name__ == "__main__":
                           help="Don't use cuda")
     argparse.add_argument("--bert", action='store_true',
                           help="Use bert for fast testing")
+    argparse.add_argument("--wandb", action='store_true', help="Log with wandb")
+
 
     argparse.add_argument("--all", action='store_true')
+
     args = argparse.parse_args()
 
     llama_model_path = os.path.join(args.llama_path, "models")
     llama_model_filename = os.path.join(
         llama_model_path, "models/ggml-model-q4_0.gguf")
+
+    if args.wandb:
+        wandb.init(project="otto")
+
 
     if args.bert:
         args.base_model_name = "bert-base-uncased"
@@ -467,12 +526,17 @@ if __name__ == "__main__":
     processed_dataset = preprocess_dataset(
         tokenizer, max_length, seed, dataset)
 
+    split_dataset = processed_dataset['train'].train_test_split(test_size=0.3)
+
+
     if args.test_model:
-        test_model(model, tokenizer, dataset, use_cuda)
+        test_model(model, tokenizer, split_dataset, use_cuda)
+
+
 
     if args.train_model:
         print("Training on dataset of length", len(processed_dataset["train"]))
-        train(model, tokenizer, processed_dataset,
+        train(model, tokenizer, split_dataset,
               args.checkpoint_dir, use_cuda, args.num_train_epochs)
 
     if args.merge_model:
