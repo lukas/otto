@@ -257,8 +257,39 @@ function System() {
   function llmSettingsPanel() {
     return (
       <Box>
+        <Button color="inherit" onClick={() => { socket.emit("start_llm", llmSettings); }}>Start LLM</Button>
+        <Button color="inherit" onClick={() => { socket.emit("stop_llm"); setRawLLM(rawLLM => ""); }}>Stop LLM</Button>
+        <FormGroup row sx={{ mt: "8px", display: 'flex', flexDirection: 'column' }}>
+          {availableLLMModels.length > 0 ? (
+            <FormControl sx={{ mb: 1, width: 300 }}>
+              <InputLabel id="preset-label">Model</InputLabel>
+              <Select
+                labelId="modell"
+                style={{ width: "400px", maxHeight: "48px" }}
+                input={<OutlinedInput label="Model" />}
+                label="Model"
+                value={String(llmModelIndex)}
+                onChange={(e: SelectChangeEvent) => {
+                  setLLMModelIndex(Number(e.target.value))
+                  setLLMSettings((llmSettings) => { return { ...llmSettings, model: availableLLMModels[Number(e.target.value)].model } })
+                }}>
+                {availableLLMModels.map((model, i) => (
+                  <MenuItem key={i} value={i}>{model.model}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          ) : (
+            <p>No Models found from Server</p>
+          )}
 
-      </Box>
+          <FormControlLabel control={<Switch checked={llmSettings.forceGrammar} onChange={(v) => setLLMSettings((llmSettings) => { return { ...llmSettings, forceGrammar: v.target.checked } })} />} label="Force Grammar" />
+          <TextField id="outlined-basic" label="Temperature" value={llmSettings.temperature}
+            style={{ width: '200px' }}
+            onChange={(e) => { }} />
+          <TextField style={{ marginTop: "8px", width: '200px' }} id="N Predict" label=" N Predict" value={llmSettings.n_predict}
+            onChange={(e) => { setLLMSettings((llmSettings) => { return { ...llmSettings, n_predict: e.target.value } }) }} />
+        </FormGroup >
+      </Box >
     )
   }
 
