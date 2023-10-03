@@ -128,131 +128,40 @@ function System() {
 
   function llmSettingsPanel() {
     return (
-      <CustomTabPanel value={tabValue} index={2} >
-        <Accordion>
-          <AccordionSummary expandIcon={<ExpandMoreSharp />}>
-            <Typography variant="h5" >Interact</Typography>
+      <Box>
+        <Button color="inherit" onClick={() => { socket.emit("start_llm", llmSettings); }}>Start LLM</Button>
+        <Button color="inherit" onClick={() => { socket.emit("stop_llm"); setRawLLM(rawLLM => ""); }}>Stop LLM</Button>
+        <FormGroup row sx={{ mt: "8px", display: 'flex', flexDirection: 'column' }}>
+          {availableLLMModels.length > 0 ? (
+            <FormControl sx={{ mb: 1, width: 300 }}>
+              <InputLabel id="preset-label">Model</InputLabel>
+              <Select
+                labelId="modell"
+                style={{ width: "400px", maxHeight: "48px" }}
+                input={<OutlinedInput label="Model" />}
+                label="Model"
+                value={String(llmModelIndex)}
+                onChange={(e: SelectChangeEvent) => {
+                  setLLMModelIndex(Number(e.target.value))
+                  setLLMSettings((llmSettings) => { return { ...llmSettings, model: availableLLMModels[Number(e.target.value)].model } })
+                }}>
+                {availableLLMModels.map((model, i) => (
+                  <MenuItem key={i} value={i}>{model.model}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          ) : (
+            <p>No Models found from Server</p>
+          )}
 
-          </AccordionSummary>
-          <AccordionDetails>
-            <Paper sx={{ m: "12px", p: "12px" }}>
-              <Box>
-                {promptPresets.length > 0 ? (
-                  <FormControl sx={{ mb: 1, width: 300 }}>
-                    <InputLabel id="preset-label">Preset Prompt</InputLabel>
-                    <Select
-
-                      labelId="preset-label"
-                      style={{ width: "400px", maxHeight: "48px" }}
-                      input={<OutlinedInput label="Preset Prompt" />}
-                      label="Preset Prompt"
-                      value={String(promptSetupIndex)}
-                      onChange={(e: SelectChangeEvent) => {
-                        setPromptSetupIndex((promptPresetSelectValue) => Number(e.target.value))
-                        setPromptSetup(promptPresets[Number(e.target.value)].prompt);
-                        socket.emit("set_prompt_setup", promptPresets[Number(e.target.value)].prompt)
-                      }}>
-                      {promptPresets.map((preset, i) => (
-                        <MenuItem key={preset.name} value={i}>{preset.name}</MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                ) : (
-                  <p>No Presets Found from Server</p>
-                )}
-
-              </Box>
-              <Box maxHeight="400px" sx={{ flexDirection: 'column' }}>
-                <TextField multiline minRows={5} sx={{ flexGrow: 1, maxHeight: '340px', overflow: 'auto' }} style={{ width: "100%" }} defaultValue={promptSetup}
-                  onChange={(e) => { setPromptSetup(e.target.value); socket.emit("set_prompt_setup", e.target.value) }} />
-                <FormGroup row sx={{ mt: "8px", height: "60px" }}>
-                  <TextField style={{ flex: 1 }} id="outlined-basic" label="Human Response" variant="outlined" value={userPrompt}
-                    onChange={(e) => { setUserPrompt(e.target.value) }} />
-                  <Button color="inherit" onClick={() => { socket.emit("manual_prompt", userPrompt); }}>Chat</Button>
-                  <Button color="inherit" onClick={() => { socket.emit("stop_talking", userPrompt); }}>Stop</Button>
-
-                  <Button color="inherit" onClick={() => { socket.emit("reset_dialog"); }}>Reset</Button>
-
-                </FormGroup>
-              </Box>
-            </Paper >
-            {(userPrompt !== "") && (
-              <Paper sx={{ m: "12px", p: "12px" }}>
-                <Typography variant="h5" sx={{ textAlign: 'center' }}>Chat</Typography>
-                {(("old_prompts" in oldPrompts) && ("old_responses" in oldPrompts)) && (
-                  ((oldPrompts["old_prompts"] as Array<string>).map((old_prompt: string, i: number) => (
-                    <p key={i}><b>Human</b> {old_prompt}<br /><b>Bot</b> {(oldPrompts["old_responses"] as Array<string>)[i]}</p>
-                  ))
-                  ))
-                }
-                <p><b>Human</b> {userPrompt}</p>
-                {response !== "" && (<p><b>Bot</b> {response}</p>)}
-              </Paper>
-            )}
-          </AccordionDetails>
-
-        </Accordion>
-        <Accordion>
-          <AccordionSummary expandIcon={<ExpandMoreSharp />}>
-            <Typography variant="h5" >Settings</Typography>
-
-          </AccordionSummary>
-          <AccordionDetails>
-            <Button color="inherit" onClick={() => { socket.emit("start_llm", llmSettings); }}>Start LLM</Button>
-            <Button color="inherit" onClick={() => { socket.emit("stop_llm"); setRawLLM(rawLLM => ""); }}>Stop LLM</Button>
-            <FormGroup row sx={{ mt: "8px", display: 'flex', flexDirection: 'column' }}>
-              {availableLLMModels.length > 0 ? (
-                <FormControl sx={{ mb: 1, width: 300 }}>
-                  <InputLabel id="preset-label">Model</InputLabel>
-                  <Select
-
-                    labelId="modell"
-                    style={{ width: "400px", maxHeight: "48px" }}
-                    input={<OutlinedInput label="Model" />}
-                    label="Model"
-                    value={String(llmModelIndex)}
-                    onChange={(e: SelectChangeEvent) => {
-                      setLLMModelIndex(Number(e.target.value))
-                      setLLMSettings((llmSettings) => { return { ...llmSettings, model: availableLLMModels[Number(e.target.value)].model } })
-                    }}>
-                    {availableLLMModels.map((model, i) => (
-                      <MenuItem key={i} value={i}>{model.model}</MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              ) : (
-                <p>No Models found from Server</p>
-              )}
-              <FormControlLabel control={<Switch checked={llmSettings.forceGrammar} onChange={(v) => setLLMSettings((llmSettings) => { return { ...llmSettings, forceGrammar: v.target.checked } })} />} label="Force Grammar" />
-
-              <TextField id="outlined-basic" label="Temperature" value={llmSettings.temperature}
-                style={{ width: '200px' }}
-                onChange={(e) => { }} />
-              <TextField style={{ marginTop: "8px", width: '200px' }} id="N Predict" label=" N Predict" value={llmSettings.n_predict}
-                onChange={(e) => { setLLMSettings((llmSettings) => { return { ...llmSettings, n_predict: e.target.value } }) }} />
-            </FormGroup>
-          </AccordionDetails>
-        </Accordion>
-
-        <Accordion>
-          <AccordionSummary expandIcon={<ExpandMoreSharp />}><Typography variant="h5" >LLM Logs</Typography></AccordionSummary>
-          <AccordionDetails>
-
-
-            {(rawLLM !== "") && (
-              <Paper sx={{ m: "12px" }} >
-
-
-                <pre style={{ height: "500px", overflow: "auto", display: "flex", flexDirection: "column-reverse" }}>
-                  {rawLLM}
-
-                </pre>
-              </Paper>
-            )}
-          </AccordionDetails>
-        </Accordion>
-      </CustomTabPanel>
-
+          <FormControlLabel control={<Switch checked={llmSettings.forceGrammar} onChange={(v) => setLLMSettings((llmSettings) => { return { ...llmSettings, forceGrammar: v.target.checked } })} />} label="Force Grammar" />
+          <TextField id="outlined-basic" label="Temperature" value={llmSettings.temperature}
+            style={{ width: '200px' }}
+            onChange={(e) => { }} />
+          <TextField style={{ marginTop: "8px", width: '200px' }} id="N Predict" label=" N Predict" value={llmSettings.n_predict}
+            onChange={(e) => { setLLMSettings((llmSettings) => { return { ...llmSettings, n_predict: e.target.value } }) }} />
+        </FormGroup >
+      </Box >
     )
   }
 
