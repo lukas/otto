@@ -296,7 +296,17 @@ function System() {
 
   function overviewLogsPanel() {
     return (
-      <Box></Box>
+      <Box>
+
+        <Paper sx={{ m: "12px" }} >
+          <pre style={{ height: "500px", overflow: "auto", display: "flex", flexDirection: "column-reverse" }}>
+            {overview}
+
+          </pre>
+        </Paper>
+
+
+      </Box>
     )
   }
 

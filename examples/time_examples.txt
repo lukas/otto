@@ -65,3 +65,6 @@ Assistant: timecheck()
 
 User: Do you have the time?
 Assistant: timecheck()
+
+User: Wake up. What time is it?
+Assistant: timecheck()
