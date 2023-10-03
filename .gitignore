@@ -1,0 +1,4 @@
+*.pyc
+wandb/
+dataset/
+.python-version

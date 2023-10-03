@@ -1,0 +1,2 @@
+wandb @ git+https://github.com/wandb/wandb@cbedc5423d33c61dd80bf731b548e3d9c3e06a2f
+weave @ git+https://github.com/wandb/weave@053fb4b07af50c53266591c336909c2891c340c6

@@ -194,9 +194,6 @@ other() should be used when none of the other commands apply
 ### User: There's nothing it's like.
 ### Assistant: other()
 
-### User: It's a fucking design. You can have everything in it. That is fucking... That's it.
-### Assistant: other()
-
 ### User: Wow, wow, wow.
 ### Assistant: other()
 
@@ -461,9 +458,6 @@ other() should be used when none of the other commands apply
 ### User: Three, two, more.
 ### Assistant: other()
 
-### User: Fucking bullshit.
-### Assistant: other()
-
 ### User: set up.
 ### Assistant: other()
 
@@ -507,9 +501,6 @@ other() should be used when none of the other commands apply
 ### Assistant: other()
 
 ### User: Thank you. [BLANK_AUDIO]
-### Assistant: other()
-
-### User: Just kidding. Fuck yeah. So screwdriver. Nothing's wrong with screwdriver.
 ### Assistant: other()
 
 ### User: They are known to be masters of their domain.
@@ -569,9 +560,6 @@ other() should be used when none of the other commands apply
 ### User: Okay, well, this is a test.
 ### Assistant: other()
 
-### User: They're fucking insane.
-### Assistant: other()
-
 ### User: And, code, these are the 4aNSN.
 ### Assistant: other()
 
@@ -600,12 +588,6 @@ other() should be used when none of the other commands apply
 ### Assistant: other()
 
 ### User: Yeah, just give me a text of what you need and I can go grab it.
-### Assistant: other()
-
-### User: It's a fucking design.
-### Assistant: other()
-
-### User: Nah, bats ain't in sex.
 ### Assistant: other()
 
 ### User: But don't worry, I won't tell anyone that you thought whales were fish. It'll be our little secret.
@@ -702,9 +684,6 @@ other() should be used when none of the other commands apply
 ### Assistant: other()
 
 ### User: She's in the mirror, man.
-### Assistant: other()
-
-### User: I'm just out of the fucking world now.
 ### Assistant: other()
 
 ### User: Do you think you can stuff over her? - Sure.
@@ -1052,9 +1031,6 @@ other() should be used when none of the other commands apply
 ### User: context of the text.
 ### Assistant: other()
 
-### User: Just kidding. Fuck yeah.
-### Assistant: other()
-
 ### User: It's got a lot of factors, you know?
 ### Assistant: other()
 
@@ -1388,9 +1364,6 @@ other() should be used when none of the other commands apply
 ### User: This is me.
 ### Assistant: other()
 
-### User: I'm gonna go take a shit.
-### Assistant: other()
-
 ### User: And
 ### Assistant: other()
 
@@ -1415,9 +1388,6 @@ other() should be used when none of the other commands apply
 ### User: Nice! Drive, drive, drive!
 ### Assistant: other()
 
-### User: So fucking retarded.
-### Assistant: other()
-
 ### User: That was a good one. And then this is my little 15th birthday.
 ### Assistant: other()
 
@@ -1440,9 +1410,6 @@ other() should be used when none of the other commands apply
 ### Assistant: other()
 
 ### User: Let's go.
-### Assistant: other()
-
-### User: Fucking bullshit
 ### Assistant: other()
 
 ### User: Good, good.
