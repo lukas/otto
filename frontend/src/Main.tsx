@@ -1,14 +1,15 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Typography } from '@mui/material';
 import logo from './robot.svg';
 import { io, Socket } from 'socket.io-client';
-import Switch from '@mui/material/Switch';
-import ToggleButton from '@mui/material/ToggleButton';
+
 import Box from '@mui/material/Box';
 import VolumeOffIcon from '@mui/icons-material/VolumeOff';
 import VolumeUpIcon from '@mui/icons-material/VolumeUp';
-import Stack from '@mui/material/Stack';
+import SettingsIcon from '@mui/icons-material/Settings';
 import IconButton from '@mui/material/IconButton';
+import { useNavigate } from 'react-router-dom';
+
 
 let socket: Socket
 
@@ -18,6 +19,7 @@ function Main() {
     const [sleeping, setSleeping] = useState(false)
     const [soundFlag, setSoundFlag] = useState(false)
     const [timer, setTimer] = useState(0)
+    const navigate = useNavigate();
     const speakFlag = true;
     let utterance: SpeechSynthesisUtterance;
     function newMessage(message: string) {
@@ -27,6 +29,7 @@ function Main() {
             socket.emit("start_speaking");
             utterance = new SpeechSynthesisUtterance(message);
             utterance.onend = () => {
+                console.log("Done speaking")
                 socket.emit("stop_speaking");
             }
             speechSynthesis.speak(utterance);
@@ -100,6 +103,11 @@ function Main() {
         >
             <Box display="flex" width="100%" flexDirection="row-reverse">
 
+                <IconButton aria-label="settings" onClick={() => {
+                    navigate('/system');
+                }}>
+                    <SettingsIcon />
+                </IconButton>
 
                 <IconButton aria-label="sound" onClick={() => {
                     setSoundFlag(!soundFlag); stopSpeaking()
@@ -112,6 +120,7 @@ function Main() {
                         {new Date(timer * 1000).toISOString().substring(11, 19)}
                     </Typography>
                 }
+
 
             </Box>
 

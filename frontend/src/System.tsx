@@ -2,13 +2,11 @@ import React, { useEffect, useState } from 'react';
 import Box from '@mui/material/Box';
 import Paper from '@mui/material/Paper';
 import Button from "@mui/material/Button";
-import Grid from "@mui/material/Grid";
 import { styled } from '@mui/material/styles';
 import AppBar from '@mui/material/AppBar';
 import Typography from '@mui/material/Typography';
 import TextField from '@mui/material/TextField';
 import FormGroup from '@mui/material/FormGroup';
-import { TextareaAutosize } from '@mui/base/TextareaAutosize';
 import { io, Socket } from 'socket.io-client';
 import MenuItem from '@mui/material/MenuItem';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
@@ -19,7 +17,11 @@ import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
-import { stat } from 'fs';
+import Accordion from '@mui/joy/Accordion';
+
+import AccordionDetails from '@mui/joy/AccordionDetails';
+import AccordionGroup from '@mui/joy/AccordionGroup';
+import AccordionSummary from '@mui/joy/AccordionSummary';
 
 const Item = styled(Paper)(({ theme }) => ({
   backgroundColor: theme.palette.mode === 'dark' ? '#1A2027' : '#fff',
@@ -105,52 +107,115 @@ function System() {
   };
 
 
-  function dialogSettingsPanel() {
+  function overviewPanel() {
     return (
       <CustomTabPanel value={tabValue} index={0}>
+        <AccordionGroup>
+          <Accordion>
+            <AccordionSummary>Settings</AccordionSummary>
+            <AccordionDetails>
+              {overviewSettingsPanel()}
+            </AccordionDetails>
+          </Accordion>
+          <Accordion>
+            <AccordionSummary>Logs</AccordionSummary>
+            <AccordionDetails>
+              {overviewLogsPanel()}
+            </AccordionDetails>
+          </Accordion>
+        </AccordionGroup>
 
-        <Paper sx={{ m: "12px", p: "12px" }}>
-          <Box>
-            <Typography variant="h5" sx={{ textAlign: 'center' }}>Bot Setup</Typography>
-            {promptPresets.length > 0 ? (
-              <FormControl sx={{ mb: 1, width: 300 }}>
-                <InputLabel id="preset-label">Preset Prompt</InputLabel>
-                <Select
 
-                  labelId="preset-label"
-                  style={{ width: "400px", maxHeight: "48px" }}
-                  input={<OutlinedInput label="Preset Prompt" />}
-                  label="Preset Prompt"
-                  value={String(promptSetupIndex)}
-                  onChange={(e: SelectChangeEvent) => {
-                    setPromptSetupIndex((promptPresetSelectValue) => Number(e.target.value))
-                    setPromptSetup(promptPresets[Number(e.target.value)].prompt);
-                    socket.emit("set_prompt_setup", promptPresets[Number(e.target.value)].prompt)
-                  }}>
-                  {promptPresets.map((preset, i) => (
-                    <MenuItem key={preset.name} value={i}>{preset.name}</MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            ) : (
-              <p>No Presets Found from Server</p>
-            )}
 
-          </Box>
-          <Box maxHeight="400px" sx={{ flexDirection: 'column' }}>
-            <TextField multiline minRows={5} sx={{ flexGrow: 1, maxHeight: '340px', overflow: 'auto' }} style={{ width: "100%" }} defaultValue={promptSetup}
-              onChange={(e) => { setPromptSetup(e.target.value); socket.emit("set_prompt_setup", e.target.value) }} />
-            <FormGroup row sx={{ mt: "8px", height: "60px" }}>
-              <TextField style={{ flex: 1 }} id="outlined-basic" label="Human Response" variant="outlined" value={userPrompt}
-                onChange={(e) => { setUserPrompt(e.target.value) }} />
-              <Button color="inherit" onClick={() => { socket.emit("manual_prompt", userPrompt); }}>Chat</Button>
-              <Button color="inherit" onClick={() => { socket.emit("stop_talking", userPrompt); }}>Stop</Button>
 
-              <Button color="inherit" onClick={() => { socket.emit("reset_dialog"); }}>Reset</Button>
+      </CustomTabPanel>
+    )
+  }
 
-            </FormGroup>
-          </Box>
-        </Paper >
+  function llmPanel() {
+    return (
+      <CustomTabPanel value={tabValue} index={2} >
+        <AccordionGroup>
+          <Accordion>
+            <AccordionSummary>Settings</AccordionSummary>
+            <AccordionDetails>
+              {llmSettingsPanel()}
+            </AccordionDetails>
+          </Accordion>
+          <Accordion>
+            <AccordionSummary>Call LLM Manually</AccordionSummary>
+            <AccordionDetails>
+              {callLlmManually()}
+            </AccordionDetails>
+          </Accordion>
+
+          <Accordion>
+            <AccordionSummary>Logs</AccordionSummary>
+            <AccordionDetails>
+              {llmLogsPanel()}
+            </AccordionDetails>
+          </Accordion>
+          <Accordion>
+            <AccordionSummary>System Logs</AccordionSummary>
+            <AccordionDetails>
+              {llmSystemLogsPanel()}
+            </AccordionDetails>
+          </Accordion>
+        </AccordionGroup>
+      </CustomTabPanel>
+    )
+  }
+
+  function callLlmManually() {
+    return (
+      <Paper sx={{ m: "12px", p: "12px" }}>
+        <Box>
+          {promptPresets.length > 0 ? (
+            <FormControl sx={{ mb: 1, width: 300 }}>
+              <InputLabel id="preset-label">Preset Prompt</InputLabel>
+              <Select
+
+                labelId="preset-label"
+                style={{ width: "400px", maxHeight: "48px" }}
+                input={<OutlinedInput label="Preset Prompt" />}
+                label="Preset Prompt"
+                value={String(promptSetupIndex)}
+                onChange={(e: SelectChangeEvent) => {
+                  setPromptSetupIndex((promptPresetSelectValue) => Number(e.target.value))
+                  setPromptSetup(promptPresets[Number(e.target.value)].prompt);
+                  socket.emit("set_prompt_setup", promptPresets[Number(e.target.value)].prompt)
+                }}>
+                {promptPresets.map((preset, i) => (
+                  <MenuItem key={preset.name} value={i}>{preset.name}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          ) : (
+            <p>No Presets Found from Server</p>
+          )}
+
+        </Box>
+        <Box maxHeight="400px" sx={{ flexDirection: 'column' }}>
+          <TextField multiline minRows={5} sx={{ flexGrow: 1, maxHeight: '340px', overflow: 'auto' }} style={{ width: "100%" }} defaultValue={promptSetup}
+            onChange={(e) => { setPromptSetup(e.target.value); socket.emit("set_prompt_setup", e.target.value) }} />
+          <FormGroup row sx={{ mt: "8px", height: "60px" }}>
+            <TextField style={{ flex: 1 }} id="outlined-basic" label="Human Response" variant="outlined" value={userPrompt}
+              onChange={(e) => { setUserPrompt(e.target.value) }} />
+            <Button color="inherit" onClick={() => { socket.emit("manual_prompt", userPrompt); }}>Chat</Button>
+            <Button color="inherit" onClick={() => { socket.emit("stop_talking", userPrompt); }}>Stop</Button>
+
+            <Button color="inherit" onClick={() => { socket.emit("reset_dialog"); }}>Reset</Button>
+
+          </FormGroup>
+        </Box>
+
+      </Paper >
+    )
+  }
+
+  function llmLogsPanel() {
+    return (
+      <Box>
         {(userPrompt !== "") && (
           <Paper sx={{ m: "12px", p: "12px" }}>
             <Typography variant="h5" sx={{ textAlign: 'center' }}>Chat</Typography>
@@ -164,20 +229,32 @@ function System() {
             {response !== "" && (<p><b>Bot</b> {response}</p>)}
           </Paper>
         )}
-        <Paper sx={{ m: "12px", p: "12px", maxHeight: '400px', flexDirection: 'column' }} >
-          <Typography variant="h5" sx={{ textAlign: 'center' }}>Listening Transcript</Typography>
-          <pre style={{ overflow: 'auto', height: '300px', display: "flex", flexDirection: "column-reverse" }}>
-            {transcription}
-          </pre>
-        </Paper>
-
-      </CustomTabPanel>
+      </Box>
     )
+  }
+
+
+  function llmSystemLogsPanel() {
+    return (
+      <Box>
+
+        {
+          (rawLLM !== "") && (
+            <Paper sx={{ m: "12px" }} >
+              <Typography variant="h5" sx={{ textAlign: 'center' }}>LLM Logs</Typography>
+              <pre style={{ height: "500px", overflow: "auto", display: "flex", flexDirection: "column-reverse" }}>
+                {rawLLM}
+
+              </pre>
+            </Paper>
+          )
+        }
+      </Box>)
   }
 
   function llmSettingsPanel() {
     return (
-      <CustomTabPanel value={tabValue} index={3} >
+      <Box>
         <Button color="inherit" onClick={() => { socket.emit("start_llm", llmSettings); }}>Start LLM</Button>
         <Button color="inherit" onClick={() => { socket.emit("stop_llm"); setRawLLM(rawLLM => ""); }}>Stop LLM</Button>
         <FormGroup row sx={{ mt: "8px", display: 'flex', flexDirection: 'column' }}>
@@ -211,23 +288,24 @@ function System() {
           <TextField style={{ marginTop: "8px", width: '200px' }} id="N Predict" label=" N Predict" value={llmSettings.n_predict}
             onChange={(e) => { setLLMSettings((llmSettings) => { return { ...llmSettings, n_predict: e.target.value } }) }} />
         </FormGroup>
-        {(rawLLM !== "") && (
-          <Paper sx={{ m: "12px" }} >
-            <Typography variant="h5" sx={{ textAlign: 'center' }}>LLM Logs</Typography>
-            <pre style={{ height: "500px", overflow: "auto", display: "flex", flexDirection: "column-reverse" }}>
-              {rawLLM}
+      </Box>
 
-            </pre>
-          </Paper>
-        )}
-      </CustomTabPanel>
+
 
     )
   }
 
-  function systemSettingsPanel() {
+
+  function overviewLogsPanel() {
     return (
-      <CustomTabPanel value={tabValue} index={1}>
+      <Box></Box>
+    )
+  }
+
+
+  function overviewSettingsPanel() {
+    return (
+      <Box>
         <Button color="inherit" onClick={() => {
           socket.emit("start_automation",
             {
@@ -270,13 +348,71 @@ function System() {
             </Paper>
           )
         }
-      </CustomTabPanel>
+      </Box>
     )
   }
 
-  function transcribeSettingsPanel() {
+  function transcriptionPanel() {
     return (
-      <CustomTabPanel value={tabValue} index={2}>
+      <CustomTabPanel value={tabValue} index={1}>
+        <AccordionGroup>
+          <Accordion>
+            <AccordionSummary>Settings</AccordionSummary>
+            <AccordionDetails>
+              {transcriptionSettingsPanel()}
+            </AccordionDetails>
+          </Accordion>
+          <Accordion>
+            <AccordionSummary>Logs</AccordionSummary>
+            <AccordionDetails>
+              {transcriptionLogsPanel()}
+            </AccordionDetails>
+          </Accordion>
+          <Accordion>
+            <AccordionSummary>System Logs</AccordionSummary>
+            <AccordionDetails>
+              {transcriptionSystemLogsPanel()}
+            </AccordionDetails>
+          </Accordion>
+        </AccordionGroup >
+      </CustomTabPanel>
+
+
+    )
+  }
+
+  function transcriptionLogsPanel() {
+    return (
+      <Paper sx={{ m: "12px", p: "12px", maxHeight: '400px', flexDirection: 'column' }} >
+        <Typography variant="h5" sx={{ textAlign: 'center' }}>Listening Transcript</Typography>
+        <pre style={{ overflow: 'auto', height: '300px', display: "flex", flexDirection: "column-reverse" }}>
+          {transcription}
+        </pre>
+      </Paper>
+    )
+  }
+
+  function transcriptionSystemLogsPanel() {
+    return (
+      <Box>
+        {
+          (rawTranscription !== "") && (
+            <Paper sx={{ m: "12px" }} style={{ height: "100%", overflow: "auto" }}>
+              <Typography variant="h5" sx={{ textAlign: 'center' }}>Transcription Logs</Typography>
+              <pre style={{ height: "500px", overflow: "auto", display: "flex", flexDirection: "column-reverse" }}>
+                {rawTranscription}
+
+              </pre>
+            </Paper>
+          )
+        }
+      </Box>
+    )
+  }
+
+  function transcriptionSettingsPanel() {
+    return (
+      <Box>
         <Button color="inherit" onClick={() => { socket.emit("start_transcribe", transcribeSettings); }}>Start Transcription</Button>
         <Button color="inherit" onClick={() => { socket.emit("stop_transcribe"); setRawTranscription(rawTranscription => ""); }}>Stop Transcription</Button>
         <FormGroup row sx={{ mt: "8px", display: 'flex', flexDirection: 'column' }}>
@@ -326,43 +462,61 @@ function System() {
             (e) => { setTranscribeSettings((transcribeSettings) => { return { ...transcribeSettings, 'speed-up': e.target.checked } }) }} />} label="2x Speed" />
 
         </FormGroup >
-        {
-          (rawTranscription !== "") && (
-            <Paper sx={{ m: "12px" }} style={{ height: "100%", overflow: "auto" }}>
-              <Typography variant="h5" sx={{ textAlign: 'center' }}>Transcription Logs</Typography>
-              <pre style={{ height: "500px", overflow: "auto", display: "flex", flexDirection: "column-reverse" }}>
-                {rawTranscription}
+      </Box>
 
-              </pre>
-            </Paper>
-          )
-        }
-      </CustomTabPanel >
+    )
+
+  }
+
+  function skillPanel() {
+    return (
+      <CustomTabPanel value={tabValue} index={3}>
+        <AccordionGroup>
+          <Accordion>
+            <AccordionSummary>Settings</AccordionSummary>
+            <AccordionDetails>
+              {skillSettingsPanel()}
+            </AccordionDetails>
+          </Accordion>
+          <Accordion>
+            <AccordionSummary>Call Skill Manually</AccordionSummary>
+            <AccordionDetails>
+              {callSkillManuallyPanel()}
+            </AccordionDetails>
+          </Accordion>
+
+        </AccordionGroup >
+      </CustomTabPanel>
+
+
     )
 
   }
 
   function skillSettingsPanel() {
     return (
-      <CustomTabPanel value={tabValue} index={4} >
+      <Box></Box>
+    )
+  }
 
+  function callSkillManuallyPanel() {
+    return (
 
-        <Paper sx={{ m: "12px" }} >
-          <Typography variant="h5" sx={{ textAlign: 'center' }}>Skills Call Log</Typography>
-          <pre style={{ height: "500px", overflow: "auto", display: "flex", flexDirection: "column-reverse" }}>
-            {functionCallStr}
+      <Paper sx={{ m: "12px" }} >
+        <Typography variant="h5" sx={{ textAlign: 'center' }}>Skills Call Log</Typography>
+        <pre style={{ height: "500px", overflow: "auto", display: "flex", flexDirection: "column-reverse" }}>
+          {functionCallStr}
 
-          </pre>
-          <FormGroup row sx={{ mt: "8px", height: "60px" }}>
-            <TextField style={{ flex: 1 }} id="outlined-basic" label="Manual Call" variant="outlined" value={userFunctionCallStr}
-              onChange={(e) => { setUserFunctionCallStr(e.target.value) }} />
+        </pre>
+        <FormGroup row sx={{ mt: "8px", height: "60px" }}>
+          <TextField style={{ flex: 1 }} id="outlined-basic" label="Manual Call" variant="outlined" value={userFunctionCallStr}
+            onChange={(e) => { setUserFunctionCallStr(e.target.value) }} />
 
-            <Button color="inherit" onClick={() => { socket.emit("call", userFunctionCallStr); }}>Call</Button>
+          <Button color="inherit" onClick={() => { socket.emit("call", userFunctionCallStr); }}>Call</Button>
 
-          </FormGroup>
-        </Paper>
+        </FormGroup>
+      </Paper>
 
-      </CustomTabPanel>
     )
   }
 
@@ -468,20 +622,18 @@ function System() {
 
       <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
         <Tabs value={tabValue} onChange={handleChange} aria-label="basic tabs example">
-          <Tab label="Dialog" {...a11yProps(0)} />
-          <Tab label="Raw Logs" {...a11yProps(1)} />
-          <Tab label="Transcription" {...a11yProps(2)} />
-          <Tab label="LLM" {...a11yProps(3)} />
-          <Tab label="Skills" {...a11yProps(4)} />
+          <Tab label="System" {...a11yProps(0)} />
+          <Tab label="Transcription" {...a11yProps(1)} />
+          <Tab label="LLM" {...a11yProps(2)} />
+          <Tab label="Skills" {...a11yProps(3)} />
 
 
         </Tabs>
       </Box>
-      {dialogSettingsPanel()}
-      {systemSettingsPanel()}
-      {transcribeSettingsPanel()}
-      {llmSettingsPanel()}
-      {skillSettingsPanel()}
+      {overviewPanel()}
+      {transcriptionPanel()}
+      {llmPanel()}
+      {skillPanel()}
 
     </div >
 
