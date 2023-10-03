@@ -2,13 +2,11 @@ import React, { useEffect, useState } from 'react';
 import Box from '@mui/material/Box';
 import Paper from '@mui/material/Paper';
 import Button from "@mui/material/Button";
-import Grid from "@mui/material/Grid";
 import { styled } from '@mui/material/styles';
 import AppBar from '@mui/material/AppBar';
 import Typography from '@mui/material/Typography';
 import TextField from '@mui/material/TextField';
 import FormGroup from '@mui/material/FormGroup';
-import { TextareaAutosize } from '@mui/base/TextareaAutosize';
 import { io, Socket } from 'socket.io-client';
 import MenuItem from '@mui/material/MenuItem';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
@@ -19,9 +17,11 @@ import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
-import { stat } from 'fs';
-import { Accordion, AccordionSummary, AccordionDetails } from '@mui/material';
-import { ExpandMoreSharp } from '@mui/icons-material';
+import Accordion from '@mui/joy/Accordion';
+
+import AccordionDetails from '@mui/joy/AccordionDetails';
+import AccordionGroup from '@mui/joy/AccordionGroup';
+import AccordionSummary from '@mui/joy/AccordionSummary';
 
 const Item = styled(Paper)(({ theme }) => ({
   backgroundColor: theme.palette.mode === 'dark' ? '#1A2027' : '#fff',
@@ -109,21 +109,149 @@ function System() {
   };
 
 
-  function overviewSettingsPanel() {
+  function overviewPanel() {
     return (
       <CustomTabPanel value={tabValue} index={0}>
+        <AccordionGroup>
+          <Accordion>
+            <AccordionSummary>Settings</AccordionSummary>
+            <AccordionDetails>
+              {overviewSettingsPanel()}
+            </AccordionDetails>
+          </Accordion>
+          <Accordion>
+            <AccordionSummary>Logs</AccordionSummary>
+            <AccordionDetails>
+              {overviewLogsPanel()}
+            </AccordionDetails>
+          </Accordion>
+        </AccordionGroup>
 
-        <Paper sx={{ m: "12px", p: "12px" }} >
-          <Typography variant="h5" sx={{ textAlign: 'center' }}>System Log</Typography>
-          <pre>
-            {overview}
-          </pre>
 
 
-        </Paper>
 
       </CustomTabPanel>
     )
+  }
+
+  function llmPanel() {
+    return (
+      <CustomTabPanel value={tabValue} index={2} >
+        <AccordionGroup>
+          <Accordion>
+            <AccordionSummary>Settings</AccordionSummary>
+            <AccordionDetails>
+              {llmSettingsPanel()}
+            </AccordionDetails>
+          </Accordion>
+          <Accordion>
+            <AccordionSummary>Call LLM Manually</AccordionSummary>
+            <AccordionDetails>
+              {callLlmManually()}
+            </AccordionDetails>
+          </Accordion>
+
+          <Accordion>
+            <AccordionSummary>Logs</AccordionSummary>
+            <AccordionDetails>
+              {llmLogsPanel()}
+            </AccordionDetails>
+          </Accordion>
+          <Accordion>
+            <AccordionSummary>System Logs</AccordionSummary>
+            <AccordionDetails>
+              {llmSystemLogsPanel()}
+            </AccordionDetails>
+          </Accordion>
+        </AccordionGroup>
+      </CustomTabPanel>
+    )
+  }
+
+  function callLlmManually() {
+    return (
+      <Paper sx={{ m: "12px", p: "12px" }}>
+        <Box>
+          {promptPresets.length > 0 ? (
+            <FormControl sx={{ mb: 1, width: 300 }}>
+              <InputLabel id="preset-label">Preset Prompt</InputLabel>
+              <Select
+
+                labelId="preset-label"
+                style={{ width: "400px", maxHeight: "48px" }}
+                input={<OutlinedInput label="Preset Prompt" />}
+                label="Preset Prompt"
+                value={String(promptSetupIndex)}
+                onChange={(e: SelectChangeEvent) => {
+                  setPromptSetupIndex((promptPresetSelectValue) => Number(e.target.value))
+                  setPromptSetup(promptPresets[Number(e.target.value)].prompt);
+                  socket.emit("set_prompt_setup", promptPresets[Number(e.target.value)].prompt)
+                }}>
+                {promptPresets.map((preset, i) => (
+                  <MenuItem key={preset.name} value={i}>{preset.name}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          ) : (
+            <p>No Presets Found from Server</p>
+          )}
+
+        </Box>
+        <Box maxHeight="400px" sx={{ flexDirection: 'column' }}>
+          <TextField multiline minRows={5} sx={{ flexGrow: 1, maxHeight: '340px', overflow: 'auto' }} style={{ width: "100%" }} defaultValue={promptSetup}
+            onChange={(e) => { setPromptSetup(e.target.value); socket.emit("set_prompt_setup", e.target.value) }} />
+          <FormGroup row sx={{ mt: "8px", height: "60px" }}>
+            <TextField style={{ flex: 1 }} id="outlined-basic" label="Human Response" variant="outlined" value={userPrompt}
+              onChange={(e) => { setUserPrompt(e.target.value) }} />
+            <Button color="inherit" onClick={() => { socket.emit("manual_prompt", userPrompt); }}>Chat</Button>
+            <Button color="inherit" onClick={() => { socket.emit("stop_talking", userPrompt); }}>Stop</Button>
+
+            <Button color="inherit" onClick={() => { socket.emit("reset_dialog"); }}>Reset</Button>
+
+          </FormGroup>
+        </Box>
+
+      </Paper >
+    )
+  }
+
+  function llmLogsPanel() {
+    return (
+      <Box>
+        {(userPrompt !== "") && (
+          <Paper sx={{ m: "12px", p: "12px" }}>
+            <Typography variant="h5" sx={{ textAlign: 'center' }}>Chat</Typography>
+            {(("old_prompts" in oldPrompts) && ("old_responses" in oldPrompts)) && (
+              ((oldPrompts["old_prompts"] as Array<string>).map((old_prompt: string, i: number) => (
+                <p key={i}><b>Human</b> {old_prompt}<br /><b>Bot</b> {(oldPrompts["old_responses"] as Array<string>)[i]}</p>
+              ))
+              ))
+            }
+            <p><b>Human</b> {userPrompt}</p>
+            {response !== "" && (<p><b>Bot</b> {response}</p>)}
+          </Paper>
+        )}
+      </Box>
+    )
+  }
+
+
+  function llmSystemLogsPanel() {
+    return (
+      <Box>
+
+        {
+          (rawLLM !== "") && (
+            <Paper sx={{ m: "12px" }} >
+              <Typography variant="h5" sx={{ textAlign: 'center' }}>LLM Logs</Typography>
+              <pre style={{ height: "500px", overflow: "auto", display: "flex", flexDirection: "column-reverse" }}>
+                {rawLLM}
+
+              </pre>
+            </Paper>
+          )
+        }
+      </Box>)
   }
 
   function llmSettingsPanel() {
@@ -165,9 +293,17 @@ function System() {
     )
   }
 
-  function systemSettingsPanel() {
+
+  function overviewLogsPanel() {
     return (
-      <CustomTabPanel value={tabValue} index={4}>
+      <Box></Box>
+    )
+  }
+
+
+  function overviewSettingsPanel() {
+    return (
+      <Box>
         <Button color="inherit" onClick={() => {
           socket.emit("start_automation",
             {
@@ -210,142 +346,175 @@ function System() {
             </Paper>
           )
         }
-      </CustomTabPanel>
+      </Box>
     )
   }
 
-  function transcribeSettingsPanel() {
+  function transcriptionPanel() {
     return (
       <CustomTabPanel value={tabValue} index={1}>
-        <Accordion>
-          <AccordionSummary>
-            <Typography variant="h5" >Transcript</Typography>
+        <AccordionGroup>
+          <Accordion>
+            <AccordionSummary>Settings</AccordionSummary>
+            <AccordionDetails>
+              {transcriptionSettingsPanel()}
+            </AccordionDetails>
+          </Accordion>
+          <Accordion>
+            <AccordionSummary>Logs</AccordionSummary>
+            <AccordionDetails>
+              {transcriptionLogsPanel()}
+            </AccordionDetails>
+          </Accordion>
+          <Accordion>
+            <AccordionSummary>System Logs</AccordionSummary>
+            <AccordionDetails>
+              {transcriptionSystemLogsPanel()}
+            </AccordionDetails>
+          </Accordion>
+        </AccordionGroup >
+      </CustomTabPanel>
 
 
-          </AccordionSummary>
-          <AccordionDetails>
-            <Paper sx={{ m: "12px", p: "12px", maxHeight: '400px', flexDirection: 'column' }} >
-              <pre style={{ overflow: 'auto', height: '300px', display: "flex", flexDirection: "column-reverse" }}>
-                {transcription}
+    )
+  }
+
+  function transcriptionLogsPanel() {
+    return (
+      <Paper sx={{ m: "12px", p: "12px", maxHeight: '400px', flexDirection: 'column' }} >
+        <Typography variant="h5" sx={{ textAlign: 'center' }}>Listening Transcript</Typography>
+        <pre style={{ overflow: 'auto', height: '300px', display: "flex", flexDirection: "column-reverse" }}>
+          {transcription}
+        </pre>
+      </Paper>
+    )
+  }
+
+  function transcriptionSystemLogsPanel() {
+    return (
+      <Box>
+        {
+          (rawTranscription !== "") && (
+            <Paper sx={{ m: "12px" }} style={{ height: "100%", overflow: "auto" }}>
+              <Typography variant="h5" sx={{ textAlign: 'center' }}>Transcription Logs</Typography>
+              <pre style={{ height: "500px", overflow: "auto", display: "flex", flexDirection: "column-reverse" }}>
+                {rawTranscription}
+
               </pre>
             </Paper>
-          </AccordionDetails>
-        </Accordion>
-        <Accordion>
-          <AccordionSummary>
+          )
+        }
+      </Box>
+    )
+  }
 
-            <Typography variant="h5" >Settings</Typography>
+  function transcriptionSettingsPanel() {
+    return (
+      <Box>
+        <Button color="inherit" onClick={() => { socket.emit("start_transcribe", transcribeSettings); }}>Start Transcription</Button>
+        <Button color="inherit" onClick={() => { socket.emit("stop_transcribe"); setRawTranscription(rawTranscription => ""); }}>Stop Transcription</Button>
+        <FormGroup row sx={{ mt: "8px", display: 'flex', flexDirection: 'column' }}>
+          {availableTranscribeModels.length > 0 ? (
+            <FormControl sx={{ mb: 1, width: 300 }}>
+              <InputLabel id="preset-label">Model</InputLabel>
+              <Select
 
-          </AccordionSummary>
-          <AccordionDetails>
-            <Button color="inherit" onClick={() => { socket.emit("start_transcribe", transcribeSettings); }}>Start Transcription</Button>
-            <Button color="inherit" onClick={() => { socket.emit("stop_transcribe"); setRawTranscription(rawTranscription => ""); }}>Stop Transcription</Button>
+                labelId="modell"
+                style={{ width: "400px", maxHeight: "48px" }}
+                input={<OutlinedInput label="Model" />}
+                label="Model"
+                value={String(transcribeModelIndex)}
+                onChange={(e: SelectChangeEvent) => {
+                  setTranscribeModelIndex(Number(e.target.value))
+                  setTranscribeSettings((t) => {
+                    return { ...t, model: availableTranscribeModels[Number(e.target.value)].model }
+                  })
+                }}>
+                {availableTranscribeModels.map((model, i) => (
+                  <MenuItem key={i} value={i}>{model.model}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          ) : (
+            <p>No Transcribe Models found from Server</p>
+          )
+          }
 
-            <FormGroup row sx={{ mt: "8px", display: 'flex', flexDirection: 'column' }}>
-              {availableTranscribeModels.length > 0 ? (
-                <FormControl sx={{ mb: 1, width: 300 }}>
-                  <InputLabel id="preset-label">Model</InputLabel>
-                  <Select
+          <TextField style={{ marginTop: "8px", width: '200px' }} id="Number Threads" label="Number Threads" value={transcribeSettings.threads}
+            onChange={(e) => { setTranscribeSettings((transcribeSettings) => { return { ...transcribeSettings, threads: e.target.value } }) }} />
+          <TextField style={{ marginTop: "8px", width: '200px' }} id="Step" label="Step (ms)" value={transcribeSettings.step}
+            onChange={(e) => { setTranscribeSettings((transcribeSettings) => { return { ...transcribeSettings, step: e.target.value } }) }} />
+          <TextField style={{ marginTop: "8px", width: '200px' }} id="Length" label="Length (ms)" value={transcribeSettings.length}
+            onChange={(e) => { setTranscribeSettings((transcribeSettings) => { return { ...transcribeSettings, length: e.target.value } }) }} />
+          <TextField style={{ marginTop: "8px", width: '200px' }} id="Keep" label="Keep (ms)" value={transcribeSettings.keep}
+            onChange={(e) => { setTranscribeSettings((transcribeSettings) => { return { ...transcribeSettings, keep: e.target.value } }) }} />
+          <TextField style={{ marginTop: "8px", width: '200px' }} id="Max Tokens" label="Max Tokens" value={transcribeSettings['max-tokens']}
+            onChange={(e) => { setTranscribeSettings((transcribeSettings) => { return { ...transcribeSettings, 'max-tokens': e.target.value } }) }} />
+          <TextField style={{ marginTop: "8px", width: '200px' }} id="Vad" label="Vad Threshold" value={transcribeSettings['vad-thold']}
+            onChange={(e) => { setTranscribeSettings((transcribeSettings) => { return { ...transcribeSettings, 'val-thold': e.target.value } }) }} />
+          <TextField style={{ marginTop: "8px", width: '200px' }} id="Freq" label="Freq Threshold" value={transcribeSettings.keep}
+            onChange={(e) => { setTranscribeSettings((transcribeSettings) => { return { ...transcribeSettings, 'freq-thold': e.target.value } }) }} />
+          <FormControlLabel control={<Switch checked={transcribeSettings['no-fallback']} onChange={
+            (e) => { setTranscribeSettings((transcribeSettings) => { return { ...transcribeSettings, 'no-fallback': e.target.checked } }) }} />} label="No Fallback" />
+          <FormControlLabel control={<Switch checked={transcribeSettings['speed-up']} onChange={
+            (e) => { setTranscribeSettings((transcribeSettings) => { return { ...transcribeSettings, 'speed-up': e.target.checked } }) }} />} label="2x Speed" />
 
-                    labelId="modell"
-                    style={{ width: "400px", maxHeight: "48px" }}
-                    input={<OutlinedInput label="Model" />}
-                    label="Model"
-                    value={String(transcribeModelIndex)}
-                    onChange={(e: SelectChangeEvent) => {
-                      setTranscribeModelIndex(Number(e.target.value))
-                      setTranscribeSettings((t) => {
-                        return { ...t, model: availableTranscribeModels[Number(e.target.value)].model }
-                      })
-                    }}>
-                    {availableTranscribeModels.map((model, i) => (
-                      <MenuItem key={i} value={i}>{model.model}</MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              ) : (
-                <p>No Transcribe Models found from Server</p>
-              )
-              }
+        </FormGroup >
+      </Box>
 
-              <TextField style={{ marginTop: "8px", width: '200px' }} id="Number Threads" label="Number Threads" value={transcribeSettings.threads}
-                onChange={(e) => { setTranscribeSettings((transcribeSettings) => { return { ...transcribeSettings, threads: e.target.value } }) }} />
-              <TextField style={{ marginTop: "8px", width: '200px' }} id="Step" label="Step (ms)" value={transcribeSettings.step}
-                onChange={(e) => { setTranscribeSettings((transcribeSettings) => { return { ...transcribeSettings, step: e.target.value } }) }} />
-              <TextField style={{ marginTop: "8px", width: '200px' }} id="Length" label="Length (ms)" value={transcribeSettings.length}
-                onChange={(e) => { setTranscribeSettings((transcribeSettings) => { return { ...transcribeSettings, length: e.target.value } }) }} />
-              <TextField style={{ marginTop: "8px", width: '200px' }} id="Keep" label="Keep (ms)" value={transcribeSettings.keep}
-                onChange={(e) => { setTranscribeSettings((transcribeSettings) => { return { ...transcribeSettings, keep: e.target.value } }) }} />
-              <TextField style={{ marginTop: "8px", width: '200px' }} id="Max Tokens" label="Max Tokens" value={transcribeSettings['max-tokens']}
-                onChange={(e) => { setTranscribeSettings((transcribeSettings) => { return { ...transcribeSettings, 'max-tokens': e.target.value } }) }} />
-              <TextField style={{ marginTop: "8px", width: '200px' }} id="Vad" label="Vad Threshold" value={transcribeSettings['vad-thold']}
-                onChange={(e) => { setTranscribeSettings((transcribeSettings) => { return { ...transcribeSettings, 'val-thold': e.target.value } }) }} />
-              <TextField style={{ marginTop: "8px", width: '200px' }} id="Freq" label="Freq Threshold" value={transcribeSettings.keep}
-                onChange={(e) => { setTranscribeSettings((transcribeSettings) => { return { ...transcribeSettings, 'freq-thold': e.target.value } }) }} />
-              <FormControlLabel control={<Switch checked={transcribeSettings['no-fallback']} onChange={
-                (e) => { setTranscribeSettings((transcribeSettings) => { return { ...transcribeSettings, 'no-fallback': e.target.checked } }) }} />} label="No Fallback" />
-              <FormControlLabel control={<Switch checked={transcribeSettings['speed-up']} onChange={
-                (e) => { setTranscribeSettings((transcribeSettings) => { return { ...transcribeSettings, 'speed-up': e.target.checked } }) }} />} label="2x Speed" />
+    )
 
-            </FormGroup >
-          </AccordionDetails>
-        </Accordion>
+  }
 
-        <Accordion>
-          <AccordionSummary>
-            <Typography variant="h5" >Logs</Typography>
-          </AccordionSummary>
-          <AccordionDetails>
-            {
-              (rawTranscription !== "") && (
-                <Paper sx={{ m: "12px" }} style={{ height: "100%", overflow: "auto" }}>
-                  <Typography variant="h5" sx={{ textAlign: 'center' }}>Transcription Logs</Typography>
-                  <pre style={{ height: "500px", overflow: "auto", display: "flex", flexDirection: "column-reverse" }}>
-                    {rawTranscription}
+  function skillPanel() {
+    return (
+      <CustomTabPanel value={tabValue} index={3}>
+        <AccordionGroup>
+          <Accordion>
+            <AccordionSummary>Settings</AccordionSummary>
+            <AccordionDetails>
+              {skillSettingsPanel()}
+            </AccordionDetails>
+          </Accordion>
+          <Accordion>
+            <AccordionSummary>Call Skill Manually</AccordionSummary>
+            <AccordionDetails>
+              {callSkillManuallyPanel()}
+            </AccordionDetails>
+          </Accordion>
 
-                  </pre>
-                </Paper>
-              )
-            }
-          </AccordionDetails>
-        </Accordion>
+        </AccordionGroup >
+      </CustomTabPanel>
 
-      </CustomTabPanel >
+
     )
 
   }
 
   function skillSettingsPanel() {
     return (
-      <CustomTabPanel value={tabValue} index={3} >
-        <Box>
-          <ul>
-            {skills.map((skill) => (
-              <li>{skill}</li>
-            )
+      <Box></Box>
+    )
+  }
 
+  function callSkillManuallyPanel() {
+    return (
 
+      <Paper sx={{ m: "12px" }} >
+        <Typography variant="h5" sx={{ textAlign: 'center' }}>Skills Call Log</Typography>
+        <pre style={{ height: "500px", overflow: "auto", display: "flex", flexDirection: "column-reverse" }}>
+          {functionCallStr}
 
-            )}
-          </ul>
-        </Box>
+        </pre>
+        <FormGroup row sx={{ mt: "8px", height: "60px" }}>
+          <TextField style={{ flex: 1 }} id="outlined-basic" label="Manual Call" variant="outlined" value={userFunctionCallStr}
+            onChange={(e) => { setUserFunctionCallStr(e.target.value) }} />
 
-        <Paper sx={{ m: "12px" }} >
-          <Typography variant="h5" sx={{ textAlign: 'center' }}>Skills Call Log</Typography>
-          <pre style={{ height: "200px", overflow: "auto", display: "flex", flexDirection: "column-reverse" }}>
-            {functionCallStr}
+          <Button color="inherit" onClick={() => { socket.emit("call", userFunctionCallStr); }}>Call</Button>
 
-          </pre>
-          <FormGroup row sx={{ mt: "8px", height: "60px" }}>
-            <TextField style={{ flex: 1 }} id="outlined-basic" label="Manual Call" variant="outlined" value={userFunctionCallStr}
-              onChange={(e) => { setUserFunctionCallStr(e.target.value) }} />
+        </FormGroup>
+      </Paper>
 
-            <Button color="inherit" onClick={() => { socket.emit("call", userFunctionCallStr); }}>Call</Button>
-
-          </FormGroup>
-        </Paper>
-
-      </CustomTabPanel>
     )
   }
 
@@ -457,21 +626,18 @@ function System() {
 
       <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
         <Tabs value={tabValue} onChange={handleChange} aria-label="basic tabs example">
-          <Tab label="Overview" {...a11yProps(0)} />
+          <Tab label="System" {...a11yProps(0)} />
           <Tab label="Transcription" {...a11yProps(1)} />
           <Tab label="LLM" {...a11yProps(2)} />
           <Tab label="Skills" {...a11yProps(3)} />
-          <Tab label="Settings" {...a11yProps(4)} />
-
 
 
         </Tabs>
       </Box>
-      {overviewSettingsPanel()}
-      {systemSettingsPanel()}
-      {transcribeSettingsPanel()}
-      {llmSettingsPanel()}
-      {skillSettingsPanel()}
+      {overviewPanel()}
+      {transcriptionPanel()}
+      {llmPanel()}
+      {skillPanel()}
 
     </div >
 
