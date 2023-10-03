@@ -44,3 +44,33 @@ news(topic="[topic]") asks for latest headlines about a topic.
 
 ### User: Is there any breaking news about science?
 ### Assistant: news(topic="science")
+
+### User: Can you give me the latest news about technology?
+### Assistant: news(topic="technology")
+
+### User: Is there any news about the stock market?
+### Assistant: news(topic="stock market")
+
+### User: What's the latest news in the entertainment industry?
+### Assistant: news(topic="entertainment")
+
+### User: Are there any recent news articles about sports?
+### Assistant: news(topic="sports")
+
+### User: Can you find me the latest news about politics?
+### Assistant: news(topic="politics")
+
+### User: What's the news on the weather today?
+### Assistant: news(topic="weather")
+
+### User: Can you provide me with the latest news about health and wellness?
+### Assistant: news(topic="health and wellness")
+
+### User: Any updates on the fashion industry?
+### Assistant: news(topic="fashion")
+
+### User: Is there any news about recent scientific discoveries?
+### Assistant: news(topic="scientific discoveries")
+
+### User: What are the current news articles about travel and tourism?
+### Assistant: news(topic="travel and tourism")

@@ -22,10 +22,10 @@ function Main() {
     const navigate = useNavigate();
     const speakFlag = true;
     let utterance: SpeechSynthesisUtterance;
-    function newMessage(message: string) {
+    function newMessage(message: string, soundFlag: boolean) {
         setMessage(message);
-        if (speakFlag) {
-            console.log("Speaking ", message)
+
+        if (soundFlag) {
             socket.emit("start_speaking");
             utterance = new SpeechSynthesisUtterance(message);
             utterance.onend = () => {
@@ -57,7 +57,7 @@ function Main() {
         })
 
         socket.on("message", (message) => {
-            newMessage(message);
+            newMessage(message, soundFlag);
         })
 
         socket.on("timer", (newTime) => {
@@ -70,7 +70,7 @@ function Main() {
                 setMessage("💤")
             } else {
                 setSleeping(false)
-                newMessage("Hello")
+                newMessage("Hello", soundFlag)
             }
 
         })
@@ -92,7 +92,7 @@ function Main() {
         return (() => {
             socket.disconnect()
         })
-    }, [])
+    }, [soundFlag])
 
     return (
         <Box alignItems="center"
@@ -110,7 +110,8 @@ function Main() {
                 </IconButton>
 
                 <IconButton aria-label="sound" onClick={() => {
-                    setSoundFlag(!soundFlag); stopSpeaking()
+                    setSoundFlag(!soundFlag);
+                    if (soundFlag === false) { stopSpeaking() }
                 }}>
 
                     {soundFlag ? <VolumeUpIcon /> : <VolumeOffIcon />}
@@ -126,17 +127,20 @@ function Main() {
 
             <Box height="500px" marginTop="100px" marginLeft="50px" marginRight="50px" display="flex"
                 flexDirection="column"
-                justifyContent="center">
+                justifyContent="center"
+            >
 
                 <img src={logo} alt="logo" style={{ height: "100px" }} />
                 {message && (
-                    <Typography variant={message?.includes("\n") ? "h6" : "h2"} component="div" gutterBottom>
-                        {message.split("\n").map((line, i) => (
-                            <p key={"Message line " + i} style={{ textAlign: "center" }}>{line} </p>
-                        ))}
+                    <Box height="300px" overflow="auto">
+                        <Typography variant={message?.length > 50 ? "h6" : "h2"} component="div" gutterBottom>
+                            {message.split("\n").map((line, i) => (
+                                <p key={"Message line " + i} style={{ textAlign: "center" }}>{line} </p>
+                            ))}
 
 
-                    </Typography>
+                        </Typography>
+                    </Box>
                 )}
             </Box>
         </Box >

@@ -1445,3 +1445,17 @@ other() should be used when none of the other commands apply
 ### User: Nice! Drive drive drive!
 ### Assistant: other()
 
+### User:  Okay, like, you know, you can look at these like quickly.
+### Assistant: other()
+
+### User:  And then I can just pop it in.
+### Assistant: other()
+
+### User:  And then I can just pop it in there and then I
+### Assistant: other()
+
+### User:  And I can also look at like, um, I've been
+### Assistant: other()
+
+### User:  And I can also look at like, I've been keeping like a log of everything I ask it.
+### Assistant: other()
