@@ -121,16 +121,13 @@ def preprocess_dataset(tokenizer: AutoTokenizer, max_length: int, seed, dataset:
 
 
 def get_max_length(model):
-    conf = model.config
     max_length = None
     for length_setting in ["n_positions", "max_position_embeddings", "seq_length"]:
         max_length = getattr(model.config, length_setting, None)
         if max_length:
-            print(f"Found max lenth: {max_length}")
             break
     if not max_length:
         max_length = 1024
-        print(f"Using default max length: {max_length}")
     return max_length
 
 
@@ -210,17 +207,15 @@ def print_trainable_parameters(model, use_4bit=False):
 class WandbLlamaCallback(TrainerCallback):
 
 
-    def on_step_end(
-        self,
-        args: TrainingArguments,
-        state: TrainerState,
-        control: TrainerControl,
-        **kwargs,
-    ):
-        # breakpoint()
-        print("Step end ")
-        # print("Kwargs  ", kwargs)
-        return super().on_step_end(args, state, control, **kwargs)
+    # def on_step_end(
+    #     self,
+    #     args: TrainingArguments,
+    #     state: TrainerState,
+    #     control: TrainerControl,
+    #     **kwargs,
+    # ):
+        
+    #     return super().on_step_end(args, state, control, **kwargs)
 
 
     def on_evaluate(self, args: TrainingArguments, state: TrainerState, control: TrainerControl, **kwargs):
@@ -237,20 +232,6 @@ class WandbLlamaCallback(TrainerCallback):
 
 
     def on_epoch_end(self, args, state, control, **kwargs):
-        print("EKwargs  ", kwargs)
-
-        tokenizer = kwargs["tokenizer"]
-        train_dataloader = kwargs["train_dataloader"]
-        
-        print(train_dataloader)
-        print(tokenizer)
-        for data in train_dataloader:
-            print(data)
-            print(dir(train_dataloader))
-            tokenizer.decode(
-                train_dataloader["input_ids"], skip_special_tokens=True)
-
-        wandb.log({}, commit=False)
 
         super().on_epoch_end(args, state, control, **kwargs)
 
@@ -258,9 +239,10 @@ class WandbLlamaCallback(TrainerCallback):
         print("State    ", state)
 
 
-def train(model, tokenizer, dataset, output_dir, use_cuda, num_train_epochs=2):
-    
+def prepare_model_for_training(model):
     model.gradient_checkpointing_enable()
+
+    # put back for new models
     model = prepare_model_for_kbit_training(model)
 
     if (isinstance(model, transformers.models.bert.modeling_bert.BertLMHeadModel)):
@@ -271,13 +253,20 @@ def train(model, tokenizer, dataset, output_dir, use_cuda, num_train_epochs=2):
     # Create PEFT config for these modules and wrap the model to PEFT
 
     peft_config = create_peft_config(modules)
-    model = get_peft_model(model, peft_config)
+    peft_model = get_peft_model(model, peft_config)
 
     # Print information about the percentage of trainable parameters
-    print_trainable_parameters(model)
+    print_trainable_parameters(peft_model)
+    return peft_model    
 
-    # os.environ["WANDB_PROJECT"] = "otto"  # log to your project
-    # os.environ["WANDB_LOG_MODEL"] = "all"  # log your models
+def train(model, tokenizer, dataset, output_dir, use_cuda, num_train_epochs=20, load_from_checkpoint=False, checkpoint_dir=None):
+    
+
+
+
+
+    os.environ["WANDB_PROJECT"] = "otto"  # log to your project
+    os.environ["WANDB_LOG_MODEL"] = "all"  # log your models
 
     if use_cuda == False:
         model = model.to(device)
@@ -311,6 +300,7 @@ def train(model, tokenizer, dataset, output_dir, use_cuda, num_train_epochs=2):
             report_to="wandb",
         )
 
+
     trainer = Trainer(
         model=model,
         tokenizer=tokenizer,
@@ -320,6 +310,8 @@ def train(model, tokenizer, dataset, output_dir, use_cuda, num_train_epochs=2):
         callbacks=[WandbLlamaCallback()],
         data_collator=DataCollatorForLanguageModeling(tokenizer, mlm=False),
     )
+
+ 
 
     # re-enable for inference to speed up predictions for similar inputs
     model.config.use_cache = False
@@ -346,7 +338,10 @@ def train(model, tokenizer, dataset, output_dir, use_cuda, num_train_epochs=2):
     print("Training...")
 
     if do_train:
-        train_result = trainer.train()
+        if (load_from_checkpoint):
+            train_result = trainer.train(resume_from_checkpoint=checkpoint_dir)
+        else:
+            train_result = trainer.train()
         metrics = train_result.metrics
         trainer.log_metrics("train", metrics)
         trainer.save_metrics("train", metrics)
@@ -410,9 +405,12 @@ def get_output_text(model, tokenizer, prompt):
     
     return output_text
 
-def test_and_log_raw_data(model, tokenizer, dataset, name, num_examples=2):
+def test_and_log_raw_data(model, tokenizer, dataset, name, num_examples=10):
     raw_data = []
     for i, input_data in enumerate(dataset["input_ids"]):
+        if i >= num_examples:
+            break
+
         text = tokenizer.decode(input_data)
         prompt_no_response_key, correct_response = text.split(RESPONSE_KEY, 1)
         user_query = prompt_no_response_key.split(INSTRUCTION_KEY, 1)[1]
@@ -421,35 +419,17 @@ def test_and_log_raw_data(model, tokenizer, dataset, name, num_examples=2):
         inputs = tokenizer(prompt, padding=True, truncation=True, max_length=get_max_length(model), return_tensors='pt').to(device)
         raw_outputs = model.generate(**inputs, max_new_tokens=100)
         _, llm_response = tokenizer.decode(raw_outputs[0]).split(RESPONSE_KEY, 1)
-        raw_data.append([prompt, correct_response, llm_response])
-        if i > num_examples:
-            break
-
-    wandb.log({name: wandb.Table(data = raw_data, columns=["prompt", "response", "output_text"])})
+        raw_data.append([prompt, user_query, correct_response, llm_response])
 
 
-def test_and_log(model, tokenizer, dataset, name):
-    log_data=[]
-    for i, data in enumerate(dataset):
-        prompt = create_prompt(
-            data['user'], data['answer'], include_response=False)
-        
-        response = data['answer']
+    wandb.log({name: wandb.Table(data = raw_data, columns=["prompt", "query", "response", "output_text"])})
 
-        output_text = get_output_text(model, tokenizer, prompt)
-        
-        log_data.append([prompt, response, output_text])
-        print("Prompt: ", prompt)
-        print("Response: ", response)
-        if i > 2:
-            break
 
-    wandb.log({name: wandb.Table(data = log_data, columns=["prompt", "response", "output_text"])})
 
 
 def test_model(model, tokenizer, dataset):
-    test_and_log(model, tokenizer, dataset['train'], "train_results") 
-    test_and_log(model, tokenizer, dataset['test'], "test_results")
+    test_and_log_raw_data(model, tokenizer, dataset['train'], "train_results") 
+    test_and_log_raw_data(model, tokenizer, dataset['test'], "test_results")
 
 
 
@@ -472,7 +452,7 @@ if __name__ == "__main__":
     argparse.add_argument("--merge-model", action='store_true')
     argparse.add_argument("--convert-model", action='store_true',
                           help="Convert model to gguf format to run in llama.cpp")
-    argparse.add_argument("--num-train-epochs", type=int, default=2)
+    argparse.add_argument("--num-train-epochs", type=int, default=20)
     argparse.add_argument("--load-from-checkpoint", action='store_true')
     argparse.add_argument("--no-cuda", action='store_true',
                           help="Don't use cuda")
@@ -512,7 +492,8 @@ if __name__ == "__main__":
 
     print("Loading model")
     if args.load_from_checkpoint:
-        model, tokenizer = load_model_from_checkpoint(args.checkpoint_dir, args.base_model_name)
+        tokenizer = AutoTokenizer.from_pretrained(args.base_model_name)
+        # model, tokenizer = load_model_from_checkpoint(args.checkpoint_dir, args.base_model_name)
     else:
         bnb_config = create_bnb_config()
         model, tokenizer = load_model(
@@ -520,7 +501,7 @@ if __name__ == "__main__":
 
     print("Loading dataset")
     dataset = load_dataset("json", data_files=args.training_data)
-    max_length = get_max_length(model)
+    max_length = 512 # get_max_length(model)
 
     seed = 42
     processed_dataset = preprocess_dataset(
@@ -530,14 +511,19 @@ if __name__ == "__main__":
 
 
     if args.test_model:
-        test_model(model, tokenizer, split_dataset, use_cuda)
+        test_model(model, tokenizer, split_dataset)
 
 
 
     if args.train_model:
         print("Training on dataset of length", len(processed_dataset["train"]))
-        train(model, tokenizer, split_dataset,
-              args.checkpoint_dir, use_cuda, args.num_train_epochs)
+        if (not args.load_from_checkpoint):
+            peft_model = prepare_model_for_training(model)
+        else:
+            peft_model = "meta-llama/Llama-2-7b-hf"
+        
+        train(peft_model, tokenizer, split_dataset,
+              args.checkpoint_dir, use_cuda, args.num_train_epochs, args.load_from_checkpoint, args.checkpoint_dir)
 
     if args.merge_model:
         print(f"Merging model and saving to {args.merged_dir}")
