@@ -89,13 +89,15 @@ function System() {
   const [userPrompt, setUserPrompt] = useState("")
   const [oldPrompts, setOldPrompts] = useState({})
   const [rawTranscription, setRawTranscription] = useState("")
-  const [transcription, setTranscription] = useState("")
+  const [transcriptionLog, setTranscriptionLog] = useState("")
   const [rawLLM, setRawLLM] = useState("")
   const [tabValue, setTabValue] = React.useState(0);
   const [llmSettings, setLLMSettings] = useState({ model: "", temperature: "0.8", n_predict: "10", forceGrammar: true })
   const [transcribeSettings, setTranscribeSettings] = useState({ model: "", threads: "4", step: "3000", length: "10000", keep: "200", "max-tokens": "32", "vad-thold": "0.6", "freq-thold": "100.0", "speed-up": false, "no-fallback": false })
 
   const [functionCalls, setFunctionCalls] = useState([] as Array<string>)
+
+  const [skillLog, setSkillLog] = useState("")
   const [userFunctionCallStr, setUserFunctionCallStr] = useState("")
   const [runTranscribeFlag, setRunTranscribeFlag] = React.useState(true)
   const [runLLMFlag, setRunLLMFlag] = React.useState(true)
@@ -394,7 +396,7 @@ function System() {
       <Paper sx={{ m: "12px", p: "12px", maxHeight: '400px', flexDirection: 'column' }} >
         <Typography variant="h5" sx={{ textAlign: 'center' }}>Listening Transcript</Typography>
         <pre style={{ overflow: 'auto', height: '300px', display: "flex", flexDirection: "column-reverse" }}>
-          {transcription}
+          {transcriptionLog}
         </pre>
       </Paper>
     )
@@ -486,35 +488,24 @@ function System() {
               {skillSettingsPanel()}
             </AccordionDetails>
           </Accordion>
+
           <Accordion>
-            <AccordionSummary>Call Skill Manually</AccordionSummary>
+            <AccordionSummary>Logs</AccordionSummary>
             <AccordionDetails>
-              {callSkillManuallyPanel()}
+              {skillLogsPanel()}
             </AccordionDetails>
           </Accordion>
 
         </AccordionGroup >
       </CustomTabPanel>
-
-
-    )
-
-  }
-
-  function skillSettingsPanel() {
-    return (
-      <Box></Box>
     )
   }
 
-  function callSkillManuallyPanel() {
+  function skillLogsPanel() {
     return (
-
-      <Paper sx={{ m: "12px" }} >
-        <Typography variant="h5" sx={{ textAlign: 'center' }}>Skills Call Log</Typography>
-        <pre style={{ height: "500px", overflow: "auto", display: "flex", flexDirection: "column-reverse" }}>
-          {functionCallStr}
-
+      <Paper sx={{ m: "12px", p: "12px", maxHeight: '400px', flexDirection: 'column' }} >
+        <pre style={{ overflow: 'auto', height: '300px', display: "flex", flexDirection: "column-reverse" }}>
+          {skillLog}
         </pre>
         <FormGroup row sx={{ mt: "8px", height: "60px" }}>
           <TextField style={{ flex: 1 }} id="outlined-basic" label="Manual Call" variant="outlined" value={userFunctionCallStr}
@@ -524,14 +515,19 @@ function System() {
 
         </FormGroup>
       </Paper>
-
     )
   }
 
+  function skillSettingsPanel() {
+    return (
+      <Box>
+
+      </Box>
+    )
+  }
 
   useEffect(() => {
     socket = io('ws://' + window.location.hostname + ':5001');
-
     socket.on("sleeping", (sleeping) => {
       if (sleeping === "True") {
         setSleeping(true)
@@ -567,7 +563,7 @@ function System() {
     })
 
     socket.on("transcribe", (newTranscription) => {
-      setTranscription(transcription => transcription + (newTranscription as string) + "\n");
+      setTranscriptionLog(transcriptionLog => transcriptionLog + (newTranscription as string) + "\n");
     })
     socket.on("llm_stdout", (newLLM) => {
       setRawLLM(rawLLM => rawLLM + (newLLM as string) + "\n")
@@ -581,17 +577,22 @@ function System() {
       setOvervierw(overview => overview + newLog + "\n")
     })
 
-    socket.on("function_call", (newFunctionCall) => {
-      const argStr = Object.keys(newFunctionCall["args"]).map(key => {
-        return (key + "=\"" + newFunctionCall["args"][key]) + "\""
-      }).join(", ")
-      const newFunctionCallStr = newFunctionCall["function_name"] + "(" + argStr + ")"
 
-      setFunctionCalls(functionCalls => [...functionCalls, newFunctionCallStr])
+    socket.on("skill_message", newSkillMessage => {
+      setSkillLog(skillLog => skillLog + newSkillMessage.skill + ": " + newSkillMessage.message + "\n")
     })
 
+    // Possibly remove
+    // socket.on("function_call", (newFunctionCall) => {
+    //   const argStr = Object.keys(newFunctionCall["args"]).map(key => {
+    //     return (key + "=\"" + newFunctionCall["args"][key]) + "\""
+    //   }).join(", ")
+    //   const newFunctionCallStr = newFunctionCall["function_name"] + "(" + argStr + ")"
+
+    //   setFunctionCalls(functionCalls => [...functionCalls, newFunctionCallStr])
+    // })
+
     socket.on("server_status", (status) => {
-      console.log("Got status ", status)
       setServerRunning(true)
       setSleeping(status["sleeping"] === "True" ? true : false)
       setRunSpeakFlag(status["speak_flag"] === "True" ? true : false)
