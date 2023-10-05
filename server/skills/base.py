@@ -10,22 +10,30 @@ class Skill:
 
 
 class SkillList:
-    def __init__(self, skills):
-        self.skills = skills
+    def __init__(self, skill_objects):
+        self.skill_objects = skill_objects
+        self.skill_names = [skill.function_name for skill in skill_objects]
+
         self.skill_instances = []
+        self.skill_to_status = {}
+        self.skill_to_instance = {}
         self._load_skills()
 
     def _load_skills(self):
 
-        for skill in self.skills:
+        for skill in self.skill_objects:
             try:
+                skill_name = skill.function_name
                 skill_instance = skill(print)
                 self.skill_instances.append(skill_instance)
+                self.skill_to_instance[skill_name] = skill_instance
+                self.skill_to_status[skill_name] = "Ok"
             except Exception as e:
-                print(f"Error loading skill {skill}: {e}")
+                error_msg = f"Error loading skill {skill}: {e}"
+                self.skill_to_status[skill_name] = error_msg
+                print(error_msg)
 
     def set_message(self, skill_message):
-        print("Setting skill message")
         for skill in self.skill_instances:
             message_function = partial(skill_message, skill.function_name)
             skill.message_function = message_function

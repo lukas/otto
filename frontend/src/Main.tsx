@@ -15,42 +15,41 @@ let socket: Socket
 
 function Main() {
     const [message, setMessage] = useState("Not Connected to Server")
-    const [serverRunning, setServerRunning] = useState(false)
-    const [sleeping, setSleeping] = useState(false)
+
     const [soundFlag, setSoundFlag] = useState(false)
     const [timer, setTimer] = useState(0)
     const navigate = useNavigate();
-    const speakFlag = true;
-    let utterance: SpeechSynthesisUtterance;
-    function newMessage(message: string, soundFlag: boolean) {
-        setMessage(message);
-
-        if (soundFlag) {
-            socket.emit("start_speaking");
-            utterance = new SpeechSynthesisUtterance(message);
-            utterance.onend = () => {
-                console.log("Done speaking")
-                socket.emit("stop_speaking");
-            }
-            speechSynthesis.speak(utterance);
-
-        }
-    }
 
     function stopSpeaking() {
         speechSynthesis.cancel();
     }
 
-
     useEffect(() => {
+        let utterance: SpeechSynthesisUtterance;
+
+        function newMessage(message: string, soundFlag: boolean) {
+            setMessage(message);
+
+            if (soundFlag) {
+                socket.emit("start_speaking");
+                utterance = new SpeechSynthesisUtterance(message);
+                utterance.onend = () => {
+                    console.log("Done speaking")
+                    socket.emit("stop_speaking");
+                }
+                speechSynthesis.speak(utterance);
+
+            }
+        }
+
         socket = io('ws://' + window.location.hostname + ':5001');
-        socket.on("factcheck", (status) => {
+        /* socket.on("factcheck", (status) => {
             if (status === "start") {
                 setMessage("Fact Checking");
             } else if (status === "false") {
                 setMessage("False Claim Detected")
             }
-        })
+        }) */
 
         socket.on("transcribe", (transcription) => {
             // setMessage(transcription);
@@ -66,19 +65,14 @@ function Main() {
 
         socket.on("sleeping", (sleeping) => {
             if (sleeping === "True") {
-                setSleeping(true)
                 setMessage("💤")
             } else {
-                setSleeping(false)
                 newMessage("Hello", soundFlag)
             }
 
         })
 
-        socket.on("server_status", (status) => {
-
-            setServerRunning(true)
-            setSleeping(status["sleeping"] === "True" ? true : false)
+        socket.on("server_status", (status: any) => {
             if (status["sleeping"] === "True") {
                 setMessage("💤")
             } else {
@@ -116,7 +110,7 @@ function Main() {
 
                     {soundFlag ? <VolumeUpIcon /> : <VolumeOffIcon />}
                 </IconButton>
-                {(timer != 0) &&
+                {(timer !== 0) &&
                     <Typography sx={{ pt: '8px', pb: '8px' }} variant="h6" textAlign={{}}  >
                         {new Date(timer * 1000).toISOString().substring(11, 19)}
                     </Typography>

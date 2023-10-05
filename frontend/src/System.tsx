@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import Box from '@mui/material/Box';
 import Paper from '@mui/material/Paper';
 import Button from "@mui/material/Button";
-import { styled } from '@mui/material/styles';
 import AppBar from '@mui/material/AppBar';
 import Typography from '@mui/material/Typography';
 import TextField from '@mui/material/TextField';
@@ -22,14 +21,16 @@ import Accordion from '@mui/joy/Accordion';
 import AccordionDetails from '@mui/joy/AccordionDetails';
 import AccordionGroup from '@mui/joy/AccordionGroup';
 import AccordionSummary from '@mui/joy/AccordionSummary';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
 
-const Item = styled(Paper)(({ theme }) => ({
-  backgroundColor: theme.palette.mode === 'dark' ? '#1A2027' : '#fff',
-  ...theme.typography.body2,
-  padding: theme.spacing(2),
-  textAlign: 'center',
-  color: theme.palette.text.secondary,
-}));
+// const Item = styled(Paper)(({ theme }) => ({
+//   backgroundColor: theme.palette.mode === 'dark' ? '#1A2027' : '#fff',
+//   ...theme.typography.body2,
+//   padding: theme.spacing(2),
+//   textAlign: 'center',
+//   color: theme.palette.text.secondary,
+// }));
 
 
 
@@ -72,9 +73,8 @@ let socket: Socket
 function System() {
   const [serverRunning, setServerRunning] = useState(false)
   const [sleeping, setSleeping] = useState(false)
-  const [factCheck, setFactCheck] = useState(false)
   const [promptPresets, setPromptPresets] = useState([] as Array<{ name: string, prompt: string }>)
-  const [skills, setSkills] = useState([] as Array<string>)
+  const [skills, setSkills] = useState({} as { [Name: string]: string })
 
   const [availableLLMModels, setAvailableLLMModels] = useState([] as Array<{ model: string, prompt_generator: string }>)
   const [availableTranscribeModels, setAvailableTranscribeModels] = useState([] as Array<{ model: string }>)
@@ -94,8 +94,6 @@ function System() {
   const [tabValue, setTabValue] = React.useState(0);
   const [llmSettings, setLLMSettings] = useState({ model: "", temperature: "0.8", n_predict: "10", forceGrammar: true })
   const [transcribeSettings, setTranscribeSettings] = useState({ model: "", threads: "4", step: "3000", length: "10000", keep: "200", "max-tokens": "32", "vad-thold": "0.6", "freq-thold": "100.0", "speed-up": false, "no-fallback": false })
-
-  const [functionCalls, setFunctionCalls] = useState([] as Array<string>)
 
   const [skillLog, setSkillLog] = useState("")
   const [userFunctionCallStr, setUserFunctionCallStr] = useState("")
@@ -521,7 +519,14 @@ function System() {
   function skillSettingsPanel() {
     return (
       <Box>
-
+        <Typography variant="h5" sx={{ textAlign: 'center' }}>Available Skills</Typography>
+        <List>
+          {
+            Object.keys(skills).map((skillName, i) => (
+              <ListItem key={`skill-list-${i}`}>{skillName}: {skills[skillName]}</ListItem>
+            ))
+          }
+        </List>
       </Box>
     )
   }
@@ -569,10 +574,6 @@ function System() {
       setRawLLM(rawLLM => rawLLM + (newLLM as string) + "\n")
     })
 
-    socket.on("factcheck", (newTruth) => {
-      setFactCheck(factCheck => newTruth === "True" ? true : false)
-    })
-
     socket.on("log", (newLog) => {
       setOvervierw(overview => overview + newLog + "\n")
     })
@@ -594,24 +595,24 @@ function System() {
 
     socket.on("server_status", (status) => {
       setServerRunning(true)
-      setSleeping(status["sleeping"] === "True" ? true : false)
-      setRunSpeakFlag(status["speak_flag"] === "True" ? true : false)
-      setResetDialogFlag(status["reset_dialog_flag"] === "True" ? true : false)
+      setSleeping(status["sleeping"])
+      setRunSpeakFlag(status["speak_flag"])
+      setResetDialogFlag(status["reset_dialog_flag"])
       setAvailableLLMModels(status["available_llm_models"] ?? [])
       setAvailableTranscribeModels(status["available_transcribe_models"] ?? [])
       setLLMSettings(status["llm_settings"] ?? {})
       setTranscribeSettings(status["transcribe_settings"] ?? {})
-      setSkills(status["available_skills"] ?? [])
+      setSkills(status["skills"] ?? [])
 
       setPromptPresets(status["prompt_presets"] ?? [])
       if (status["prompt_presets"].length > 0) {
         setPromptSetup(status["prompt_presets"][0].prompt)
       }
 
-
+      if (status['run_llm'] === false) {
+        // LLM not running
+      }
     })
-
-    socket.emit("user_prompt", userPrompt)
 
     socket.emit("request_status");
 
@@ -624,11 +625,8 @@ function System() {
   const serverStatus = serverRunning ?
     sleeping ? "Sleeping" : runLLMFlag ? "Running" : "Listening, Not Automatically Responding"
     : "Disconnected from Server"
-  const functionCallStr = functionCalls.join("\n")
+
   return (
-
-
-
     <div>
       <AppBar position="static" sx={{ flexDirection: "row" }}   >
         <Typography marginLeft={"12px"}>Otto Bot</Typography>

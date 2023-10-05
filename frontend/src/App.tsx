@@ -1,7 +1,4 @@
-import * as React from 'react';
 import { Routes, Route } from 'react-router-dom';
-import { io, Socket } from 'socket.io-client';
-
 
 import Main from './Main';
 import System from './System';

@@ -11,8 +11,5 @@ from skills.story_skill import StorySkill
 from skills.news_skill import NewsSkill
 from skills import base
 
-skills = [TimerSkill, WeatherSkill, TimeSkill,
-          OpenAISkill, RunAppSkill, MathSkill, StorySkill, NewsSkill]
-
-
-active_skills = base.SkillList(skills)
+available_skills = [TimerSkill, WeatherSkill, TimeSkill,
+                    OpenAISkill, RunAppSkill, MathSkill, StorySkill, NewsSkill]

@@ -14,8 +14,6 @@ from markupsafe import escape
 
 import llama_server
 from generate_grammar import generate_grammar
-from skills import active_skills
-
 
 import config as cfg
 from state import State
@@ -462,7 +460,7 @@ def update_status():
     print("Status Requested")
 
     status = {
-        "sleeping": str(state.sleeping),
+        "sleeping": state.sleeping,
         "run_llm": state.run_llm_on_new_transcription,
         "speak_flag": state.speak_flag,
         "reset_dialog_flag": state.reset_dialog_flag,
@@ -471,7 +469,7 @@ def update_status():
         "available_llm_models": state.available_llm_models,
         "prompt_presets": state.prompt_presets,
         "available_transcribe_models": state.available_transcribe_models,
-        "skills": state.skills_with_status
+        "skills": state.skills.skill_to_status
     }
     print("Updating Status", status)
     socket_io.emit("server_status", status)
@@ -483,7 +481,7 @@ def call(call_str):
 
 
 if __name__ == '__main__':
-    state.load_skills()
+    state.load_skills(skill_message)
     state.load_available_llm_models(cfg)
     state.load_available_transcribe_models(cfg)
     state.load_prompt_presets(cfg)

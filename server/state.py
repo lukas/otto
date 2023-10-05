@@ -2,7 +2,8 @@ import time
 import yaml
 import os
 import json
-from skills import active_skills
+from skills import available_skills
+from skills.base import SkillList
 
 
 class State:
@@ -36,6 +37,8 @@ class State:
         self.wake_words = cfg.default_wake_words
 
         self.last_tts_line = ""
+
+        self.skills = SkillList(available_skills)
 
     def load_available_transcribe_models(self, cfg):
         with open(cfg.transcribe_model_list_filename) as f:
@@ -85,7 +88,10 @@ class State:
         self.llm_settings['model'] = self.available_llm_models[0]["model"]
 
     def load_skills(self, skill_message):
-        active_skills.set_message(skill_message)
+        self.skills.set_message(skill_message)
+
+    def get_skills_with_status(self):
+        return active_skills.get_skills_with_status()
 
     def get_prompt_generator_for_model(self, model: str):
         # find model file in available_llm_models and return prompt_generator
