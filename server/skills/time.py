@@ -32,7 +32,6 @@ class TimeSkill(Skill):
     def start(self, args: dict[str, str]):
         location_string = ""
         time = ""
-        print("In timecheck")
 
         if ('location' in args):
             location_string = args["location"]

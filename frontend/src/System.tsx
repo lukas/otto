@@ -92,7 +92,7 @@ function System() {
   const [transcriptionLog, setTranscriptionLog] = useState("")
   const [rawLLM, setRawLLM] = useState("")
   const [tabValue, setTabValue] = React.useState(0);
-  const [llmSettings, setLLMSettings] = useState({ model: "", temperature: "0.8", n_predict: "10", forceGrammar: true })
+  const [llmSettings, setLLMSettings] = useState({ model: "", temperature: "0.8", n_predict: "10", force_grammar: true })
   const [transcribeSettings, setTranscribeSettings] = useState({ model: "", threads: "4", step: "3000", length: "10000", keep: "200", "max-tokens": "32", "vad-thold": "0.6", "freq-thold": "100.0", "speed-up": false, "no-fallback": false })
 
   const [skillLog, setSkillLog] = useState("")
@@ -282,7 +282,7 @@ function System() {
             <p>No Models found from Server</p>
           )}
 
-          <FormControlLabel control={<Switch checked={llmSettings.forceGrammar} onChange={(v) => setLLMSettings((llmSettings) => { return { ...llmSettings, forceGrammar: v.target.checked } })} />} label="Force Grammar" />
+          <FormControlLabel control={<Switch checked={llmSettings.force_grammar} onChange={(v) => setLLMSettings((llmSettings) => { return { ...llmSettings, force_grammar: v.target.checked } })} />} label="Force Grammar" />
           <TextField id="outlined-basic" label="Temperature" value={llmSettings.temperature}
             style={{ width: '200px' }}
             onChange={(e) => { }} />
@@ -576,6 +576,10 @@ function System() {
 
     socket.on("log", (newLog) => {
       setOvervierw(overview => overview + newLog + "\n")
+    })
+
+    socket.on("error", (newError) => {
+      setOvervierw(overview => overview + "Error: " + newError + "\n")
     })
 
 

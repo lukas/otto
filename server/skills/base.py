@@ -19,6 +19,9 @@ class SkillList:
         self.skill_to_instance = {}
         self._load_skills()
 
+    def has_skill(self, skill_name):
+        return skill_name in self.skill_names
+
     def _load_skills(self):
 
         for skill in self.skill_objects:

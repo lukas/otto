@@ -26,6 +26,7 @@ def llm_output(line):
 
 
 def error_output(line):
+    print("Error: ", line)
     socket_io.emit("error", line)
 
 
@@ -69,7 +70,7 @@ def speak_text(text):
 
 
 def skill_message(skill, text):
-    print("Skill message ", skill, text)
+    # print("Skill message ", skill, text)
     socket_io.emit("skill_message", {'skill': skill, 'message': text})
 
 
@@ -107,6 +108,10 @@ def function_call(function_name: str, args: dict[str, str]):
 
     if function_name != "other":
         log_output(f"Calling function {function_name} with args {args}")
+        if (not state.skills.has_skill(function_name)):
+            error_output(f"Unknown skill {function_name}")
+            return
+
         for skill in state.skills.skill_instances:
             if function_name == skill.function_name:
                 try:
@@ -234,7 +239,6 @@ def listen():
         line_words = re.split(r'\W+', line.lower())
         for word in state.wake_words:
             if (word in line_words):
-                print("Waking up")
                 last_action_time = time.time()
                 socket_io.emit("sleeping", str(False))
                 state.last_tts_line = line  # don't call llm on the wake word

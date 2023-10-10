@@ -43,20 +43,22 @@ function Main() {
         }
 
         socket = io('ws://' + window.location.hostname + ':5001');
-        /* socket.on("factcheck", (status) => {
-            if (status === "start") {
-                setMessage("Fact Checking");
-            } else if (status === "false") {
-                setMessage("False Claim Detected")
-            }
-        }) */
 
         socket.on("transcribe", (transcription) => {
             // setMessage(transcription);
         })
 
-        socket.on("message", (message) => {
-            newMessage(message, soundFlag);
+        socket.on("skill_message", (skillMessage) => {
+            if (skillMessage.skill === "timer") {
+                if (skillMessage.message.startswith("time:")) {
+                    setTimer(parseInt(skillMessage.message.split(":")[1]))
+                } else {
+                    newMessage(skillMessage.message, soundFlag);
+                }
+            } else {
+                newMessage(skillMessage.message, soundFlag);
+            }
+
         })
 
         socket.on("timer", (newTime) => {
