@@ -107,7 +107,7 @@ def function_call(function_name: str, args: dict[str, str]):
 
     if function_name != "other":
         log_output(f"Calling function {function_name} with args {args}")
-        for skill in active_skills.skill_instances:
+        for skill in state.skills.skill_instances:
             if function_name == skill.function_name:
                 try:
                     skill.start(args)
@@ -193,7 +193,7 @@ def generate_prompt_and_call_llm(user_prompt):
 
     socket_io.emit("prompt", prompt)
 
-    grammar_string = generate_grammar(active_skills.skills)
+    grammar_string = generate_grammar(state.skills.skill_instances)
 
     response = llama_server.call_llm(
         prompt, state.llm_settings, grammar_string, end_response, None, error_output, llm_response_output)
