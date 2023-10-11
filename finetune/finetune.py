@@ -317,7 +317,6 @@ def train(model, tokenizer, dataset, output_dir, use_cuda, num_train_epochs=20, 
     model.config.use_cache = False
 
     # SOURCE https://github.com/artidoro/qlora/blob/main/qlora.py
-    # Verifying the datatypes before training
 
     dtypes = {}
     for _, p in model.named_parameters():
@@ -532,6 +531,9 @@ if __name__ == "__main__":
 
     if args.convert_model:
 
+        #if (args.wandb):
+        #    wandb.init(project="otto", job_type="convert-gguf")
+
         print(
             f"Converting to gguf format and saving to {llama_model_filename}")
 
@@ -541,3 +543,10 @@ if __name__ == "__main__":
 
         subprocess.run([os.path.join(args.llama_path, "quantize"), os.path.join(
             args.merged_dir, "ggml-model-f16.gguf"), os.path.join(llama_model_path, args.gguf_filename), "q4_0"])
+        
+        if (args.wandb):
+            artifact = wandb.Artifact('gguf-model-finetuned', type='model')
+            artifact.add_file(os.path.join(llama_model_path, args.gguf_filename))
+            wandb.log_artifact(artifact)
+
+        print("Done!")
