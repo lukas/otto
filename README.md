@@ -69,7 +69,7 @@ Feel free to add more llama or whisper models to play with. If you add a differe
 
 ```
 pip install -r requirements.txt
-pip install -r requirements_skills.txt
+pip install -r server/skills/requirements_skills.txt
 ```
 
 ### Step 3: Install yarn packages
@@ -82,7 +82,7 @@ yarn install
 ### Step 4: Run backend
 
 ```
-./app.py
+python server/app.py
 ```
 
 ### Step 5: Run frontend

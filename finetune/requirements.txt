@@ -4,3 +4,4 @@ bitsandbytes
 accelerate
 datasets
 openai
+wandb
