@@ -304,6 +304,17 @@ def run_transcribe():
                             "--print-special",
                             "-f", cfg.transcribe_filename])
 
+    if (not os.path.exists(cfg.whisper_cpp_dir)):
+        raise (
+            f"Could not find whisper_cpp_dir {cfg.whisper_cpp_dir} Please install whisper_cpp or set whisper_cpp_dir in config.py")
+
+    if (not os.path.exists(cfg.whisper_model_dir)):
+        raise (
+            f"Could not find whisper_model_dir {cfg.whisper_model_dir} Please install whisper model - see README.md")
+
+    if (not os.path.exists(cfg.log_dir)):
+        os.makedirs(cfg.log_dir)
+
     transcribe_command = [os.path.join(
         cfg.whisper_cpp_dir, "stream")] + transcribe_args
     socket_io.emit("transcribe_command", transcribe_command)

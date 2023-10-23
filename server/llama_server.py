@@ -105,6 +105,14 @@ def restart_llm_server(llm_settings: dict, llama_cpp_dir: str, llama_model_dir: 
 
     stop_llm_server()
 
+    if (not os.path.exists(llama_cpp_dir)):
+        raise (
+            f"Could not find llama_cpp_dir {llama_cpp_dir} Please install llama_cpp - see README.md")
+
+    if (not os.path.exists(llama_model_dir)):
+        raise (
+            f"Could not find llama_model_dir {llama_model_dir} Please install llama_cpp model - see README.md")
+
     llm_thread = threading.Thread(
         target=run_llm_server, args=[llm_settings, llama_cpp_dir, llama_model_dir, output_function])
     llm_thread.start()
