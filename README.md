@@ -42,6 +42,12 @@ cd models
 wget https://huggingface.co/TheBloke/Llama-2-7B-GGUF/resolve/main/llama-2-7b.Q4_K_M.gguf
 ```
 
+#### Downlaod a finetuned model
+
+```
+wget https://api.wandb.ai/artifactsV2/gcp-us/l2k2/QXJ0aWZhY3Q6NjAyMDE2NzM0/25bd8f78a12839913fd2c4c49c3f9c22/ggml-finetuned-model-q4_0.gguf
+```
+
 #### Install [whisper.cpp](https://github.com/ggerganov/whisper.cpp)
 
 ```
