@@ -201,7 +201,7 @@ function System() {
           <TextField multiline minRows={5} sx={{ flexGrow: 1, maxHeight: '340px', overflow: 'auto' }} style={{ width: "100%" }} defaultValue={promptSetup}
             onChange={(e) => { setPromptSetup(e.target.value); socket.emit("set_prompt_setup", e.target.value) }} />
           <FormGroup row sx={{ mt: "8px", height: "60px" }}>
-            <TextField style={{ flex: 1 }} id="outlined-basic" label="Human Response" variant="outlined" value={userPrompt}
+            <TextField style={{ flex: 1 }} id="outlined-basic" label="Manual LLM Query" variant="outlined" value={userPrompt}
               onChange={(e) => { setUserPrompt(e.target.value) }} />
             <Button color="inherit" onClick={() => { socket.emit("manual_prompt", userPrompt); }}>Chat</Button>
             <Button color="inherit" onClick={() => { socket.emit("stop_talking", userPrompt); }}>Stop</Button>
