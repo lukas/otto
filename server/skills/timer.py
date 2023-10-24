@@ -62,8 +62,8 @@ class TimerSkill(Skill):
 
         while time.time() - start_time < seconds or stop_timer:
             time.sleep(1)
-            self.message_function("time:",
-                                  int(seconds - (time.time() - start_time)))
+            self.message_function("time:" + str(
+                                  int(seconds - (time.time() - start_time))))
 
         if callback:
             callback()
