@@ -31,7 +31,7 @@ In root directory run
 
 ```
 git clone https://github.com/ggerganov/llama.cpp.git
-cd llama
+cd llama.cpp
 make
 ```
 
