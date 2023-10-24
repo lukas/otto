@@ -31,7 +31,7 @@ In root directory run
 
 ```
 git clone https://github.com/ggerganov/llama.cpp.git
-cd llama
+cd llama.cpp
 make
 ```
 
@@ -52,7 +52,7 @@ wget https://api.wandb.ai/artifactsV2/gcp-us/l2k2/QXJ0aWZhY3Q6NjAyMDE2NzM0/25bd8
 
 ```
 git clone https://github.com/ggerganov/whisper.cpp.git
-cd whisper
+cd whisper.app
 make
 make stream
 ```
