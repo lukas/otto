@@ -2,3 +2,8 @@
 wandb/
 dataset/
 .python-version
+llama.cpp/
+whisper.cpp/
+frontend/yarn.lock
+frontend/node_modules/
+logs/
