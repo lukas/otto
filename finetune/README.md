@@ -10,13 +10,13 @@ pip install -r requirements_finetune.txt
 ## Optionally generate more training data
 
 ```
-python training_data.py -c --file ../skills/run_app_examples.txt
+python training_data.py -c --file ../examples/run_app_examples.txt
 ```
 
 ## Collect training data
 
 ```
-python training_data.py -t --files skills/*examples.txt > dataset/training_data.json
+python training_data.py -t --files ../examples/*examples.txt > dataset/training_data.json
 ```
 
 ## Get base model
