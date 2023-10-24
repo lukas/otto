@@ -49,10 +49,10 @@ wget https://api.wandb.ai/artifactsV2/gcp-us/l2k2/QXJ0aWZhY3Q6NjAyMDE2NzM0/25bd8
 ```
 
 #### Install [whisper.cpp](https://github.com/ggerganov/whisper.cpp)
-
+In root directory run
 ```
 git clone https://github.com/ggerganov/whisper.cpp.git
-cd whisper.app
+cd whisper.cpp
 make
 make stream
 ```
@@ -64,7 +64,7 @@ sudo apt-get install libsdl2-dev
 ```
 
 #### Download a whisper model
-
+Store the model in whisper.cpp/models
 ```
 bash ./models/download-ggml-model.sh base.en
 ```
