@@ -1,7 +1,7 @@
 # otto
 
-Install node
-Install python
+https://github.com/lavanyashukla/otto/assets/12243123/82801fa5-8dbc-4698-ad0b-da751ea30adb
+
 
 ## Getting Started
 
