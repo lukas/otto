@@ -50,7 +50,7 @@ function Main() {
 
         socket.on("skill_message", (skillMessage) => {
             if (skillMessage.skill === "timer") {
-                if (skillMessage.message.startswith("time:")) {
+                if (skillMessage.message.startsWith("time:")) {
                     setTimer(parseInt(skillMessage.message.split(":")[1]))
                 } else {
                     newMessage(skillMessage.message, soundFlag);
