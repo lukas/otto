@@ -148,10 +148,12 @@ def collect_training_data(file: str, n_generations: int=5):
         temperature=TEMPERATURE,
     )
     for c in response["choices"]:
-        if c.message.function_call != None:    
-            response = json.loads(c.message.function_call.arguments)
-            print("### User: {user}\n### Assistant: {assistant}\n\n".format(**response))
-
+        try:
+            if c.message.function_call != None:    
+                response = json.loads(c.message.function_call.arguments)
+                print("### User: {user}\n### Assistant: {assistant}\n\n".format(**response))
+        except:
+            pass
 
 def strip_ansi_codes(s):
     return re.sub(r"\x1b\[([0-9,A-Z]{1,2}(;[0-9]{1,2})?(;[0-9]{3})?)?[m|K]?", "", s)
