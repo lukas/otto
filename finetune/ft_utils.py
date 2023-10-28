@@ -2,6 +2,7 @@ from functools import partial
 
 import wandb
 
+from tqdm.auto import tqdm
 import torch
 import numpy as np
 from datasets import load_from_disk
