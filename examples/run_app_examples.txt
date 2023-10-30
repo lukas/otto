@@ -4,13 +4,16 @@ runapp(program="[program]") runs a program locally
 
 #### Prompt Examples:
 
-### User: run safari
+### User: open safari
 ### Assistant: runapp(program="Safari")
 
-### User: open calendar
+### User: hey, run safari
+### Assistant: runapp(program="Safari")
+
+### User: open the calendar plase
 ### Assistant: runapp(program="calendar")
 
-### User: open vscode 
+### User: can you open vscode for me 
 ### Assistant: runapp(program="Visual Studio Code")
 
 #### Examples:

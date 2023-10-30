@@ -1,7 +1,7 @@
 # otto
 
-Install node
-Install python
+https://github.com/lavanyashukla/otto/assets/12243123/82801fa5-8dbc-4698-ad0b-da751ea30adb
+
 
 ## Getting Started
 
@@ -36,23 +36,23 @@ make
 ```
 
 #### Download a llama model
-
+Store the model in llama.cpp/models
 ```
-cd models
+cd llama.cpp/models
 wget https://huggingface.co/TheBloke/Llama-2-7B-GGUF/resolve/main/llama-2-7b.Q4_K_M.gguf
 ```
 
-#### Downlaod a finetuned model
-
+#### Download a finetuned model
+Store the fine-tuned model in llama.cpp/models
 ```
 wget https://api.wandb.ai/artifactsV2/gcp-us/l2k2/QXJ0aWZhY3Q6NjAyMDE2NzM0/25bd8f78a12839913fd2c4c49c3f9c22/ggml-finetuned-model-q4_0.gguf
 ```
 
 #### Install [whisper.cpp](https://github.com/ggerganov/whisper.cpp)
-
+In root directory run
 ```
 git clone https://github.com/ggerganov/whisper.cpp.git
-cd whisper.app
+cd whisper.cpp
 make
 make stream
 ```
@@ -64,7 +64,7 @@ sudo apt-get install libsdl2-dev
 ```
 
 #### Download a whisper model
-
+Store the model in whisper.cpp/models
 ```
 bash ./models/download-ggml-model.sh base.en
 ```
