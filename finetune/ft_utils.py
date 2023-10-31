@@ -1,3 +1,4 @@
+from pathlib import Path
 from functools import partial
 
 import wandb
@@ -6,10 +7,71 @@ from tqdm.auto import tqdm
 import torch
 import numpy as np
 from datasets import load_from_disk
-from transformers import GenerationConfig, Trainer
+from peft import AutoPeftModelForCausalLM
+from transformers import AutoModelForCausalLM, GenerationConfig, Trainer, AutoTokenizer
 from transformers.integrations import WandbCallback
 
-def load_from_artifact(at_address, type="dataset"):
+llama_chat_prompt = """<s>[INST] <<SYS>>
+You are AI that converts human request into api calls. 
+You have a set of functions:
+-news(topic="[topic]") asks for latest headlines about a topic.
+-math(question="[question]") asks a math question in python format.
+-notes(action="add|list", note="[note]") lets a user take simple notes.
+-openai(prompt="[prompt]") asks openai a question.
+-runapp(program="[program]") runs a program locally.
+-story(description=[description]) lets a user ask for a story.
+-timecheck(location="[location]") ask for the time at a location. If no location is given it's assumed to be the current location.
+-timer(duration="[duration]") sets a timer for duration written out as a string.
+-weather(location="[location]") ask for the weather at a location. If there's no location string the location is assumed to be where the user is.
+-other() should be used when none of the other commands apply
+
+Reply with the corresponding function call only, be brief.
+<</SYS>>
+
+Here is a user request, reply with the corresponding function call, be brief.
+USER_QUERY: {user}[/INST]{answer}"""
+
+def _create_llama_chat_prompt(user, answer=""):
+    return llama_chat_prompt.format(user=user, answer=answer)
+
+def create_llama_chat_prompt(row):
+    return _create_llama_chat_prompt(**row)
+
+
+def _create_llama_prompt(user, answer=""):
+    "Format the prompt to style"
+    return ("Below is an instruction that describes a task. Write a response that appropriately completes the request.\n"
+            "### User: {user}\n"
+            "### Answer: {answer}").format(user=user, answer=answer)
+
+def create_llama_prompt(row):
+    return _create_llama_prompt(**row)
+
+mistral_prompt = """[INST]You are AI that converts human request into api calls. 
+You have a set of functions:
+-news(topic="[topic]") asks for latest headlines about a topic.
+-math(question="[question]") asks a math question in python format.
+-notes(action="add|list", note="[note]") lets a user take simple notes.
+-openai(prompt="[prompt]") asks openai a question.
+-runapp(program="[program]") runs a program locally.
+-story(description=[description]) lets a user ask for a story.
+-timecheck(location="[location]") ask for the time at a location. If no location is given it's assumed to be the current location.
+-timer(duration="[duration]") sets a timer for duration written out as a string.
+-weather(location="[location]") ask for the weather at a location. If there's no location string the location is assumed to be where the user is.
+-other() should be used when none of the other commands apply
+
+Here is a user request, reply with the corresponding function call, be brief.
+USER_QUERY: {user}[/INST]{answer}"""
+
+
+def _create_mistral_instruct_prompt(user, answer=""):
+    return mistral_prompt.format(user=user, answer=answer)
+
+def create_mistral_instruc_prompt(row):
+    return _create_mistral_instruct_prompt(**row)
+
+
+def load_ds_from_artifact(at_address, type="dataset"):
     "Load the dataset from an Artifact"
     if wandb.run is not None:
         artifact = wandb.use_artifact(at_address, type=type)
@@ -20,7 +82,40 @@ def load_from_artifact(at_address, type="dataset"):
     artifact_dir = artifact.download()
     return load_from_disk(artifact_dir)
 
+def model_type(model_path):
+    if list(model_path.glob("*adapter*")):
+        return AutoPeftModelForCausalLM
+    return AutoModelForCausalLM
 
+
+def load_model_from_artifact(MODEL_AT):
+    "Load model and tokenizer from W&B"
+    if not wandb.run:
+        from wandb import Api
+        api = Api()
+        artifact = api.artifact(MODEL_AT, type="model")
+    else:
+        artifact = wandb.use_artifact(MODEL_AT, type="model")
+    artifact_dir = Path(artifact.download())
+    
+    model = model_type(artifact_dir).from_pretrained(
+            artifact_dir, device_map="auto", torch_dtype=torch.bfloat16)
+
+    tokenizer = AutoTokenizer.from_pretrained(artifact_dir)
+    tokenizer.pad_token = tokenizer.eos_token
+    
+    return model, tokenizer
+
+def load_model_from_hf(model_id):
+    "Load model and tokenizer from HF"
+    
+    model = AutoModelForCausalLM.from_pretrained(
+            model_id, device_map="auto", torch_dtype=torch.bfloat16)
+
+    tokenizer = AutoTokenizer.from_pretrained(model_id)
+    tokenizer.pad_token = tokenizer.eos_token
+    
+    return model, tokenizer
 
 def has_exisiting_wandb_callback(trainer: Trainer):
     for item in trainer.callback_handler.callbacks:
@@ -32,6 +127,7 @@ def generate(prompt, model, tokenizer, gen_config):
     tokenized_prompt = tokenizer(prompt, return_tensors='pt')['input_ids'].cuda()
     with torch.inference_mode():
         output = model.generate(inputs=tokenized_prompt, 
+                                pad_token_id=tokenizer.eos_token_id,
                                 generation_config=gen_config)
     return tokenizer.decode(output[0][len(tokenized_prompt[0]):], skip_special_tokens=True)
 

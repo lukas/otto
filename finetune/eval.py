@@ -12,25 +12,29 @@ from ft_utils import (
     load_ds_from_artifact, 
     create_mistral_instruc_prompt, 
     create_llama_prompt,
+    create_llama_chat_prompt,
     load_model_from_hf,
 )
 
 defaults = SimpleNamespace(
     MODEL_AT = 'capecape/huggingface/6urzaw17-mistralai_Mistral-7B-Instruct-v0.1-ft:v0',
     DATASET_AT = 'capecape/otto/split_dataset:v2',
-    MODEL_ID = None,  #  "mistralai/Mistral-7B-Instruct-v0.1" # Evaluate a model from the HF Hub
+    # MODEL_ID = None,  #  "mistralai/Mistral-7B-Instruct-v0.1" # Evaluate a model from the HF Hub
+    MODEL_ID = "meta-llama/Llama-2-7b-chat-hf"
 )
 
 def load_ds_and_model(defaults):
     ds = load_ds_from_artifact(defaults.DATASET_AT)
     if defaults.MODEL_ID is not None:
         print(f"Loading pre-trained model, not finetuned one: {defaults.MODEL_ID}")
-        model, tokenizer = load_model_from_artifact(defaults.MODEL_ID)
+        model, tokenizer = load_model_from_hf(defaults.MODEL_ID)
     else:
         model, tokenizer = load_model_from_artifact(defaults.MODEL_AT)
-    model = getattr(model, "model", model)  # maybe unwrap model
+        model = getattr(model, "model", model)  # maybe unwrap model
     if "mistral" in model.name_or_path.lower():
         create_prompt = create_mistral_instruc_prompt
+    elif "chat" in model.name_or_path.lower():
+        create_prompt = create_llama_chat_prompt
     else:
         create_prompt = create_llama_prompt
     create_test_prompt = lambda row: {"text": create_prompt({"user":row["user"], "answer":""})}
@@ -54,6 +58,7 @@ def create_predictions_table(model, tokenizer, test_dataset, max_new_tokens=256)
                                model=model, 
                                tokenizer=tokenizer,
                                gen_config=gen_config)
+        print(f"{prompt} -> {generation}")
         records_table.add_data(prompt,
                                example["user"],
                                example["answer"],
