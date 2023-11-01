@@ -11,6 +11,11 @@ from peft import AutoPeftModelForCausalLM
 from transformers import AutoModelForCausalLM, GenerationConfig, Trainer, AutoTokenizer
 from transformers.integrations import WandbCallback
 
+llama_prompt = """Below is an instruction that describes a task. Write a response that appropriately completes the request.
+### User: {user}
+### Answer: {answer}"""
+
+
 llama_chat_prompt = """<s>[INST] <<SYS>>
 You are AI that converts human request into api calls. 
 You have a set of functions:
@@ -31,22 +36,6 @@ Reply with the corresponding function call only, be brief.
 Here is a user request, reply with the corresponding function call, be brief.
 USER_QUERY: {user}[/INST]{answer}"""
 
-def _create_llama_chat_prompt(user, answer=""):
-    return llama_chat_prompt.format(user=user, answer=answer)
-
-def create_llama_chat_prompt(row):
-    return _create_llama_chat_prompt(**row)
-
-
-def _create_llama_prompt(user, answer=""):
-    "Format the prompt to style"
-    return ("Below is an instruction that describes a task. Write a response that appropriately completes the request.\n"
-            "### User: {user}\n"
-            "### Answer: {answer}").format(user=user, answer=answer)
-
-def create_llama_prompt(row):
-    return _create_llama_prompt(**row)
-
 mistral_prompt = """[INST]You are AI that converts human request into api calls. 
 You have a set of functions:
 -news(topic="[topic]") asks for latest headlines about a topic.
@@ -64,11 +53,14 @@ Here is a user request, reply with the corresponding function call, be brief.
 USER_QUERY: {user}[/INST]{answer}"""
 
 
-def _create_mistral_instruct_prompt(user, answer=""):
-    return mistral_prompt.format(user=user, answer=answer)
+def create_custom_prompt(prompt_template):
+    def _inner(row):
+        return prompt_template.format(**row)
+    return _inner
 
-def create_mistral_instruc_prompt(row):
-    return _create_mistral_instruct_prompt(**row)
+create_llama_prompt = create_custom_prompt(llama_prompt)
+create_llama_chat_prompt = create_custom_prompt(llama_chat_prompt)
+create_mistral_instruct_prompt = create_custom_prompt(mistral_prompt)
 
 
 def load_ds_from_artifact(at_address, type="dataset"):
