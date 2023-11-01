@@ -11,47 +11,16 @@ from peft import AutoPeftModelForCausalLM
 from transformers import AutoModelForCausalLM, GenerationConfig, Trainer, AutoTokenizer
 from transformers.integrations import WandbCallback
 
-llama_prompt = """Below is an instruction that describes a task. Write a response that appropriately completes the request.
-### User: {user}
-### Answer: {answer}"""
 
+def read_file(fname):
+    "Read a file to string"
+    with open(fname, "r") as f:
+        file_content = f.read()
+    return file_content
 
-llama_chat_prompt = """<s>[INST] <<SYS>>
-You are AI that converts human request into api calls. 
-You have a set of functions:
--news(topic="[topic]") asks for latest headlines about a topic.
--math(question="[question]") asks a math question in python format.
--notes(action="add|list", note="[note]") lets a user take simple notes.
--openai(prompt="[prompt]") asks openai a question.
--runapp(program="[program]") runs a program locally.
--story(description=[description]) lets a user ask for a story.
--timecheck(location="[location]") ask for the time at a location. If no location is given it's assumed to be the current location.
--timer(duration="[duration]") sets a timer for duration written out as a string.
--weather(location="[location]") ask for the weather at a location. If there's no location string the location is assumed to be where the user is.
--other() should be used when none of the other commands apply
-
-Reply with the corresponding function call only, be brief.
-<</SYS>>
-
-Here is a user request, reply with the corresponding function call, be brief.
-USER_QUERY: {user}[/INST]{answer}"""
-
-mistral_prompt = """[INST]You are AI that converts human request into api calls. 
-You have a set of functions:
--news(topic="[topic]") asks for latest headlines about a topic.
--math(question="[question]") asks a math question in python format.
--notes(action="add|list", note="[note]") lets a user take simple notes.
--openai(prompt="[prompt]") asks openai a question.
--runapp(program="[program]") runs a program locally.
--story(description=[description]) lets a user ask for a story.
--timecheck(location="[location]") ask for the time at a location. If no location is given it's assumed to be the current location.
--timer(duration="[duration]") sets a timer for duration written out as a string.
--weather(location="[location]") ask for the weather at a location. If there's no location string the location is assumed to be where the user is.
--other() should be used when none of the other commands apply
-
-Here is a user request, reply with the corresponding function call, be brief.
-USER_QUERY: {user}[/INST]{answer}"""
-
+llama_prompt = read_file("prompts/llama2_vanilla.txt")
+llama_chat_prompt = read_file("prompts/llama2_chat.txt")
+mistral_prompt = read_file("prompts/mistral.txt")
 
 def create_custom_prompt(prompt_template):
     def _inner(row):

@@ -16,6 +16,7 @@ from ft_utils import (
     create_llama_chat_prompt,
     create_custom_prompt,
     load_model_from_hf,
+    read_file,
 )
 
 def validate_prompt_format(prompt):
@@ -119,11 +120,6 @@ def evaluate(args):
     wandb.run.summary["acc"] = acc
     wandb.run.summary["acc_lousy"] = acc_lousy
     wandb.finish()
-
-def read_file(fname):
-    with open(fname, "r") as f:
-        prompt = f.read()
-    return prompt
     
 if __name__ == "__main__":
     args = parse_args(defaults)
