@@ -5,3 +5,5 @@ accelerate
 datasets
 openai
 wandb
+scipy
+tqdm
