@@ -33,6 +33,7 @@ INTRO_BLURB = "Below is an instruction that describes a task. Write a response t
 INSTRUCTION_KEY = "### User: "
 RESPONSE_KEY = "### Answer: "
 
+
 def load_model(model_name, bnb_config):
     n_gpus = torch.cuda.device_count()
     max_memory = f"{24000}MB"
@@ -144,7 +145,6 @@ def preprocess_batch(batch, tokenizer, max_length):
 
 def create_prompt(user, answer, include_response=True):
 
-
     blurb = f"{INTRO_BLURB}"
     instruction = f"{INSTRUCTION_KEY}{user}"
     if include_response:
@@ -206,7 +206,6 @@ def print_trainable_parameters(model, use_4bit=False):
 
 class WandbLlamaCallback(TrainerCallback):
 
-
     # def on_step_end(
     #     self,
     #     args: TrainingArguments,
@@ -214,9 +213,8 @@ class WandbLlamaCallback(TrainerCallback):
     #     control: TrainerControl,
     #     **kwargs,
     # ):
-        
-    #     return super().on_step_end(args, state, control, **kwargs)
 
+    #     return super().on_step_end(args, state, control, **kwargs)
 
     def on_evaluate(self, args: TrainingArguments, state: TrainerState, control: TrainerControl, **kwargs):
         print("Evaluate")
@@ -226,10 +224,8 @@ class WandbLlamaCallback(TrainerCallback):
         dataset = kwargs['train_dataloader'].dataset
         model = kwargs['model']
         tokenizer = kwargs['tokenizer']
-        test_and_log_raw_data(dataset=dataset, model=model, tokenizer=tokenizer, name="train_results")
-
-
-
+        test_and_log_raw_data(dataset=dataset, model=model,
+                              tokenizer=tokenizer, name="train_results")
 
     def on_epoch_end(self, args, state, control, **kwargs):
 
@@ -257,14 +253,10 @@ def prepare_model_for_training(model):
 
     # Print information about the percentage of trainable parameters
     print_trainable_parameters(peft_model)
-    return peft_model    
+    return peft_model
+
 
 def train(model, tokenizer, dataset, output_dir, use_cuda, num_train_epochs=20, load_from_checkpoint=False, checkpoint_dir=None):
-    
-
-
-
-
     os.environ["WANDB_PROJECT"] = "otto"  # log to your project
     os.environ["WANDB_LOG_MODEL"] = "all"  # log your models
 
@@ -300,7 +292,6 @@ def train(model, tokenizer, dataset, output_dir, use_cuda, num_train_epochs=20, 
             report_to="wandb",
         )
 
-
     trainer = Trainer(
         model=model,
         tokenizer=tokenizer,
@@ -310,8 +301,6 @@ def train(model, tokenizer, dataset, output_dir, use_cuda, num_train_epochs=20, 
         callbacks=[WandbLlamaCallback()],
         data_collator=DataCollatorForLanguageModeling(tokenizer, mlm=False),
     )
-
- 
 
     # re-enable for inference to speed up predictions for similar inputs
     model.config.use_cache = False
@@ -360,11 +349,10 @@ def train(model, tokenizer, dataset, output_dir, use_cuda, num_train_epochs=20, 
     torch.cuda.empty_cache()
 
 
-
 def load_model_from_checkpoint(checkpoint_dir, base_model_name):
     if (base_model_name.startswith('bert')):
         model = AutoPeftModelForCausalLM.from_pretrained(
-            checkpoint_dir,           
+            checkpoint_dir,
         )
     else:
         model = AutoPeftModelForCausalLM.from_pretrained(
@@ -379,21 +367,22 @@ def load_model_from_checkpoint(checkpoint_dir, base_model_name):
 
     return model, tokenizer
 
+
 def merge_and_save_model(checkpoint_dir, merged_dir, base_model_name):
 
-    model, tokenizer = load_model_from_checkpoint(checkpoint_dir, base_model_name)
+    model, tokenizer = load_model_from_checkpoint(
+        checkpoint_dir, base_model_name)
     merged_model = model.merge_and_unload()
 
     os.makedirs(merged_dir, exist_ok=True)
     merged_model.save_pretrained(merged_dir, safe_serialization=True)
 
     # save tokenizer for easy inference
-    
+
     tokenizer.save_pretrained(merged_dir)
 
 
 def get_output_text(model, tokenizer, prompt):
-
 
     inputs = tokenizer(prompt, padding=True, truncation=True, max_length=get_max_length(
         model), return_tensors="pt").to(device)
@@ -401,8 +390,9 @@ def get_output_text(model, tokenizer, prompt):
     outputs = model.generate(**inputs, max_new_tokens=100)
     output_text = tokenizer.decode(
         outputs[0], skip_special_tokens=True)
-    
+
     return output_text
+
 
 def test_and_log_raw_data(model, tokenizer, dataset, name, num_examples=10):
     raw_data = []
@@ -415,21 +405,20 @@ def test_and_log_raw_data(model, tokenizer, dataset, name, num_examples=10):
         user_query = prompt_no_response_key.split(INSTRUCTION_KEY, 1)[1]
 
         prompt = prompt_no_response_key + RESPONSE_KEY
-        inputs = tokenizer(prompt, padding=True, truncation=True, max_length=get_max_length(model), return_tensors='pt').to(device)
+        inputs = tokenizer(prompt, padding=True, truncation=True, max_length=get_max_length(
+            model), return_tensors='pt').to(device)
         raw_outputs = model.generate(**inputs, max_new_tokens=100)
-        _, llm_response = tokenizer.decode(raw_outputs[0]).split(RESPONSE_KEY, 1)
+        _, llm_response = tokenizer.decode(
+            raw_outputs[0]).split(RESPONSE_KEY, 1)
         raw_data.append([prompt, user_query, correct_response, llm_response])
 
-
-    wandb.log({name: wandb.Table(data = raw_data, columns=["prompt", "query", "response", "output_text"])})
-
-
+    wandb.log({name: wandb.Table(data=raw_data, columns=[
+              "prompt", "query", "response", "output_text"])})
 
 
 def test_model(model, tokenizer, dataset):
-    test_and_log_raw_data(model, tokenizer, dataset['train'], "train_results") 
+    test_and_log_raw_data(model, tokenizer, dataset['train'], "train_results")
     test_and_log_raw_data(model, tokenizer, dataset['test'], "test_results")
-
 
 
 if __name__ == "__main__":
@@ -457,8 +446,8 @@ if __name__ == "__main__":
                           help="Don't use cuda")
     argparse.add_argument("--bert", action='store_true',
                           help="Use bert for fast testing")
-    argparse.add_argument("--wandb", action='store_true', help="Log with wandb")
-
+    argparse.add_argument("--wandb", action='store_true',
+                          help="Log with wandb")
 
     argparse.add_argument("--all", action='store_true')
 
@@ -471,7 +460,6 @@ if __name__ == "__main__":
     if args.wandb:
         wandb.init(project="otto")
 
-
     if args.bert:
         args.base_model_name = "bert-base-uncased"
 
@@ -481,7 +469,6 @@ if __name__ == "__main__":
     else:
         use_cuda = True
         device = "cuda:0"
-
 
     if args.all:
         args.load_dataset = True
@@ -500,7 +487,7 @@ if __name__ == "__main__":
 
     print("Loading dataset")
     dataset = load_dataset("json", data_files=args.training_data)
-    max_length = 512 # get_max_length(model)
+    max_length = 512  # get_max_length(model)
 
     seed = 42
     processed_dataset = preprocess_dataset(
@@ -508,11 +495,8 @@ if __name__ == "__main__":
 
     split_dataset = processed_dataset['train'].train_test_split(test_size=0.3)
 
-
     if args.test_model:
         test_model(model, tokenizer, split_dataset)
-
-
 
     if args.train_model:
         print("Training on dataset of length", len(processed_dataset["train"]))
@@ -520,7 +504,7 @@ if __name__ == "__main__":
             peft_model = prepare_model_for_training(model)
         else:
             peft_model = "meta-llama/Llama-2-7b-hf"
-        
+
         train(peft_model, tokenizer, split_dataset,
               args.checkpoint_dir, use_cuda, args.num_train_epochs, args.load_from_checkpoint, args.checkpoint_dir)
 
@@ -531,7 +515,7 @@ if __name__ == "__main__":
 
     if args.convert_model:
 
-        #if (args.wandb):
+        # if (args.wandb):
         #    wandb.init(project="otto", job_type="convert-gguf")
 
         print(
@@ -543,10 +527,11 @@ if __name__ == "__main__":
 
         subprocess.run([os.path.join(args.llama_path, "quantize"), os.path.join(
             args.merged_dir, "ggml-model-f16.gguf"), os.path.join(llama_model_path, args.gguf_filename), "q4_0"])
-        
+
         if (args.wandb):
             artifact = wandb.Artifact('gguf-model-finetuned', type='model')
-            artifact.add_file(os.path.join(llama_model_path, args.gguf_filename))
+            artifact.add_file(os.path.join(
+                llama_model_path, args.gguf_filename))
             wandb.log_artifact(artifact)
 
         print("Done!")

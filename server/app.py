@@ -317,6 +317,8 @@ def run_transcribe():
 
     transcribe_command = [os.path.join(
         cfg.whisper_cpp_dir, "stream")] + transcribe_args
+
+    # print("Transcribe command: ", " ".join(transcribe_command))
     socket_io.emit("transcribe_command", transcribe_command)
 
     transcribe_process = subprocess.Popen(transcribe_command,
@@ -424,7 +426,6 @@ def stop_transcribe():
 
 @socket_io.on('start_automation')
 def start_automation(args):
-
     if ('transcribe_model' in args):
         # find the first model in available_transcribe_models where model_file equals transcribe_model
         state.transcribe_model = next(

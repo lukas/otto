@@ -1,3 +1,7 @@
 flask
 flask_socketio
 python-dotenv
+requests
+pyyaml
+pytz
+

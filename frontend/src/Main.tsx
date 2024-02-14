@@ -44,8 +44,8 @@ function Main() {
 
         socket = io('ws://' + window.location.hostname + ':5001');
 
-        socket.on("transcribe", (transcription) => {
-            // setMessage(transcription);
+        socket.on("raw_transcription", (transcription) => {
+            setMessage(transcription);
         })
 
         socket.on("skill_message", (skillMessage) => {
