@@ -15,6 +15,7 @@ let socket: Socket
 
 function Main() {
     const [message, setMessage] = useState("Not Connected to Server")
+    const [transcriptionMessage, setTranscriptionMessage] = useState("")
 
     const [soundFlag, setSoundFlag] = useState(false)
     const [timer, setTimer] = useState(0)
@@ -45,7 +46,9 @@ function Main() {
         socket = io('ws://' + window.location.hostname + ':5001');
 
         socket.on("raw_transcription", (transcription) => {
-            setMessage(transcription);
+            // remove anything inside [] or inside <> from transcription
+            transcription = transcription.replace(/<[^>]*>/g, '').replace(/\[[^\]]*\]/g, '');
+            setTranscriptionMessage(transcription);
         })
 
         socket.on("skill_message", (skillMessage) => {
@@ -127,6 +130,13 @@ function Main() {
             >
 
                 <img src={logo} alt="logo" style={{ height: "100px" }} />
+                {transcriptionMessage && (
+                    <Box height="30px" overflow="auto">
+                        <Typography variant="h6" component="div" color='blue' gutterBottom>
+                            {transcriptionMessage}
+                        </Typography>
+                    </Box>
+                )}
                 {message && (
                     <Box height="300px" overflow="auto">
                         <Typography variant={message?.length > 50 ? "h6" : "h2"} component="div" gutterBottom>
