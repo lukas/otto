@@ -54,6 +54,7 @@ In root directory run
 git clone https://github.com/ggerganov/whisper.cpp.git
 cd whisper.cpp
 make
+brew install sdl2
 make stream
 ```
 
