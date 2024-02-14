@@ -68,6 +68,33 @@ If you don't have access to Llama2 for instance, you can either use [OpenLlama](
 
 ## Run fine tuning
 
-```
-python finetune.py --all
-```
+You can perform fine-tune using the provided [finetune.ipynb](finetune.ipynb) script. Running this script with everything as default will reproduce our Mistral Instruct experiments.
+It uses:
+- Peft with qLoRA for efficient finetuning
+- SFTTrainer from [trl](https://github.com/huggingface/trl/blob/main/trl/trainer/sft_trainer.py) for data pre-processing
+- W&B to log metrics and predictions during training.
+- W&B to log the model checkpoint and the corresponding prompt formatting used. We only log the adapters to save memory.
+
+## Eval
+
+You can run evaluation with the `eval.py` script, this will:
+- Pull the test dataset from W&B
+- Apply the corresponding prompt
+- Log the metrics and predictions to W&B
+
+You can override the parameters
+- If you pass `MODEL_ID` it will use that model from the HF hub instead of the fine-tuned artifact
+- If you pass `PROMPT` it will override the defaults prompts with the one you pass. (long prompts are better passed as a file)
+- `PROMPT_FILE`: A better way of passing your prompt is probably using a file, check [prompts](prompts) folder for examples.
+
+> you have to pair the right format with the right model. Llama and Mistral have different formats.
+
+# Useful resources to get you started fine-tuning
+- [Fine-tuning Mistral 7B with W&B](https://wandb.ai/vincenttu/finetuning_mistral7b/reports/Fine-tuning-Mistral-7B-with-W-B--Vmlldzo1NTc3MjMy?galleryTag=llm)
+- [How to Fine-Tune an LLM Part 1: Preparing a Dataset for Instruction Tuning](https://wandb.ai/capecape/alpaca_ft/reports/How-to-Fine-Tune-an-LLM-Part-1-Preparing-a-Dataset-for-Instruction-Tuning--Vmlldzo1NTcxNzE2?galleryTag=llm)
+- [Fine-Tuning an Open Source LLM in Amazon SageMaker with W&B](https://wandb.ai/capecape/aws_llm_workshop/reports/Fine-Tuning-an-Open-Source-LLM-in-Amazon-SageMaker-with-W-B--Vmlldzo1Njk4MDc1?galleryTag=llm)
+- [Fine-Tuning ChatGPT for Sentiment Analysis With W&B](https://wandb.ai/mostafaibrahim17/ml-articles/reports/Fine-Tuning-ChatGPT-for-Sentiment-Analysis-With-W-B--Vmlldzo1NjMzMjQx?galleryTag=llm)
+- [How to Adapt your LLM for Question Answering with Prompt-Tuning using NVIDIA NeMo and W&Bs](https://wandb.ai/a-sh0ts/NeMo_Megatron_PTuning-demo/reports/How-to-Adapt-your-LLM-for-Question-Answering-with-Prompt-Tuning-using-NVIDIA-NeMo-and-Weights-Biases--Vmlldzo1NjA1MjEx?galleryTag=llm)
+- [Scaling Llama 2 to 32k Tokens With LongLora](https://wandb.ai/byyoung3/ml-news/reports/Scaling-Llama-2-to-32k-Tokens-With-LongLora--Vmlldzo1NzU4OTk2?galleryTag=llm)
+- [Building Custom Autonomous Agents with Prompt Chaining](https://wandb.ai/samuel-shapley/OrchestrAI/reports/Introducing-OrchestrAI-Building-Custom-Autonomous-Agents-with-Prompt-Chaining--Vmlldzo1MTE1MTM1?galleryTag=llm)
+
