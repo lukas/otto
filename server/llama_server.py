@@ -5,6 +5,8 @@ import requests
 import json
 import os
 from typing import Callable
+import weave
+
 
 llm_thread = None
 llm_process = None
@@ -12,7 +14,9 @@ llm_process = None
 url = "http://127.0.0.1:8080/completion"
 
 
+@weave.op()
 def call_llm(prompt: str, llm_settings: dict, grammar_string, end_response_callback, end_response_chunk_callback, error_output_function, response_output_function):
+    print("Inside call_llm")
     llama_request = {"n_predict": llm_settings["n_predict"],
                      "prompt": prompt,
                      "stream": True,

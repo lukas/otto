@@ -16,6 +16,9 @@ let socket: Socket
 function Main() {
     const [message, setMessage] = useState("Not Connected to Server")
     const [transcriptionMessage, setTranscriptionMessage] = useState("")
+    const [functionCall, setFunctionCall] = useState("")
+
+    const [sleeping, setSleeping] = useState(true)
 
     const [soundFlag, setSoundFlag] = useState(false)
     const [timer, setTimer] = useState(0)
@@ -51,6 +54,15 @@ function Main() {
             setTranscriptionMessage(transcription);
         })
 
+        socket.on("function_call", (newFunctionCall) => {
+            const argStr = Object.keys(newFunctionCall["args"]).map(key => {
+                return (key + "=\"" + newFunctionCall["args"][key]) + "\""
+            }).join(", ")
+            const newFunctionCallStr = newFunctionCall["function_name"] + "(" + argStr + ")"
+
+            setFunctionCall(newFunctionCallStr)
+        })
+
         socket.on("skill_message", (skillMessage) => {
             if (skillMessage.skill === "timer") {
                 if (skillMessage.message.startsWith("time:")) {
@@ -70,18 +82,21 @@ function Main() {
 
         socket.on("sleeping", (sleeping) => {
             if (sleeping === "True") {
+                setSleeping(true)
                 setMessage("💤")
             } else {
+                setSleeping(false)
                 newMessage("Hello", soundFlag)
             }
 
         })
 
         socket.on("server_status", (status: any) => {
+            setMessage("Connected to Server")
             if (status["sleeping"] === "True") {
-                setMessage("💤")
+                setSleeping(true)
             } else {
-                setMessage("...")
+                setSleeping(false)
             }
         })
 
@@ -129,11 +144,20 @@ function Main() {
                 justifyContent="center"
             >
 
-                <img src={logo} alt="logo" style={{ height: "100px" }} />
+                {!sleeping &&
+                    <img src={logo} alt="logo" style={{ height: "100px" }} />
+                }
                 {transcriptionMessage && (
                     <Box height="30px" overflow="auto">
-                        <Typography variant="h6" component="div" color='blue' gutterBottom>
+                        <Typography variant="h6" component="div" color='blue' gutterBottom style={{ textAlign: "center" }}>
                             {transcriptionMessage}
+                        </Typography>
+                    </Box>
+                )}
+                {functionCall && (
+                    <Box height="30px" overflow="auto">
+                        <Typography variant="h6" component="div" color='green' gutterBottom style={{ textAlign: "center" }}>
+                            {functionCall}
                         </Typography>
                     </Box>
                 )}

@@ -17,6 +17,9 @@ from generate_grammar import generate_grammar
 
 import config as cfg
 from state import State
+import weave
+
+weave.init('otto9')
 
 state = State(cfg)
 
@@ -169,12 +172,24 @@ def generate_prompt_instruct(prompt_setup, user_prompt, old_prompts, old_respons
     return prompt
 
 
+with open("finetune/prompts/mistral.txt", "r") as f:
+    mistral_prompt = f.read()
+
+
+def generate_prompt_mistral(user_prompt):
+    print("MP: ", mistral_prompt)
+    return mistral_prompt.format(**{"user": user_prompt, "answer": ""})
+
+
 def generate_prompt(prompt_setup, user_prompt, old_prompts, old_responses, prompt_generator):
 
     if (prompt_generator == "instruct"):
         return generate_prompt_instruct(prompt_setup, user_prompt, old_prompts, old_responses)
     elif (prompt_generator == "chat"):
         return generate_prompt_chat(prompt_setup, user_prompt, old_prompts, old_responses)
+    elif (prompt_generator == "mistral"):
+        return generate_prompt_mistral(user_prompt)
+
     raise (
         f"Unknown LLM model prompt generator {prompt_generator}")
 
@@ -186,10 +201,10 @@ def log_llm(user_prompt, response):
 
 
 def generate_prompt_and_call_llm(user_prompt):
-
+    print("User prompt: " + user_prompt)
     prompt = generate_prompt(state.prompt_setup, user_prompt,
                              state.old_prompts, state.old_responses, state.get_prompt_generator_for_model(state.llm_settings["model"]))
-
+    print("Final prompt: " + prompt)
     log_output(f"LLM call: {user_prompt}")
     socket_io.emit("prompt_setup", state.prompt_setup)
     socket_io.emit("old_prompts", {
