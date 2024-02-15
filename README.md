@@ -49,18 +49,22 @@ wget https://api.wandb.ai/artifactsV2/gcp-us/l2k2/QXJ0aWZhY3Q6NjAyMDE2NzM0/25bd8
 ```
 
 #### Install [whisper.cpp](https://github.com/ggerganov/whisper.cpp)
+On linux run:
+```
+sudo apt-get install libsdl2-dev
+```
+
+On OSX run:
+```
+brew install sdl2
+```
+
 In root directory run
 ```
 git clone https://github.com/ggerganov/whisper.cpp.git
 cd whisper.cpp
 make
 make stream
-```
-
-On linux you may need to run:
-
-```
-sudo apt-get install libsdl2-dev
 ```
 
 #### Download a whisper model
