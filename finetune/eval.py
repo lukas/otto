@@ -1,5 +1,10 @@
 import argparse
 import wandb
+import weave
+import asyncio
+
+from weave import weaveflow
+
 from types import SimpleNamespace
 from tqdm.auto import tqdm
 
@@ -107,6 +112,54 @@ def create_predictions_table(model, tokenizer, test_dataset, max_new_tokens=64):
     
     return records_table, acc/len(test_dataset), acc_lousy/len(test_dataset)
 
+
+@weave.type()
+class GenText(weaveflow.Model):
+    m: dict
+    tokenizer: dict
+    gen_config: dict
+
+    @weave.op()
+    async def predict(self, example: dict) -> dict:
+        prompt = example["text"]
+        user_query = example["user"]
+        label = example["answer"]
+        generation = generate(prompt=prompt, 
+                               model=self.m, 
+                               tokenizer=self.tokenizer,
+                               gen_config=self.gen_config)
+        
+        return {'generated_text': generation}
+    
+@weave.op()
+def match(example: dict, prediction: dict) -> dict:
+    return {'acc': prediction['generated_text'] == example['answer']}
+
+@weave.op()
+def example_to_model_input(example:dict) -> str:
+    return example
+
+
+def evaluate_weave(args):
+    weave.init("otto2")
+
+    max_new_tokens=64
+
+    test_dataset = load_test_ds(args)
+    hf_model, tokenizer = load_model(args)
+    gen_config = GenerationConfig.from_pretrained(
+        hf_model.name_or_path,
+        pad_token_id=tokenizer.eos_token_id,
+        max_new_tokens=max_new_tokens)
+    # breakpoint()
+    test_dataset_list_of_dict = weaveflow.Dataset(test_dataset.to_pandas().to_dict('records'))
+    dataset_ref = weave.publish(test_dataset_list_of_dict, 'test-labels')
+
+    weave_model = GenText(hf_model, tokenizer, gen_config)
+    eval = weaveflow.Evaluation(test_dataset_list_of_dict, scores=[match], example_to_model_input=example_to_model_input)
+    asyncio.run(eval.evaluate(weave_model))
+    # table, acc, acc_lousy = create_predictions_table(model, tokenizer, test_dataset, 64)
+
 def evaluate(args):
     # initialize run
     wandb.init(project="otto", job_type="eval", config=args)
@@ -126,4 +179,4 @@ if __name__ == "__main__":
     if args.PROMPT_FILE is not None:
         print(f"Reading prompt from file: {args.PROMPT_FILE}")
         args.PROMPT = read_file(args.PROMPT_FILE)
-    evaluate(args)
+    evaluate_weave(args)
