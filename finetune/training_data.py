@@ -2,15 +2,16 @@ import re
 import argparse
 from openai import ChatCompletion
 import json
+from weave import weaveflow
+import weave
 import os
 
 import openai
 
-openai.api_base = "https://api.wandb.ai/proxy/openai/v1"
-wandb_key = os.environ["WANDB_API_KEY"]
-openai_key = os.environ['OPENAI_API_KEY']
-openai.api_key = f"{wandb_key}:{openai_key}"
-
+# openai.api_base = "https://api.wandb.ai/proxy/openai/v1"
+# wandb_key = os.environ["WANDB_API_KEY"]
+# openai_key = os.environ['OPENAI_API_KEY']
+# openai.api_key = f"{wandb_key}:{openai_key}"
 
 def parse_example_file(file) -> (str, list[dict], list[dict]):
     with open(file, "r") as f:
@@ -67,11 +68,24 @@ def parse_example_file(file) -> (str, list[dict], list[dict]):
         return (prompt, prompt_examples, examples)
 
 
+def save_training_data_file(files):
+    examples = []
+    for file in files:
+        prompt, prompt_examples, file_examples = parse_example_file(file)
+        for line in file_examples:
+            examples.append(line)
+    weave.init('otto2')
+    weave.publish(weaveflow.Dataset(examples), 'examples')
+    print(examples[0])
+    print("here")
+
+
 def create_training_data_file(files):
     examples = []
     for file in files:
         prompt, prompt_examples, file_examples = parse_example_file(file)
         examples.append(file_examples)
+
 
     for example in examples:
         for line in example:
@@ -158,6 +172,7 @@ def generate_other_examples(files):
 
 
 if __name__ == "__main__":
+
     argparser = argparse.ArgumentParser(
 
         description='Generate training data from example files')
@@ -172,6 +187,8 @@ if __name__ == "__main__":
                            help="collect training data")
     argparser.add_argument('-o', '--generate-other-examples', action='store_true',
                            help="generate other examples")
+    argparser.add_argument('-s', '--save-training-data-file', action='store_true',
+                           help="save training data file")
 
     args = argparser.parse_args()
     if args.training_data_file:
@@ -182,3 +199,5 @@ if __name__ == "__main__":
         collect_training_data(args.files[0])
     elif args.generate_other_examples:
         generate_other_examples(args.files)
+    elif args.save_training_data_file:
+        save_training_data_file(args.files)
