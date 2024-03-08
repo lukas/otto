@@ -1,6 +1,5 @@
 import argparse
 import weave
-from weave import weaveflow
 from types import SimpleNamespace
 
 from ft_utils import (
@@ -17,10 +16,6 @@ from ft_utils import (
 from eval.anthropic_eval import evaluate_anthropic
 from eval.openai_eval import evaluate_openai
 from eval.finetune_eval import evaluate_model
-
-
-
-
 
 def validate_prompt_format(prompt):
     if not ("user" in prompt and "answer" in prompt):
@@ -60,18 +55,29 @@ def parse_args(defaults):
     # parser.add_argument("--PROMPT_FILE", type=str, default=None)
     return parser.parse_args()
 
-def load_test_ds(args):
-    if args.PROMPT is not None: # custom prompt
-        create_prompt = validate_prompt_format(args.PROMPT)
-    else:
-        create_prompt = get_default_create_prompt(args)
+def load_test_ds(dataset):
+    # if args.PROMPT is not None: # custom prompt
+    #     create_prompt = validate_prompt_format(args.PROMPT)
+    # else:
+    #     create_prompt = get_default_create_prompt(args)
 
-    # to parse the hf dataset
-    create_test_prompt = lambda row: {"text": create_prompt({"user":row["user"], "answer":""})}
+    # # to parse the hf dataset
+    # create_test_prompt = lambda row: {"text": create_prompt({"user":row["user"], "answer":""})}
     
-    ds = load_ds_from_artifact(args.DATASET_AT)
-    test_dataset = ds["test"].map(create_test_prompt)
+    ds = load_ds_from_artifact(dataset)
+    test_dataset = ds["test"]
     return test_dataset
+
+def publish_eval_datasets(dataset_ref: str):
+    test_dataset = load_test_ds(dataset_ref)
+
+    test_dataset_list_of_dict = weave.Dataset(rows=test_dataset.to_pandas().to_dict('records'), name='test-labels')
+    small_test_dataset = weave.Dataset(rows=test_dataset.to_pandas()[:5].to_dict('records'), name='test-labels-small')
+    weave.publish(test_dataset_list_of_dict)
+    weave.publish(small_test_dataset)
+
+    dataset = weave.ref("test-labels").get()
+
 
 
 
@@ -96,8 +102,15 @@ if __name__ == "__main__":
     args = parse_args(defaults)
     if args.dataset == 'small':
         eval_dataset_name = 'test-labels-small'
-    else:
+    elif args.dataset == 'test':
         eval_dataset_name = 'test-labels'
+    elif args.dataset == 'synthetic':
+        eval_dataset_name = 'synthetic-data'
+    elif args.dataset == 'synthetic-small':
+        eval_dataset_name = 'synthetic-data-small'
+
+
+    # publish_eval_datasets('capecape/otto/split_dataset:v2')
 
     # if args.PROMPT_FILE is not None:
     #     print(f"Reading prompt from file: {args.PROMPT_FILE}")

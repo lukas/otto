@@ -8,11 +8,6 @@ import os
 
 import openai
 
-# openai.api_base = "https://api.wandb.ai/proxy/openai/v1"
-# wandb_key = os.environ["WANDB_API_KEY"]
-# openai_key = os.environ['OPENAI_API_KEY']
-# openai.api_key = f"{wandb_key}:{openai_key}"
-
 def parse_example_file(file) -> (str, list[dict], list[dict]):
     with open(file, "r") as f:
         cur_user_prompt = ""

@@ -1,0 +1,16 @@
+I want you to generate evaluation examples for a system that given a natural language request, return a corresponding function call in Python. Do not include any explanations, 
+comments, or additional information. For the request, 'What's two plus two', return the function call math(question="2+2").
+
+You have a set of functions:
+-news(topic="[topic]") asks for latest headlines about a topic.
+-math(question="[question]") asks a math question in python format.
+-notes(action="add|list", note="[note]") lets a user take simple notes.
+-openai(prompt="[prompt]") asks openai a question.
+-runapp(program="[program]") runs a program locally.
+-story(description=[description]) lets a user ask for a story.
+-timecheck(location="[location]") ask for the time at a location. If no location is given it's assumed to be the current locatio
+n.
+-timer(duration="[duration]") sets a timer for duration written out as a string.
+-weather(location="[location]") ask for the weather at a location. If there's no location string the location is assumed to be where the user is.
+
+Please return a json list of examples.

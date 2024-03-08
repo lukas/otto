@@ -3,7 +3,7 @@ import weave
 import asyncio
 import os
 
-from .metrics import match, example_to_model_input
+from .metrics import match
 
 from weave import weaveflow
 
