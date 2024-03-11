@@ -40,6 +40,6 @@ def evaluate_openai(dataset_name: str):
     openai_user_tempate = open("prompts/openai_user.txt", "r").read()
 
     weave_model = GenTextOpenAIModel(model_name="gpt-4", system_prompt=openai_system_prompt, user_template=openai_user_tempate, name="gpt-4")
-    eval = weave.Evaluation(dataset=dataset, scores=[match])
+    eval = weave.Evaluation(dataset=dataset, scorers=[match])
     asyncio.run(eval.evaluate(weave_model))
     # table, acc, acc_lousy = create_predictions_table(model, tokenizer, test_dataset, 64)

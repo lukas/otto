@@ -520,11 +520,15 @@ if __name__ == "__main__":
 
         print(
             f"Converting to gguf format and saving to {llama_model_filename}")
+        
+        print(" ".join(["python", os.path.join(args.llama_path, "convert.py"), args.merged_dir]))
 
         subprocess.run(["python", os.path.join(args.llama_path, "convert.py"), args.merged_dir],
                        stdout=subprocess.PIPE,
                        stderr=subprocess.STDOUT)
 
+        print(" ".join([os.path.join(args.llama_path, "quantize"), os.path.join(
+            args.merged_dir, "ggml-model-f16.gguf"), os.path.join(llama_model_path, args.gguf_filename), "q4_0"]))
         subprocess.run([os.path.join(args.llama_path, "quantize"), os.path.join(
             args.merged_dir, "ggml-model-f16.gguf"), os.path.join(llama_model_path, args.gguf_filename), "q4_0"])
 

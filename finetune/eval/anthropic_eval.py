@@ -51,7 +51,6 @@ def evaluate_anthropic(dataset_name: str):
     weave_model = GenTextAnthropic(model_name="claude-3-sonnet-20240229", 
                                     system_prompt=openai_system_prompt, 
                                     user_template=openai_user_tempate)
-    eval = weave.Evaluation(dataset=dataset, scores=[match])
-    eval = weave.Evaluation(dataset=dataset, scores=[match])
+    eval = weave.Evaluation(dataset=dataset, scorers=[match])
     asyncio.run(eval.evaluate(weave_model))
     # table, acc, acc_lousy = create_predictions_table(model, tokenizer, test_dataset, 64)

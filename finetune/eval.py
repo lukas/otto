@@ -36,6 +36,8 @@ def get_default_create_prompt(args):
         raise Exception("Model not recognized")
     return create_prompt
 
+
+
 defaults = SimpleNamespace(
     MODEL_AT = 'capecape/huggingface/6urzaw17-mistralai_Mistral-7B-Instruct-v0.1-ft:v0',
     DATASET_AT = 'capecape/otto/split_dataset:v2',

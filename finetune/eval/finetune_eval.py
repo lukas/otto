@@ -83,7 +83,8 @@ def evaluate_model(dataset_name: str):
     max_new_tokens=64
     
     # hf_model, tokenizer = load_model(args)
-    model, tokenizer = load_model_from_artifact('capecape/huggingface/6urzaw17-mistralai_Mistral-7B-Instruct-v0.1-ft:v0')
+    # model, tokenizer = load_model_from_artifact('capecape/huggingface/6urzaw17-mistralai_Mistral-7B-Instruct-v0.1-ft:v0')
+    model, tokenizer = load_model_from_artifact('llm-play/otto/gguf-model-finetuned:v0')
 
     gen_config = GenerationConfig.from_pretrained(
         model.name_or_path,
@@ -94,7 +95,7 @@ def evaluate_model(dataset_name: str):
 
 
     weave_model = GenText(model, tokenizer, gen_config)
-    eval = weaveflow.Evaluation(dataset, scores=[match], example_to_model_input=example_to_model_input)
+    eval = weaveflow.Evaluation(dataset, scorers=[match])
     asyncio.run(eval.evaluate(weave_model))
     # table, acc, acc_lousy = create_predictions_table(model, tokenizer, test_dataset, 64)
 

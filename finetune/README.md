@@ -69,6 +69,12 @@ If you don't have access to Llama2 for instance, you can either use [OpenLlama](
 ## Run fine tuning
 
 You can perform fine-tune using the provided [finetune.ipynb](finetune.ipynb) script. Running this script with everything as default will reproduce our Mistral Instruct experiments.
+
+Or you can run
+```bash
+python finetune.py --train-model --merge-model --convert-model
+```
+
 It uses:
 - Peft with qLoRA for efficient finetuning
 - SFTTrainer from [trl](https://github.com/huggingface/trl/blob/main/trl/trainer/sft_trainer.py) for data pre-processing
