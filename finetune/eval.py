@@ -49,6 +49,7 @@ def parse_args(defaults):
     parser = argparse.ArgumentParser()
     parser.add_argument("--model", type=str)
     parser.add_argument("--dataset", type=str)
+    parser.add_argument("--publish", action="store_true")
 
     # parser.add_argument("--MODEL_AT", type=str, default=defaults.MODEL_AT)
     # parser.add_argument("--DATASET_AT", type=str, default=defaults.DATASET_AT)
@@ -99,9 +100,14 @@ def publish_eval_datasets(dataset_ref: str):
     
 if __name__ == "__main__":
 
-    weave.init("otto8")
+    weave.init("otto11")
 
     args = parse_args(defaults)
+
+    if args.publish:
+        publish_eval_datasets('capecape/otto/split_dataset:v2')
+        exit()
+
     if args.dataset == 'small':
         eval_dataset_name = 'test-labels-small'
     elif args.dataset == 'test':
@@ -123,3 +129,5 @@ if __name__ == "__main__":
         evaluate_openai(eval_dataset_name)
     elif args.model == "custom":
         evaluate_model(eval_dataset_name)
+    # else:
+    #    evaluate_anthropic_bt(eval_dataset_name)

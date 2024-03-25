@@ -5,8 +5,6 @@ import os
 
 from .metrics import match
 
-from weave import weaveflow
-
 from types import SimpleNamespace
 from tqdm.auto import tqdm
 from openai import OpenAI
@@ -60,8 +58,7 @@ def load_model(args):
     
     return model, tokenizer
 
-@weave.type()
-class GenText(weaveflow.Model):
+class GenText(weave.Model):
     m: dict
     tokenizer: dict
     gen_config: dict
@@ -95,7 +92,7 @@ def evaluate_model(dataset_name: str):
 
 
     weave_model = GenText(model, tokenizer, gen_config)
-    eval = weaveflow.Evaluation(dataset, scorers=[match])
+    eval = weave.Evaluation(dataset, scorers=[match])
     asyncio.run(eval.evaluate(weave_model))
     # table, acc, acc_lousy = create_predictions_table(model, tokenizer, test_dataset, 64)
 
