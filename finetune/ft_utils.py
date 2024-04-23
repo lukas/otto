@@ -2,6 +2,7 @@ from pathlib import Path
 from functools import partial
 
 import wandb
+import weave
 
 from tqdm.auto import tqdm
 import torch
@@ -22,6 +23,7 @@ llama_prompt = read_file("prompts/llama2_vanilla.txt")
 llama_chat_prompt = read_file("prompts/llama2_chat.txt")
 mistral_prompt = read_file("prompts/mistral.txt")
 
+@weave.op()
 def create_custom_prompt(prompt_template):
     def _inner(row):
         return prompt_template.format(**row)
@@ -47,6 +49,7 @@ def model_type(model_path):
     if list(model_path.glob("*adapter*")):
         return AutoPeftModelForCausalLM
     return AutoModelForCausalLM
+
 
 
 def load_model_from_artifact(MODEL_AT):
@@ -84,7 +87,8 @@ def has_exisiting_wandb_callback(trainer: Trainer):
             return True
     return False
 
-def generate(prompt, model, tokenizer, gen_config):
+@weave.op()
+def generate(prompt:str, model:AutoModelForCausalLM, tokenizer:AutoTokenizer, gen_config:GenerationConfig) -> str:
     tokenized_prompt = tokenizer(prompt, return_tensors='pt')['input_ids'].cuda()
     with torch.inference_mode():
         output = model.generate(inputs=tokenized_prompt, 
@@ -123,7 +127,8 @@ class LLMSampleCB(WandbCallback):
         
         
 
-def token_accuracy(eval_preds):
+@weave.op()
+def token_accuracy(eval_preds:tuple[torch.Tensor, torch.Tensor]) -> dict[str, float]:
     logits, labels = eval_preds
     predictions = np.argmax(logits, axis=-1)
     tp = (predictions.reshape(-1) == labels.reshape(-1)).astype(np.float)
