@@ -8,7 +8,6 @@ from tqdm.auto import tqdm
 import torch
 import numpy as np
 from datasets import load_from_disk
-from peft import AutoPeftModelForCausalLM
 from transformers import AutoModelForCausalLM, GenerationConfig, Trainer, AutoTokenizer
 from transformers.integrations import WandbCallback
 
@@ -23,7 +22,6 @@ llama_prompt = read_file("prompts/llama2_vanilla.txt")
 llama_chat_prompt = read_file("prompts/llama2_chat.txt")
 mistral_prompt = read_file("prompts/mistral.txt")
 
-@weave.op()
 def create_custom_prompt(prompt_template):
     def _inner(row):
         return prompt_template.format(**row)
@@ -47,6 +45,7 @@ def load_ds_from_artifact(at_address, type="dataset"):
 
 def model_type(model_path):
     if list(model_path.glob("*adapter*")):
+        from peft import AutoPeftModelForCausalLM
         return AutoPeftModelForCausalLM
     return AutoModelForCausalLM
 
