@@ -2,25 +2,62 @@ from dataclasses import dataclass
 from pathlib import Path
 import simple_parsing
 import os
+import wandb
 import weave
 import asyncio
 
 import torch
 import datasets
-from peft import AutoPeftModelForCausalLM
+from pydantic import model_validator
+from peft import AutoPeftModelForCausalLM, PeftModelForCausalLM
+from datasets import load_from_disk
 from transformers import AutoModelForCausalLM, AutoTokenizer
+from transformers.models.llama import LlamaTokenizerFast
 
-from ft_utils import load_ds_from_artifact, llama_prompt, mistral_prompt
+mistral_prompt = """[INST]You are AI that converts human request into api calls. 
+You have a set of functions:
+-news(topic="[topic]") asks for latest headlines about a topic.
+-math(question="[question]") asks a math question in python format.
+-notes(action="add|list", note="[note]") lets a user take simple notes.
+-openai(prompt="[prompt]") asks openai a question.
+-runapp(program="[program]") runs a program locally.
+-story(description=[description]) lets a user ask for a story.
+-timecheck(location="[location]") ask for the time at a location. If no location is given it's assumed to be the current location.
+-timer(duration="[duration]") sets a timer for duration written out as a string.
+-weather(location="[location]") ask for the weather at a location. If there's no location string the location is assumed to be where the user is.
+-other() should be used when none of the other commands apply.
+
+Some example user queries and the corresponding function call:
+USER_QUERY: What is a random number under one hundred
+FUNCTION_CALL: math(question="randint(100)")
+
+USER_QUERY: Ask gpt if a leopard can swim
+FUNCTION_CALL: openai(prompt="Can a leopard swim?")
+
+USER_QUER: So it's like…
+FUNCTION_CALL: other()
+
+USER_QUERY: to do this? Also, I've noticed that when I use
+FUNCTION_CALL: other()
+
+Here is a user request, reply with the corresponding function call, be brief.
+USER_QUERY: {user} 
+FUCTION_CALL: [/INST]{answer}"""
 
 # export WEAVE_PARALLELISM=1
 os.environ["WEAVE_PARALLELISM"] = "1"
 
-@dataclass
-class Args:
-    model_id: str = 'capecape/huggingface/6urzaw17-mistralai_Mistral-7B-Instruct-v0.1-ft:v0'
-    # model_id: str = 'meta-llama/Llama-2-7b-hf'
-    dataset_at: str = 'capecape/otto/split_dataset:v2'
-    num_samples: int = None
+
+def load_ds_from_artifact(at_address, type="dataset"):
+    "Load the dataset from an Artifact"
+    if wandb.run is not None:
+        artifact = wandb.use_artifact(at_address, type=type)
+    else:
+        from wandb import Api
+        api = Api()
+        artifact = api.artifact(at_address, type=type)
+    artifact_dir = artifact.download()
+    return load_from_disk(artifact_dir)
 
 def hf_to_weave(dataset: datasets.Dataset, num_samples: int = None) -> weave.Dataset:
     "Convert a Huggingface dataset to a Weave dataset"
@@ -32,8 +69,8 @@ def model_type(model_path):
         return AutoPeftModelForCausalLM
     return AutoModelForCausalLM
 
-def maybe_load_from_at(model_at_or_hub):
-    "Load model from W&B or HF"
+def load_model_and_tokenizer(model_at_or_hub):
+    "Load model and tokenizer from W&B or HF"
     try:
         from wandb import Api
         api = Api()
@@ -59,10 +96,55 @@ def match(answer: str, model_output: dict ) -> dict:
         "acc_lousy": answer.strip().lower() == model_output["generated_text"].strip().lower()
         }
 
+class MistralFT(weave.Model):
+    model_id: str
+    system_prompt: str
+    temperature: float = 0.5
+    max_new_tokens: int = 128
+    model: PeftModelForCausalLM
+    tokenizer: LlamaTokenizerFast
+
+    @model_validator(mode='before')
+    def load_model_and_tokenizer(cls, v):
+        model_id = v["model_id"]
+        if model_id is None:
+            raise ValueError("model_id is required")
+        model, tokenizer = load_model_and_tokenizer(model_id)
+        v["model"] = model
+        v["tokenizer"] = tokenizer
+        return v
+
+    @weave.op()
+    def format_prompt(self, user: str) -> str:
+        return self.system_prompt.format(user=user, answer="")
+
+    @weave.op()
+    def predict(self, user: str) -> str:
+        prompt = self.format_prompt(user)
+        tokenized_prompt = self.tokenizer(prompt, return_tensors='pt')['input_ids'].cuda()
+        with torch.inference_mode():
+            outputs = self.model.generate(
+                tokenized_prompt,
+                max_new_tokens=self.max_new_tokens,
+                do_sample=True,
+                pad_token_id=self.tokenizer.eos_token_id,
+                temperature=self.temperature,
+            )
+        generated_text = self.tokenizer.decode(outputs[0][len(tokenized_prompt[0]):], skip_special_tokens=True)
+        return {"generated_text": generated_text}
+
+
 if __name__ == "__main__":
-    weave.init("otto11")
-    
+
+    @dataclass
+    class Args:
+        model_id: str = 'capecape/huggingface/6urzaw17-mistralai_Mistral-7B-Instruct-v0.1-ft:v0'
+        # model_id: str = 'meta-llama/Llama-2-7b-hf'
+        dataset_at: str = 'capecape/otto/split_dataset:v2'
+        num_samples: int = None
     args = simple_parsing.parse(Args)
+
+    weave.init("otto11")
 
     # grab the dataset
     dataset = load_ds_from_artifact(args.dataset_at)
@@ -70,36 +152,9 @@ if __name__ == "__main__":
     # convert to weave
     wds = hf_to_weave(dataset["test"], args.num_samples)
 
-    system_prompt = mistral_prompt
-
-    model, tokenizer = maybe_load_from_at(args.model_id)
-
-    class MistralFT(weave.Model):
-        system_prompt: str
-        temperature: float = 0.5
-        max_new_tokens: int = 128
-
-        @weave.op()
-        def format_prompt(self, user: str) -> str:
-            return self.system_prompt.format(user=user, answer="")
-
-        @weave.op()
-        def predict(self, user: str) -> str:
-            prompt = self.format_prompt(self.system_prompt, user)
-            tokenized_prompt = tokenizer(prompt, return_tensors='pt')['input_ids'].cuda()
-            with torch.inference_mode():
-                outputs = model.generate(
-                    tokenized_prompt,
-                    max_new_tokens=self.max_new_tokens,
-                    do_sample=True,
-                    pad_token_id=tokenizer.eos_token_id,
-                    temperature=self.temperature,
-                )
-            generated_text = tokenizer.decode(outputs[0][len(tokenized_prompt[0]):], skip_special_tokens=True)
-            return {"generated_text": generated_text}
-    
     weave_model = MistralFT(
-        system_prompt=get_prompt(args.model_id),
+        model_id=args.model_id,
+        system_prompt=mistral_prompt,
         temperature=0.5,
         max_new_tokens=128,
     )
@@ -110,3 +165,4 @@ if __name__ == "__main__":
 
     eval = weave.Evaluation(dataset=wds, scorers=[match])
     asyncio.run(eval.evaluate(weave_model))
+
