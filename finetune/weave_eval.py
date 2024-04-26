@@ -13,8 +13,9 @@ from peft import AutoPeftModelForCausalLM, PeftModelForCausalLM
 from datasets import load_from_disk
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from transformers.models.llama import LlamaTokenizerFast
+from transformers.models.mistral import MistralForCausalLM
 
-mistral_prompt = """[INST]You are AI that converts human request into api calls. 
+mistral_prompt = """[INST] You are AI that converts human request into api calls. 
 You have a set of functions:
 -news(topic="[topic]") asks for latest headlines about a topic.
 -math(question="[question]") asks a math question in python format.
@@ -25,24 +26,10 @@ You have a set of functions:
 -timecheck(location="[location]") ask for the time at a location. If no location is given it's assumed to be the current location.
 -timer(duration="[duration]") sets a timer for duration written out as a string.
 -weather(location="[location]") ask for the weather at a location. If there's no location string the location is assumed to be where the user is.
--other() should be used when none of the other commands apply.
-
-Some example user queries and the corresponding function call:
-USER_QUERY: What is a random number under one hundred
-FUNCTION_CALL: math(question="randint(100)")
-
-USER_QUERY: Ask gpt if a leopard can swim
-FUNCTION_CALL: openai(prompt="Can a leopard swim?")
-
-USER_QUER: So it's like…
-FUNCTION_CALL: other()
-
-USER_QUERY: to do this? Also, I've noticed that when I use
-FUNCTION_CALL: other()
+-other() should be used when none of the other commands apply
 
 Here is a user request, reply with the corresponding function call, be brief.
-USER_QUERY: {user} 
-FUCTION_CALL: [/INST]{answer}"""
+USER_QUERY: {user} [/INST]{answer}"""
 
 # export WEAVE_PARALLELISM=1
 os.environ["WEAVE_PARALLELISM"] = "1"
@@ -64,10 +51,12 @@ def hf_to_weave(dataset: datasets.Dataset, num_samples: int = None) -> weave.Dat
     list_ds = dataset.to_list()[0:num_samples]
     return weave.Dataset(rows=list_ds, name='test-ds')
 
-def model_type(model_path):
-    if list(model_path.glob("*adapter*")):
-        return AutoPeftModelForCausalLM
-    return AutoModelForCausalLM
+def model_type(model_path: Path):
+    try:
+        if list(model_path.glob("*adapter*")):
+            return AutoPeftModelForCausalLM
+    except:
+        return AutoModelForCausalLM
 
 def load_model_and_tokenizer(model_at_or_hub):
     "Load model and tokenizer from W&B or HF"
@@ -81,7 +70,7 @@ def load_model_and_tokenizer(model_at_or_hub):
         artifact_dir = model_at_or_hub
     
     model = model_type(artifact_dir).from_pretrained(
-        artifact_dir, device_map="auto", torch_dtype=torch.bfloat16)
+        artifact_dir, device_map="auto", torch_dtype=torch.bfloat16, use_cache=True)
 
     tokenizer = AutoTokenizer.from_pretrained(artifact_dir)
     tokenizer.pad_token = tokenizer.eos_token
@@ -101,7 +90,7 @@ class MistralFT(weave.Model):
     system_prompt: str
     temperature: float = 0.5
     max_new_tokens: int = 128
-    model: PeftModelForCausalLM
+    model: PeftModelForCausalLM | MistralForCausalLM
     tokenizer: LlamaTokenizerFast
 
     @model_validator(mode='before')
@@ -137,12 +126,20 @@ class MistralFT(weave.Model):
 if __name__ == "__main__":
 
     @dataclass
-    class Args:
+    class Model:
         model_id: str = 'capecape/huggingface/6urzaw17-mistralai_Mistral-7B-Instruct-v0.1-ft:v0'
         # model_id: str = 'meta-llama/Llama-2-7b-hf'
+        temperature: float = 0.5
+        max_new_tokens: int = 128
+        system_prompt: str = mistral_prompt
+
+    @dataclass
+    class Config:
         dataset_at: str = 'capecape/otto/split_dataset:v2'
         num_samples: int = None
-    args = simple_parsing.parse(Args)
+        model: Model = Model()
+
+    args = simple_parsing.parse(Config)
 
     weave.init("otto11")
 
@@ -153,10 +150,10 @@ if __name__ == "__main__":
     wds = hf_to_weave(dataset["test"], args.num_samples)
 
     weave_model = MistralFT(
-        model_id=args.model_id,
-        system_prompt=mistral_prompt,
-        temperature=0.5,
-        max_new_tokens=128,
+        model_id=args.model.model_id,
+        system_prompt=args.model.system_prompt,
+        temperature=args.model.temperature,
+        max_new_tokens=args.model.max_new_tokens,
     )
 
     # print("sanity check")
