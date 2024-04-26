@@ -23,6 +23,7 @@ class Args:
     num_samples: int = None
 
 def hf_to_weave(dataset: datasets.Dataset, num_samples: int = None) -> weave.Dataset:
+    "Convert a Huggingface dataset to a Weave dataset"
     list_ds = dataset.to_list()[0:num_samples]
     return weave.Dataset(rows=list_ds, name='test-ds')
 
@@ -53,20 +54,10 @@ def maybe_load_from_at(model_at_or_hub):
 @weave.op()
 def match(answer: str, model_output: dict ) -> dict:
     "a row -> {'user': 'Cheers!', 'answer': 'other()'}"
-    print(f"answer: {answer}")
-    print(f"model_output: {model_output}")
     return {
         "acc": answer.strip() == model_output["generated_text"].strip(),
         "acc_lousy": answer.strip().lower() == model_output["generated_text"].strip().lower()
         }
-
-@weave.op()
-def get_prompt(model_id: str):
-    # create a system prompt
-    if "mistral" in model_id:
-        return mistral_prompt
-    else:
-        return llama_prompt
 
 if __name__ == "__main__":
     weave.init("otto11")
@@ -79,53 +70,43 @@ if __name__ == "__main__":
     # convert to weave
     wds = hf_to_weave(dataset["test"], args.num_samples)
 
-    system_prompt = get_prompt(args.model_id)
+    system_prompt = mistral_prompt
 
     model, tokenizer = maybe_load_from_at(args.model_id)
 
-    # create a HF pipeline to perform inference
-    # pipe = pipeline(
-    #     "text-generation",
-    #     model=model_id,
-    #     device_map="auto",
-    #     torch_dtype=torch.bfloat16,
-    #     )
+    class MistralFT(weave.Model):
+        system_prompt: str
+        temperature: float = 0.5
+        max_new_tokens: int = 128
 
-    @weave.op()
-    def format_prompt(system_prompt: str, user: str) -> str:
-        return system_prompt.format(user=user, answer="")
-    
-    # @weave.op()
-    # def predict(user: str) -> str:
-    #     prompt = format_prompt(user)
-    #     outputs = pipe(
-    #         prompt,
-    #         max_new_tokens=128,
-    #         do_sample=True,
-    #         return_full_text=False,
-    #         temperature=0.7,
-    #     )
-    #     return outputs[0]
+        @weave.op()
+        def format_prompt(self, user: str) -> str:
+            return self.system_prompt.format(user=user, answer="")
 
-    @weave.op()
-    def predict(user: str) -> str:
-        "Hello"
-        prompt = format_prompt(system_prompt, user)
-        tokenized_prompt = tokenizer(prompt, return_tensors='pt')['input_ids'].cuda()
-        with torch.inference_mode():
-            outputs = model.generate(
-                tokenized_prompt,
-                max_new_tokens=128,
-                do_sample=True,
-                pad_token_id=tokenizer.eos_token_id,
-                temperature=0.5,
-            )
-        generated_text = tokenizer.decode(outputs[0][len(tokenized_prompt[0]):], skip_special_tokens=True)
-        return {"generated_text": generated_text}
+        @weave.op()
+        def predict(self, user: str) -> str:
+            prompt = self.format_prompt(self.system_prompt, user)
+            tokenized_prompt = tokenizer(prompt, return_tensors='pt')['input_ids'].cuda()
+            with torch.inference_mode():
+                outputs = model.generate(
+                    tokenized_prompt,
+                    max_new_tokens=self.max_new_tokens,
+                    do_sample=True,
+                    pad_token_id=tokenizer.eos_token_id,
+                    temperature=self.temperature,
+                )
+            generated_text = tokenizer.decode(outputs[0][len(tokenized_prompt[0]):], skip_special_tokens=True)
+            return {"generated_text": generated_text}
     
-    print("sanity check")
-    print(f" >input: {wds.rows[0]}")
-    outputs = predict(wds.rows[0]["user"])
-    print(outputs)
+    weave_model = MistralFT(
+        system_prompt=get_prompt(args.model_id),
+        temperature=0.5,
+        max_new_tokens=128,
+    )
+
+    # print("sanity check")
+    # print(f" >input: {wds.rows[0]}")
+    # outputs = weave_model.predict(wds.rows[0]["user"])
+
     eval = weave.Evaluation(dataset=wds, scorers=[match])
-    asyncio.run(eval.evaluate(predict))
+    asyncio.run(eval.evaluate(weave_model))
