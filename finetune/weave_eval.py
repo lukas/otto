@@ -31,7 +31,6 @@ You have a set of functions:
 Here is a user request, reply with the corresponding function call, be brief.
 USER_QUERY: {user} [/INST]{answer}"""
 
-# export WEAVE_PARALLELISM=1
 os.environ["WEAVE_PARALLELISM"] = "1"
 
 
@@ -90,7 +89,7 @@ class MistralFT(weave.Model):
     system_prompt: str
     temperature: float = 0.5
     max_new_tokens: int = 128
-    model: PeftModelForCausalLM | MistralForCausalLM
+    model: PeftModelForCausalLM | MistralForCausalLM | AutoModelForCausalLM
     tokenizer: LlamaTokenizerFast
 
     @model_validator(mode='before')
@@ -129,7 +128,7 @@ if __name__ == "__main__":
     class Model:
         model_id: str = 'capecape/huggingface/6urzaw17-mistralai_Mistral-7B-Instruct-v0.1-ft:v0'
         # model_id: str = 'meta-llama/Llama-2-7b-hf'
-        temperature: float = 0.5
+        temperature: float = 0.7
         max_new_tokens: int = 128
         system_prompt: str = mistral_prompt
 
