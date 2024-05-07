@@ -24,6 +24,5 @@ FUNCTION_CALL: other()
 USER_QUERY: to do this? Also, I've noticed that when I use
 FUNCTION_CALL: other()
 
-Here is a user request, reply with the corresponding function call, be brief.
-USER_QUERY: {user} 
-FUCTION_CALL: [/INST]{answer}
+Here is a user request, reply with the corresponding function call only, nothing else.
+USER_QUERY: {user} [/INST]{answer}
