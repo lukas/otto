@@ -22,8 +22,8 @@ class ScriptArgs:
     model_id: str="mistralai/Mistral-7B-Instruct-v0.2" # "the model name"
     output_dir: str="training_output" # "the output directory"
     learning_rate: float=1.4e-5 # "the learning rate"
-    batch_size: int=1 # "the batch size", 24GB -> 2, 40GB -> 4
-    seq_length: int=1024 # "Input sequence length"
+    batch_size: int=2 # "the batch size", 24GB -> 2, 40GB -> 4
+    seq_length: int=512 # "Input sequence length"
     gradient_accumulation_steps: int=4 # "simulate larger batch sizes"
     lora_r: int=64 # "the rank of the matrix parameter of the LoRA adapters"
     lora_alpha: int=16 # "the alpha parameter of the LoRA adapters"
@@ -50,10 +50,7 @@ if __name__ == "__main__":
     print(f"You are using the following system prompt:\n{system_prompt}\n")
 
     # apply prompt per row of dataset
-    def formatting_func(row):
-        return {"text": system_prompt.format_map(row)}
-
-    ds = ds.map(formatting_func)
+    ds = ds.map(lambda row: {"text": system_prompt.format_map(row)})
 
     quantization_config = BitsAndBytesConfig(load_in_4bit=True)
     model = AutoModelForCausalLM.from_pretrained(
@@ -84,8 +81,6 @@ if __name__ == "__main__":
         num_train_epochs=args.epochs,
         report_to="wandb"
     )
-
-
 
     # Let's Train
     print(f"Training {args.model_id} on {len(ds['train'])} examples")
