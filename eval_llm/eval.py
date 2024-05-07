@@ -35,6 +35,19 @@ os.environ["WEAVE_PARALLELISM"] = "1"
 
 WANDB_PROJECT = "otto_bis"
 
+@dataclass
+class ModelConfig:
+    model_id: str = 'capecape/huggingface/6urzaw17-mistralai_Mistral-7B-Instruct-v0.1-ft:v0'
+    temperature: float = 0.7
+    max_new_tokens: int = 128
+    prompt_file: Path = Path("prompts/mistral_simple.txt")
+
+@dataclass
+class Config:
+    dataset_at: str = 'capecape/otto/split_dataset:v2'
+    num_samples: int = None
+    model: ModelConfig = ModelConfig()
+
 @weave.op()
 def match(answer: str, model_output: dict ) -> dict:
     "a row -> {'user': 'Cheers!', 'answer': 'other()'}"
@@ -74,7 +87,6 @@ class HFModel(weave.Model):
             outputs = self.model.generate(
                 tokenized_prompt,
                 max_new_tokens=self.max_new_tokens,
-                do_sample=(self.temperature>0),
                 pad_token_id=self.tokenizer.eos_token_id,
                 temperature=self.temperature,
             )
@@ -83,19 +95,6 @@ class HFModel(weave.Model):
 
 
 if __name__ == "__main__":
-
-    @dataclass
-    class ModelConfig:
-        model_id: str = 'capecape/huggingface/6urzaw17-mistralai_Mistral-7B-Instruct-v0.1-ft:v0'
-        temperature: float = 0.7
-        max_new_tokens: int = 128
-        prompt_file: Path = Path("prompts/mistral_simple.txt")
-
-    @dataclass
-    class Config:
-        dataset_at: str = 'capecape/otto/split_dataset:v2'
-        num_samples: int = None
-        model: ModelConfig = ModelConfig()
 
     args = simple_parsing.parse(Config)
 
