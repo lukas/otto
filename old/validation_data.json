@@ -1,0 +1,1150 @@
+[
+    {
+        "input": "What's the latest news about climate change?",
+        "output": "news(topic='climate change')"
+    },
+    {
+        "input": "Calculate 5 times 7",
+        "output": "math(question='5*7')"
+    },
+    {
+        "input": "Add a note that I have a meeting tomorrow at 10AM",
+        "output": "notes(action='add', note='I have a meeting tomorrow at 10AM')"
+    },
+    {
+        "input": "Ask OpenAI what is the meaning of life",
+        "output": "openai(prompt='what is the meaning of life')"
+    },
+    {
+        "input": "Run the program named 'calculator'",
+        "output": "runapp(program='calculator')"
+    },
+    {
+        "input": "Tell me a story about a brave knight",
+        "output": "story(description='a brave knight')"
+    },
+    {
+        "input": "What's the time in London?",
+        "output": "timecheck(location='London')"
+    },
+    {
+        "input": "Set a timer for 15 minutes",
+        "output": "timer(duration='15 minutes')"
+    },
+    {
+        "input": "What's the weather like in New York?",
+        "output": "weather(location='New York')"
+    },
+    {
+        "input": "List all my notes",
+        "output": "notes(action='list')"
+    },
+    {
+        "input": "What's the square root of 16?",
+        "output": "math(question='sqrt(16)')"
+    },
+    {
+        "input": "Run the program 'Photoshop'",
+        "output": "runapp(program='Photoshop')"
+    },
+    {
+        "input": "What's the time?",
+        "output": "timecheck(location='')"
+    },
+    {
+        "input": "Set a timer for 2 hours",
+        "output": "timer(duration='2 hours')"
+    },
+    {
+        "input": "What's the weather like?",
+        "output": "weather(location='')"
+    },
+    {
+        "input": "Tell me a story about a lost puppy",
+        "output": "story(description='a lost puppy')"
+    },
+    {
+        "input": "Ask OpenAI what is the capital of Australia",
+        "output": "openai(prompt='what is the capital of Australia')"
+    },
+    {
+        "input": "Add a note that I need to buy milk",
+        "output": "notes(action='add', note='I need to buy milk')"
+    },
+    {
+        "input": "Calculate 9 minus 3",
+        "output": "math(question='9-3')"
+    },
+    {
+        "input": "What's the latest news about the stock market?",
+        "output": "news(topic='stock market')"
+    },
+    {
+        "input": "What's the weather like in New York?",
+        "output": "weather(location='New York')"
+    },
+    {
+        "input": "Tell me a story about a princess",
+        "output": "story(description='a princess')"
+    },
+    {
+        "input": "What is the time in London?",
+        "output": "timecheck(location='London')"
+    },
+    {
+        "input": "Set a timer for 5 minutes",
+        "output": "timer(duration='5 minutes')"
+    },
+    {
+        "input": "Run the program Photoshop",
+        "output": "runapp(program='Photoshop')"
+    },
+    {
+        "input": "Add a note that says 'Buy milk'",
+        "output": "notes(action='add', note='Buy milk')"
+    },
+    {
+        "input": "What's the latest news about Bitcoin?",
+        "output": "news(topic='Bitcoin')"
+    },
+    {
+        "input": "What's nine minus three",
+        "output": "math(question='9-3')"
+    },
+    {
+        "input": "Ask OpenAI what is the meaning of life",
+        "output": "openai(prompt='what is the meaning of life')"
+    },
+    {
+        "input": "What's the weather like in San Francisco?",
+        "output": "weather(location='San Francisco')"
+    },
+    {
+        "input": "Set a timer for 10 minutes",
+        "output": "timer(duration='10 minutes')"
+    },
+    {
+        "input": "Tell me a story about a dragon",
+        "output": "story(description='a dragon')"
+    },
+    {
+        "input": "What's the square root of 16?",
+        "output": "math(question='sqrt(16)')"
+    },
+    {
+        "input": "Add a note saying 'Buy milk'",
+        "output": "notes(action='add', note='Buy milk')"
+    },
+    {
+        "input": "What's the time in London?",
+        "output": "timecheck(location='London')"
+    },
+    {
+        "input": "Run the program named 'Calculator'",
+        "output": "runapp(program='Calculator')"
+    },
+    {
+        "input": "What's the latest news on Bitcoin?",
+        "output": "news(topic='Bitcoin')"
+    },
+    {
+        "input": "Ask OpenAI 'What is the meaning of life?'",
+        "output": "openai(prompt='What is the meaning of life?')"
+    },
+    {
+        "input": "List all my notes",
+        "output": "notes(action='list')"
+    },
+    {
+        "input": "What's the weather like?",
+        "output": "weather(location='')"
+    },
+    {
+        "input": "What's the time?",
+        "output": "timecheck(location='')"
+    },
+    {
+        "input": "What's the latest news about technology?",
+        "output": "news(topic='technology')"
+    },
+    {
+        "input": "Calculate 10 divided by 2",
+        "output": "math(question='10/2')"
+    },
+    {
+        "input": "Add a note saying 'buy milk'",
+        "output": "notes(action='add', note='buy milk')"
+    },
+    {
+        "input": "Ask OpenAI 'What is the meaning of life?'",
+        "output": "openai(prompt='What is the meaning of life?')"
+    },
+    {
+        "input": "Run the program named 'Photoshop'",
+        "output": "runapp(program='Photoshop')"
+    },
+    {
+        "input": "Tell me a story about a brave knight",
+        "output": "story(description='a brave knight')"
+    },
+    {
+        "input": "What's the time in New York?",
+        "output": "timecheck(location='New York')"
+    },
+    {
+        "input": "Set a timer for 15 minutes",
+        "output": "timer(duration='15 minutes')"
+    },
+    {
+        "input": "What's the weather like in London?",
+        "output": "weather(location='London')"
+    },
+    {
+        "input": "List all my notes",
+        "output": "notes(action='list')"
+    },
+    {
+        "input": "Calculate the square root of 16",
+        "output": "math(question='sqrt(16)')"
+    },
+    {
+        "input": "Ask OpenAI 'What is the capital of France?'",
+        "output": "openai(prompt='What is the capital of France?')"
+    },
+    {
+        "input": "Run the program named 'Spotify'",
+        "output": "runapp(program='Spotify')"
+    },
+    {
+        "input": "Tell me a story about a lost puppy",
+        "output": "story(description='a lost puppy')"
+    },
+    {
+        "input": "What's the latest news about technology?",
+        "output": "news(topic='technology')"
+    },
+    {
+        "input": "What's the sum of 15 and 7?",
+        "output": "math(question='15+7')"
+    },
+    {
+        "input": "Add a note 'Buy milk'",
+        "output": "notes(action='add', note='Buy milk')"
+    },
+    {
+        "input": "List all my notes",
+        "output": "notes(action='list')"
+    },
+    {
+        "input": "Ask OpenAI 'What is the meaning of life?'",
+        "output": "openai(prompt='What is the meaning of life?')"
+    },
+    {
+        "input": "Give me the latest news about technology",
+        "output": "news(topic=\"technology\")"
+    },
+    {
+        "input": "What is the square root of 16",
+        "output": "math(question=\"sqrt(16)\")"
+    },
+    {
+        "input": "Add a note about my meeting tomorrow",
+        "output": "notes(action=\"add\", note=\"my meeting tomorrow\")"
+    },
+    {
+        "input": "What is the meaning of life",
+        "output": "openai(prompt=\"meaning of life\")"
+    },
+    {
+        "input": "Run the calculator",
+        "output": "runapp(program=\"calculator\")"
+    },
+    {
+        "input": "Tell me a story about a brave knight",
+        "output": "story(description=\"a brave knight\")"
+    },
+    {
+        "input": "What's the current time in Tokyo",
+        "output": "timecheck(location=\"Tokyo\")"
+    },
+    {
+        "input": "Set a timer for 15 minutes",
+        "output": "timer(duration=\"15 minutes\")"
+    },
+    {
+        "input": "What's the weather in New York",
+        "output": "weather(location=\"New York\")"
+    },
+    {
+        "input": "Subtract 5 from 10",
+        "output": "math(question=\"10-5\")"
+    },
+    {
+        "input": "List all my notes",
+        "output": "notes(action=\"list\")"
+    },
+    {
+        "input": "Ask openai about the history of Rome",
+        "output": "openai(prompt=\"history of Rome\")"
+    },
+    {
+        "input": "Run the program named Photoshop",
+        "output": "runapp(program=\"Photoshop\")"
+    },
+    {
+        "input": "What's the latest news about technology?",
+        "output": "news(topic=\"technology\")"
+    },
+    {
+        "input": "Solve the equation 3x+2=14",
+        "output": "math(question=\"3*x+2-14\")"
+    },
+    {
+        "input": "Add a note saying Buy milk",
+        "output": "notes(action=\"add\", note=\"Buy milk\")"
+    },
+    {
+        "input": "List all my notes",
+        "output": "notes(action=\"list\")"
+    },
+    {
+        "input": "Ask OpenAI what's the meaning of life",
+        "output": "openai(prompt=\"What's the meaning of life\")"
+    },
+    {
+        "input": "Run the program named Calculator",
+        "output": "runapp(program=\"Calculator\")"
+    },
+    {
+        "input": "Tell me a story about a brave knight",
+        "output": "story(description=\"a brave knight\")"
+    },
+    {
+        "input": "What's the time in London?",
+        "output": "timecheck(location=\"London\")"
+    },
+    {
+        "input": "Set a timer for 15 minutes",
+        "output": "timer(duration=\"15 minutes\")"
+    },
+    {
+        "input": "Get the latest news about technology",
+        "output": "news(topic=\"technology\")"
+    },
+    {
+        "input": "What's the square root of 64",
+        "output": "math(question=\"sqrt(64)\")"
+    },
+    {
+        "input": "Add a note that says 'Buy milk'",
+        "output": "notes(action=\"add\", note=\"Buy milk\")"
+    },
+    {
+        "input": "Ask OpenAI about the meaning of life",
+        "output": "openai(prompt=\"What is the meaning of life?\")"
+    },
+    {
+        "input": "Run the program named 'Calculator'",
+        "output": "runapp(program=\"Calculator\")"
+    },
+    {
+        "input": "Tell me a story about a brave knight",
+        "output": "story(description=\"a brave knight\")"
+    },
+    {
+        "input": "What's the time in Tokyo?",
+        "output": "timecheck(location=\"Tokyo\")"
+    },
+    {
+        "input": "Set a timer for 15 minutes",
+        "output": "timer(duration=\"15 minutes\")"
+    },
+    {
+        "input": "What's the weather like in Paris?",
+        "output": "weather(location=\"Paris\")"
+    },
+    {
+        "input": "What's the result of 7 times 8",
+        "output": "math(question=\"7*8\")"
+    },
+    {
+        "input": "List all my notes",
+        "output": "notes(action=\"list\")"
+    },
+    {
+        "input": "Ask OpenAI about the history of Python",
+        "output": "openai(prompt=\"What is the history of Python?\")"
+    },
+    {
+        "input": "Give me the latest news on technology",
+        "output": "news(topic='technology')"
+    },
+    {
+        "input": "What's nine minus three",
+        "output": "math(question='9-3')"
+    },
+    {
+        "input": "Add a note that I have a meeting at 3pm",
+        "output": "notes(action='add', note='I have a meeting at 3pm')"
+    },
+    {
+        "input": "Show me my notes",
+        "output": "notes(action='list')"
+    },
+    {
+        "input": "Ask OpenAI what is the meaning of life",
+        "output": "openai(prompt='what is the meaning of life')"
+    },
+    {
+        "input": "Run the program named 'Calculator'",
+        "output": "runapp(program='Calculator')"
+    },
+    {
+        "input": "Tell me a story about a brave knight",
+        "output": "story(description='a brave knight')"
+    },
+    {
+        "input": "What's the latest news about technology?",
+        "output": "news(topic='technology')"
+    },
+    {
+        "input": "What is 15 times 3?",
+        "output": "math(question='15*3')"
+    },
+    {
+        "input": "Take a note that I need to buy milk",
+        "output": "notes(action='add', note='I need to buy milk')"
+    },
+    {
+        "input": "Ask OpenAI what is the meaning of life",
+        "output": "openai(prompt='what is the meaning of life')"
+    },
+    {
+        "input": "Run the program named Photoshop",
+        "output": "runapp(program='Photoshop')"
+    },
+    {
+        "input": "Tell me a story about a brave knight",
+        "output": "story(description='a brave knight')"
+    },
+    {
+        "input": "What's the time in London?",
+        "output": "timecheck(location='London')"
+    },
+    {
+        "input": "Set a timer for 15 minutes",
+        "output": "timer(duration='15 minutes')"
+    },
+    {
+        "input": "What's the weather like in New York?",
+        "output": "weather(location='New York')"
+    },
+    {
+        "input": "What's the square root of 81?",
+        "output": "math(question='sqrt(81)')"
+    },
+    {
+        "input": "List all my notes",
+        "output": "notes(action='list')"
+    },
+    {
+        "input": "Ask OpenAI how to make a good pizza",
+        "output": "openai(prompt='how to make a good pizza')"
+    },
+    {
+        "input": "Run the program named Excel",
+        "output": "runapp(program='Excel')"
+    },
+    {
+        "input": "Tell me a story about a magical forest",
+        "output": "story(description='a magical forest')"
+    },
+    {
+        "input": "Give me the latest news about Bitcoin",
+        "output": "news(topic='Bitcoin')"
+    },
+    {
+        "input": "What's the square root of 49",
+        "output": "math(question='sqrt(49)')"
+    },
+    {
+        "input": "Add a note that says 'Buy milk'",
+        "output": "notes(action='add', note='Buy milk')"
+    },
+    {
+        "input": "Ask OpenAI about the meaning of life",
+        "output": "openai(prompt='What is the meaning of life?')"
+    },
+    {
+        "input": "Run the program Photoshop",
+        "output": "runapp(program='Photoshop')"
+    },
+    {
+        "input": "Tell me a story about a princess and a dragon",
+        "output": "story(description='A princess and a dragon')"
+    },
+    {
+        "input": "What's the time in New York?",
+        "output": "timecheck(location='New York')"
+    },
+    {
+        "input": "Set a timer for 15 minutes",
+        "output": "timer(duration='15 minutes')"
+    },
+    {
+        "input": "What's the weather like in Paris?",
+        "output": "weather(location='Paris')"
+    },
+    {
+        "input": "List all my notes",
+        "output": "notes(action='list')"
+    },
+    {
+        "input": "What's 100 divided by 5",
+        "output": "math(question='100/5')"
+    },
+    {
+        "input": "What's the weather in New York?",
+        "output": "weather(location='New York')"
+    },
+    {
+        "input": "Start a timer for 10 minutes",
+        "output": "timer(duration='10 minutes')"
+    },
+    {
+        "input": "What's the square root of 64?",
+        "output": "math(question='sqrt(64)')"
+    },
+    {
+        "input": "Give me the latest news about Bitcoin",
+        "output": "news(topic='Bitcoin')"
+    },
+    {
+        "input": "Add a note that says 'Buy milk'",
+        "output": "notes(action='add', note='Buy milk')"
+    },
+    {
+        "input": "What's the time in London?",
+        "output": "timecheck(location='London')"
+    },
+    {
+        "input": "Run the program called 'Photoshop'",
+        "output": "runapp(program='Photoshop')"
+    },
+    {
+        "input": "Ask OpenAI 'What is the meaning of life?'",
+        "output": "openai(prompt='What is the meaning of life?')"
+    },
+    {
+        "input": "Tell me a story about a brave knight",
+        "output": "story(description='a brave knight')"
+    },
+    {
+        "input": "What's the weather like?",
+        "output": "weather(location='')"
+    },
+    {
+        "input": "List all my notes",
+        "output": "notes(action='list', note='')"
+    },
+    {
+        "input": "What's seven times eight?",
+        "output": "math(question='7*8')"
+    },
+    {
+        "input": "Get the latest news about the presidential election",
+        "output": "news(topic='presidential election')"
+    },
+    {
+        "input": "What's the time?",
+        "output": "timecheck(location='')"
+    },
+    {
+        "input": "What's the latest news on climate change?",
+        "output": "news(topic=\"climate change\")"
+    },
+    {
+        "input": "Subtract 7 from 15",
+        "output": "math(question=\"15-7\")"
+    },
+    {
+        "input": "Add a note that says 'buy milk'",
+        "output": "notes(action=\"add\", note=\"buy milk\")"
+    },
+    {
+        "input": "Ask openai what's the meaning of life",
+        "output": "openai(prompt=\"what's the meaning of life\")"
+    },
+    {
+        "input": "Run the program named 'Photoshop'",
+        "output": "runapp(program=\"Photoshop\")"
+    },
+    {
+        "input": "Tell me a story about a brave knight",
+        "output": "story(description=\"a brave knight\")"
+    },
+    {
+        "input": "What's the time in London?",
+        "output": "timecheck(location=\"London\")"
+    },
+    {
+        "input": "Set a timer for 15 minutes",
+        "output": "timer(duration=\"15 minutes\")"
+    },
+    {
+        "input": "What's the weather like in Paris?",
+        "output": "weather(location=\"Paris\")"
+    },
+    {
+        "input": "Divide 20 by 5",
+        "output": "math(question=\"20/5\")"
+    },
+    {
+        "input": "List all my notes",
+        "output": "notes(action=\"list\")"
+    },
+    {
+        "input": "Ask openai who won the world series in 2020",
+        "output": "openai(prompt=\"who won the world series in 2020\")"
+    },
+    {
+        "input": "What's the current weather in New York?",
+        "output": "weather(location=\"New York\")"
+    },
+    {
+        "input": "What's the time in London?",
+        "output": "timecheck(location=\"London\")"
+    },
+    {
+        "input": "What's seven times seven?",
+        "output": "math(question=\"7*7\")"
+    },
+    {
+        "input": "Tell me a story about a brave knight",
+        "output": "story(description=\"a brave knight\")"
+    },
+    {
+        "input": "Run the Spotify app",
+        "output": "runapp(program=\"Spotify\")"
+    },
+    {
+        "input": "Add a note that says buy milk",
+        "output": "notes(action=\"add\", note=\"buy milk\")"
+    },
+    {
+        "input": "List all my notes",
+        "output": "notes(action=\"list\")"
+    },
+    {
+        "input": "Ask OpenAI what the meaning of life is",
+        "output": "openai(prompt=\"what is the meaning of life\")"
+    },
+    {
+        "input": "What's the latest news about climate change?",
+        "output": "news(topic=\"climate change\")"
+    },
+    {
+        "input": "What's the square root of 16?",
+        "output": "math(question=\"sqrt(16)\")"
+    },
+    {
+        "input": "Add a note about buying milk",
+        "output": "notes(action=\"add\", note=\"buy milk\")"
+    },
+    {
+        "input": "List all my notes",
+        "output": "notes(action=\"list\")"
+    },
+    {
+        "input": "Ask OpenAI what's the meaning of life",
+        "output": "openai(prompt=\"what's the meaning of life\")"
+    },
+    {
+        "input": "Run the program Photoshop",
+        "output": "runapp(program=\"Photoshop\")"
+    },
+    {
+        "input": "Tell me a story about a brave knight",
+        "output": "story(description=\"a brave knight\")"
+    },
+    {
+        "input": "Tell me the latest news about technology",
+        "output": "news(topic=\"technology\")"
+    },
+    {
+        "input": "What is the square root of 64",
+        "output": "math(question=\"sqrt(64)\")"
+    },
+    {
+        "input": "List all my notes",
+        "output": "notes(action=\"list\")"
+    },
+    {
+        "input": "Add a note that says 'Buy milk'",
+        "output": "notes(action=\"add\", note=\"Buy milk\")"
+    },
+    {
+        "input": "Ask OpenAI what is the meaning of life",
+        "output": "openai(prompt=\"what is the meaning of life\")"
+    },
+    {
+        "input": "Run the program called 'Photoshop'",
+        "output": "runapp(program=\"Photoshop\")"
+    },
+    {
+        "input": "Tell me a story about a brave knight",
+        "output": "story(description=\"a brave knight\")"
+    },
+    {
+        "input": "What's the time in Paris",
+        "output": "timecheck(location=\"Paris\")"
+    },
+    {
+        "input": "Set a timer for 15 minutes",
+        "output": "timer(duration=\"15 minutes\")"
+    },
+    {
+        "input": "What's the weather like in New York",
+        "output": "weather(location=\"New York\")"
+    },
+    {
+        "input": "Give me the latest news about technology",
+        "output": "news(topic='technology')"
+    },
+    {
+        "input": "What is the square root of 16?",
+        "output": "math(question='sqrt(16)')"
+    },
+    {
+        "input": "Add a note to buy milk",
+        "output": "notes(action='add', note='buy milk')"
+    },
+    {
+        "input": "What is the meaning of life?",
+        "output": "openai(prompt='What is the meaning of life?')"
+    },
+    {
+        "input": "Run the program named 'calculator'",
+        "output": "runapp(program='calculator')"
+    },
+    {
+        "input": "Tell me a story about a haunted house",
+        "output": "story(description='a haunted house')"
+    },
+    {
+        "input": "What's the time in New York?",
+        "output": "timecheck(location='New York')"
+    },
+    {
+        "input": "Set a timer for 15 minutes",
+        "output": "timer(duration='15 minutes')"
+    },
+    {
+        "input": "What's the weather like in Paris?",
+        "output": "weather(location='Paris')"
+    },
+    {
+        "input": "Tell me the latest news about politics",
+        "output": "news(topic='politics')"
+    },
+    {
+        "input": "What's 10 times 10?",
+        "output": "math(question='10*10')"
+    },
+    {
+        "input": "Add a note to call John",
+        "output": "notes(action='add', note='call John')"
+    },
+    {
+        "input": "Who won the world series?",
+        "output": "openai(prompt='Who won the world series?')"
+    },
+    {
+        "input": "Tell me the latest news about climate change",
+        "output": "news(topic='climate change')"
+    },
+    {
+        "input": "What's the square root of 49",
+        "output": "math(question='sqrt(49)')"
+    },
+    {
+        "input": "Add a note that says 'Buy milk'",
+        "output": "notes(action='add', note='Buy milk')"
+    },
+    {
+        "input": "Ask OpenAI what's the meaning of life",
+        "output": "openai(prompt='what's the meaning of life')"
+    },
+    {
+        "input": "Run the program named 'Photoshop'",
+        "output": "runapp(program='Photoshop')"
+    },
+    {
+        "input": "Tell me a story about a brave knight",
+        "output": "story(description='a brave knight')"
+    },
+    {
+        "input": "What's the time in New York?",
+        "output": "timecheck(location='New York')"
+    },
+    {
+        "input": "Set a timer for 15 minutes",
+        "output": "timer(duration='15 minutes')"
+    },
+    {
+        "input": "What's the weather in Paris?",
+        "output": "weather(location='Paris')"
+    },
+    {
+        "input": "List all my notes",
+        "output": "notes(action='list')"
+    },
+    {
+        "input": "What's the weather like?",
+        "output": "weather(location='')"
+    },
+    {
+        "input": "What's the time?",
+        "output": "timecheck(location='')"
+    },
+    {
+        "input": "Tell me a story about a lost puppy",
+        "output": "story(description='a lost puppy')"
+    },
+    {
+        "input": "Run the program 'Excel'",
+        "output": "runapp(program='Excel')"
+    },
+    {
+        "input": "What's the latest news on climate change?",
+        "output": "news(topic=\"climate change\")"
+    },
+    {
+        "input": "What's the square root of 64?",
+        "output": "math(question=\"sqrt(64)\")"
+    },
+    {
+        "input": "Add a note that I have a meeting tomorrow at 10 AM",
+        "output": "notes(action=\"add\", note=\"I have a meeting tomorrow at 10 AM\")"
+    },
+    {
+        "input": "List all my notes",
+        "output": "notes(action=\"list\")"
+    },
+    {
+        "input": "Ask openai what's the meaning of life",
+        "output": "openai(prompt=\"what's the meaning of life\")"
+    },
+    {
+        "input": "Run the program Photoshop",
+        "output": "runapp(program=\"Photoshop\")"
+    },
+    {
+        "input": "Tell me a story about a brave knight",
+        "output": "story(description=\"a brave knight\")"
+    },
+    {
+        "input": "What's the time in New York?",
+        "output": "timecheck(location=\"New York\")"
+    },
+    {
+        "input": "Set a timer for 15 minutes",
+        "output": "timer(duration=\"15 minutes\")"
+    },
+    {
+        "input": "What's the weather like in Paris?",
+        "output": "weather(location=\"Paris\")"
+    },
+    {
+        "input": "Ask OpenAI how to make pancakes",
+        "output": "openai(prompt='how to make pancakes')"
+    },
+    {
+        "input": "Add a note that says 'Call mom'",
+        "output": "notes(action='add', note='Call mom')"
+    },
+    {
+        "input": "What's 7 times 8",
+        "output": "math(question='7*8')"
+    },
+    {
+        "input": "Tell me the latest news about the stock market",
+        "output": "news(topic='stock market')"
+    },
+    {
+        "input": "Run the program named 'photoshop'",
+        "output": "runapp(program='photoshop')"
+    },
+    {
+        "input": "Tell me a story about a brave knight",
+        "output": "story(description='a brave knight')"
+    },
+    {
+        "input": "What's the time in London?",
+        "output": "timecheck(location='London')"
+    },
+    {
+        "input": "Set a timer for 30 minutes",
+        "output": "timer(duration='30 minutes')"
+    },
+    {
+        "input": "What's the weather like in Tokyo?",
+        "output": "weather(location='Tokyo')"
+    },
+    {
+        "input": "What's the time in Sydney?",
+        "output": "timecheck(location=\"Sydney\")"
+    },
+    {
+        "input": "Set a timer for 15 minutes",
+        "output": "timer(duration=\"15 minutes\")"
+    },
+    {
+        "input": "What's the weather in London?",
+        "output": "weather(location=\"London\")"
+    },
+    {
+        "input": "Set a timer for 15 minutes",
+        "output": "timer(duration=\"15 minutes\")"
+    },
+    {
+        "input": "What's the latest news about the Olympics?",
+        "output": "news(topic=\"Olympics\")"
+    },
+    {
+        "input": "Run the program 'Excel'",
+        "output": "runapp(program=\"Excel\")"
+    },
+    {
+        "input": "Tell me a story about a lost puppy",
+        "output": "story(description=\"a lost puppy\")"
+    },
+    {
+        "input": "What's the time in New York?",
+        "output": "timecheck(location=\"New York\")"
+    },
+    {
+        "input": "Set a timer for 30 minutes",
+        "output": "timer(duration=\"30 minutes\")"
+    },
+    {
+        "input": "What's the weather like in Tokyo?",
+        "output": "weather(location=\"Tokyo\")"
+    },
+    {
+        "input": "Run the program 'Word'",
+        "output": "runapp(program='Word')"
+    },
+    {
+        "input": "Ask OpenAI 'What are the best practices for remote work?'",
+        "output": "openai(prompt='What are the best practices for remote work?')"
+    },
+    {
+        "input": "Tell me a story about a lost puppy",
+        "output": "story(description='a lost puppy')"
+    },
+    {
+        "input": "Start a timer for 30 seconds",
+        "output": "timer(duration='30 seconds')"
+    },
+    {
+        "input": "Give me the latest news about the Olympics",
+        "output": "news(topic='Olympics')"
+    },
+    {
+        "input": "Ask OpenAI about the history of Python",
+        "output": "openai(prompt='What is the history of Python?')"
+    },
+    {
+        "input": "What's the time?",
+        "output": "timecheck(location='')"
+    },
+    {
+        "input": "Set a timer for 30 seconds",
+        "output": "timer(duration='30 seconds')"
+    },
+    {
+        "input": "What's the weather like?",
+        "output": "weather(location='')"
+    },
+    {
+        "input": "What's the time?",
+        "output": "timecheck(location='')"
+    },
+    {
+        "input": "Set a timer for 30 minutes",
+        "output": "timer(duration='30 minutes')"
+    },
+    {
+        "input": "What's the weather like?",
+        "output": "weather(location='')"
+    },
+    {
+        "input": "What's the time in New York",
+        "output": "timecheck(location='New York')"
+    },
+    {
+        "input": "Set a timer for 15 minutes",
+        "output": "timer(duration='15 minutes')"
+    },
+    {
+        "input": "What's the weather like in Paris",
+        "output": "weather(location='Paris')"
+    },
+    {
+        "input": "Run the program named 'Photoshop'",
+        "output": "runapp(program=\"Photoshop\")"
+    },
+    {
+        "input": "Tell me a story about a lost puppy",
+        "output": "story(description=\"a lost puppy\")"
+    },
+    {
+        "input": "What's the time in London?",
+        "output": "timecheck(location=\"London\")"
+    },
+    {
+        "input": "Set a timer for 30 seconds",
+        "output": "timer(duration=\"30 seconds\")"
+    },
+    {
+        "input": "What's the weather like in New York?",
+        "output": "weather(location=\"New York\")"
+    },
+    {
+        "input": "What's the weather in Paris?",
+        "output": "weather(location=\"Paris\")"
+    },
+    {
+        "input": "Tell me a story about a lost puppy",
+        "output": "story(description=\"a lost puppy\")"
+    },
+    {
+        "input": "What's the current time",
+        "output": "timecheck(location=\"\")"
+    },
+    {
+        "input": "Set a timer for 1 hour",
+        "output": "timer(duration=\"1 hour\")"
+    },
+    {
+        "input": "What's the weather",
+        "output": "weather(location=\"\")"
+    },
+    {
+        "input": "Run the program 'Photoshop'",
+        "output": "runapp(program='Photoshop')"
+    },
+    {
+        "input": "Tell me a story about a brave knight",
+        "output": "story(description='a brave knight')"
+    },
+    {
+        "input": "What's the time in New York?",
+        "output": "timecheck(location='New York')"
+    },
+    {
+        "input": "Set a timer for 15 minutes",
+        "output": "timer(duration='15 minutes')"
+    },
+    {
+        "input": "What's the weather in Paris?",
+        "output": "weather(location='Paris')"
+    },
+    {
+        "input": "What's the time in Sydney?",
+        "output": "timecheck(location='Sydney')"
+    },
+    {
+        "input": "Set a timer for 30 seconds",
+        "output": "timer(duration='30 seconds')"
+    },
+    {
+        "input": "What's the weather like in Tokyo?",
+        "output": "weather(location='Tokyo')"
+    },
+    {
+        "input": "Run my email app",
+        "output": "runapp(program='email')"
+    },
+    {
+        "input": "Tell me a story about a princess",
+        "output": "story(description='a princess')"
+    },
+    {
+        "input": "What's 7 times 8?",
+        "output": "math(question='7*8')"
+    },
+    {
+        "input": "List all my notes",
+        "output": "notes(action='list')"
+    },
+    {
+        "input": "Tell me the latest news about technology",
+        "output": "news(topic='technology')"
+    },
+    {
+        "input": "What's the square root of 16",
+        "output": "math(question='sqrt(16)')"
+    },
+    {
+        "input": "Add a note that says buy milk",
+        "output": "notes(action='add', note='buy milk')"
+    },
+    {
+        "input": "Ask OpenAI about the meaning of life",
+        "output": "openai(prompt='meaning of life')"
+    },
+    {
+        "input": "Run the program named Photoshop",
+        "output": "runapp(program='Photoshop')"
+    },
+    {
+        "input": "Tell me a story about a dragon",
+        "output": "story(description='a dragon')"
+    },
+    {
+        "input": "What's the time in New York",
+        "output": "timecheck(location='New York')"
+    },
+    {
+        "input": "Set a timer for 10 minutes",
+        "output": "timer(duration='10 minutes')"
+    },
+    {
+        "input": "What's the weather like in Paris",
+        "output": "weather(location='Paris')"
+    },
+    {
+        "input": "What's the product of 7 and 8",
+        "output": "math(question='7*8')"
+    },
+    {
+        "input": "List all my notes",
+        "output": "notes(action='list')"
+    },
+    {
+        "input": "Ask OpenAI about the history of Rome",
+        "output": "openai(prompt='history of Rome')"
+    },
+    {
+        "input": "Run the program named Spotify",
+        "output": "runapp(program='Spotify')"
+    },
+    {
+        "input": "Tell me a story about a princess",
+        "output": "story(description='a princess')"
+    },
+    {
+        "input": "What's the time in London",
+        "output": "timecheck(location='London')"
+    },
+    {
+        "input": "Set a timer for 5 minutes",
+        "output": "timer(duration='5 minutes')"
+    },
+    {
+        "input": "What's the weather like in Tokyo",
+        "output": "weather(location='Tokyo')"
+    }
+]
