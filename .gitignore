@@ -1,4 +1,5 @@
-*.pyc
+/**/*/__pycache__
+**/*.pyc
 wandb/
 dataset/
 .python-version
@@ -7,3 +8,6 @@ whisper.cpp/
 frontend/yarn.lock
 frontend/node_modules/
 logs/
+/**/*/wandb
+/**/*/artifacts
+
