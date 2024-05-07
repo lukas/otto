@@ -2,12 +2,12 @@ from pathlib import Path
 from functools import partial
 
 import wandb
+import weave
 
 from tqdm.auto import tqdm
 import torch
 import numpy as np
 from datasets import load_from_disk
-from peft import AutoPeftModelForCausalLM
 from transformers import AutoModelForCausalLM, GenerationConfig, Trainer, AutoTokenizer
 from transformers.integrations import WandbCallback
 
@@ -21,6 +21,7 @@ def read_file(fname):
 llama_prompt = read_file("prompts/llama2_vanilla.txt")
 llama_chat_prompt = read_file("prompts/llama2_chat.txt")
 mistral_prompt = read_file("prompts/mistral.txt")
+mistral_prompt_simple = read_file("prompts/mistral_simple.txt")
 
 def create_custom_prompt(prompt_template):
     def _inner(row):
@@ -45,8 +46,10 @@ def load_ds_from_artifact(at_address, type="dataset"):
 
 def model_type(model_path):
     if list(model_path.glob("*adapter*")):
+        from peft import AutoPeftModelForCausalLM
         return AutoPeftModelForCausalLM
     return AutoModelForCausalLM
+
 
 
 def load_model_from_artifact(MODEL_AT):
@@ -84,7 +87,8 @@ def has_exisiting_wandb_callback(trainer: Trainer):
             return True
     return False
 
-def generate(prompt, model, tokenizer, gen_config):
+@weave.op()
+def generate(prompt:str, model:AutoModelForCausalLM, tokenizer:AutoTokenizer, gen_config:GenerationConfig) -> str:
     tokenized_prompt = tokenizer(prompt, return_tensors='pt')['input_ids'].cuda()
     with torch.inference_mode():
         output = model.generate(inputs=tokenized_prompt, 
@@ -123,7 +127,8 @@ class LLMSampleCB(WandbCallback):
         
         
 
-def token_accuracy(eval_preds):
+@weave.op()
+def token_accuracy(eval_preds:tuple[torch.Tensor, torch.Tensor]) -> dict[str, float]:
     logits, labels = eval_preds
     predictions = np.argmax(logits, axis=-1)
     tp = (predictions.reshape(-1) == labels.reshape(-1)).astype(np.float)
