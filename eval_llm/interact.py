@@ -31,6 +31,8 @@ while True:
     print(f"User\n{user_input}")
     print("===============================================================")
     encoded_input = tokenizer.encode(user_input, return_tensors="pt").to(model.device)
+    print(f"Encoded input\n{encoded_input}")
+    print("===============================================================")
     out = model.generate(
         encoded_input, 
         max_new_tokens=args.max_new_tokens, 
